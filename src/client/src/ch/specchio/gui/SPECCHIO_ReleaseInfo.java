@@ -274,14 +274,14 @@ class JReleaseInfoViewer {
 
          // Feature request from rgisler 20040430
          if (methodName.equalsIgnoreCase("getProject")) {
-            Object objP = method.invoke(obj, null);
+            Object objP = method.invoke(obj, (Object) null);
             if (objP instanceof String) {
                project = (String)objP;
             }
          }
 
          if (methodName.equalsIgnoreCase("getVersion")) {
-            Object objV = method.invoke(obj, null);
+            Object objV = method.invoke(obj, (Object) null);
             if (objV instanceof String) {
                version = (String)objV;
             } else {
@@ -292,12 +292,12 @@ class JReleaseInfoViewer {
          if (methodName.startsWith("get")) {
             String field = methodName.substring(3);
             v.add(field);
-            v.add(method.invoke(obj, null));
+            v.add(method.invoke(obj, (Object) null));
             sortedProps.put(field, v);
          } else if (methodName.startsWith("is")) {
             String field = methodName.substring(2);
             v.add(field);
-            v.add(method.invoke(obj, null));
+            v.add(method.invoke(obj, (Object) null));
             sortedProps.put(field, v);
          }
       }
