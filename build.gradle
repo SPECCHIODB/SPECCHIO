@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 version = '1.0'
-mainClassName  = "SPECCHIO"
+mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
