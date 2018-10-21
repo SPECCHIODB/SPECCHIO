@@ -394,13 +394,13 @@ public class SPECCHIO_ReleaseInfo {
 
 
    /** version (set during build process to "3.3.0.1"). */
-   private static String version = "3.3.0.1";
+   private static String version = System.getProperty("version");
 
    /**
     * Get version (set during build process to "3.3.0.1").
     * @return String version
     */
-   public static final String getVersion() { return version; }
+   public static final String getVersion() { return SPECCHIO_ReleaseInfo.class.getPackage().getImplementationVersion(); }
 
 
    /** company (set during build process to "${company}"). */

@@ -29,6 +29,18 @@ sourceSets {
     }
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart',
+                'Implementation-Version': version,
+                'Implementation-Build-Time': version,
+                'Implementation-Packagename': 'ch.specchio.gui',
+                'Implementation-Web': 'http://specchio.ch',
+                'Implementation-Project': 'SPECCHIO Spectral Information System',
+                'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong'
+    }
+}
+
 dependencies {
     //Client
     compile fileTree(include: ['*.jar'], dir: 'src/client/lib')
