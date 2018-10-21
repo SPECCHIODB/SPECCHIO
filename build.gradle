@@ -38,9 +38,22 @@ task client(type: Jar) {
 check.dependsOn client
 
 dependencies {
+    //Client
     compile fileTree(include: ['*.jar'], dir: 'src/client/lib')
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile group: 'org.apache.commons', name: 'commons-csv', version: '1.2'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'de.micromata.jak', name: 'JavaAPIforKml', version: '2.2.0'
+    compile group: 'org.jfree', name: 'jcommon', version: '1.0.17'
+    compile group: 'com.sun.jersey', name: 'jersey-bundle', version: '1.19.4'
+    compile group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
+    compile group: 'jgraph', name: 'jgraph', version: '5.13.0.0'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
+    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
+    compile group: 'net.sf.py4j', name: 'py4j', version: '0.10.3'
+    compile group: 'net.e175.klaus', name: 'solarpositioning', version: '0.0.9'
+
+    // Types
     compile fileTree(include: ['*.jar'], dir: 'src/types/lib')
-	compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
-    compile group: 'net.iharder', name: 'base64', version: '2.3.8'
-    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+    compile group: 'joda-time', name: 'joda-time', version: '2.6'
 }

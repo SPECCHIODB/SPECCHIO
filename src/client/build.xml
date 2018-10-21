@@ -203,7 +203,7 @@
 	<!-- build MacOS application -->
     <taskdef name="bundleapp"
              classname="com.oracle.appbundler.AppBundlerTask"   
-             classpath="lib/appbundler-1.0.jar" />
+             classpath="lib_old/appbundler-1.0.jar" />
 
     <target name="SPECCHIO_MacOSXApp" depends="init">
         <bundleapp outputdirectory="${macos_pkg.dir}"
