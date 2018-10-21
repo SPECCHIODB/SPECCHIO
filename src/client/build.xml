@@ -147,9 +147,9 @@
     	<chmod file="${dist.dir}/macosx/specchio" perm="755" />
     	
     	<!-- copy support files -->
-    	<copy file="specchio.keystore" todir="${dist.dir}" />
-    	<copy file="SPECCHIO_Icon_Mid_Res_small.jpg" todir="${dist.dir}" />
-    	<copy file="SPECCHIO.icns" todir="${dist.dir}" />
+    	<copy file="resources/specchio.keystore" todir="${dist.dir}" />
+    	<copy file="resources/SPECCHIO_Icon_Mid_Res_small.jpg" todir="${dist.dir}" />
+    	<copy file="resources/SPECCHIO.icns" todir="${dist.dir}" />
     	
     	<!-- copy mysql upgrade files -->
     	<mkdir dir="${dist.dir}/mysql" />
