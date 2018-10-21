@@ -1,5 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+    id "com.github.johnrengelman.shadow" version "4.0.1"
+    id 'java'
+    id 'application'
+}
 
 version = '3.3.0.1'
 mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
@@ -20,22 +23,11 @@ sourceSets {
             srcDir file('src/client/src')
             srcDir file('src/types/src')
         }
+        resources {
+            srcDirs = ['src/client/resources']
+        }
     }
 }
-
-task client(type: Jar) {
-    description = 'Build Jar for SPECCIO Client'
-    manifest {
-        attributes 'Implementation-Title': 'Gradle Jar File Example',
-            'Implementation-Version': version,
-            'Main-Class': 'ch.specchio.gui.SPECCHIOApplication'
-    }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it)} }
-    with jar
-}
-
-check.dependsOn client
 
 dependencies {
     //Client
