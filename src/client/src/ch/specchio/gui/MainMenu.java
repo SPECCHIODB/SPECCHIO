@@ -752,7 +752,7 @@ private JMenuItem dbConfigmenuItem;
     	  
     	  BufferedImage myPicture;
 		try {
-			myPicture = ImageIO.read(new File(SPECCHIOClientFactory.getApplicationFilepath("SPECCHIO_Icon_Mid_Res_small.jpg")));
+			myPicture = ImageIO.read(ClassLoader.getSystemClassLoader().getResource("SPECCHIO_Icon_Mid_Res_small.jpg"));
 //			myPicture = ImageIO.read(new File("SPECCHIO_Icon_Mid_Res_small.jpg"));
 			JLabel picLabel = new JLabel(new ImageIcon(myPicture));	  
 

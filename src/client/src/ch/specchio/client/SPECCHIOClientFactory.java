@@ -175,33 +175,27 @@ public class SPECCHIOClientFactory {
 	
 	public static String getApplicationFilepath(String name)
 	{
-		File file = null;
 		// check if the file is found in the current directory
-		
-		file = new File(name);
-		
-		if(file.isFile())
+		File file = new File(name);
+		if (file.isFile())
 		{
-			//System.out.println(name + " found in current dir.");
 			return file.getPath();
 		}
-		else
+
+		// check if the file is present in the jar bundle
+		if (ClassLoader.getSystemClassLoader().getResource(name) != null)
 		{
-			// 
-			try {
-				File app_dir = new File(SPECCHIOApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-				
-				file = new File(app_dir.getParent() + File.separator + name);
-				
-				//System.out.println(name + " not found in current dir but here: " + file);
-				
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			return ClassLoader.getSystemClassLoader().getResource(name).toString();
 		}
-		
+
+		try {
+			File app_dir = new File(SPECCHIOApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			file = new File(app_dir.getParent() + File.separator + name);
+			return file.getPath();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+
 		return file.getPath();
 	}
 	
