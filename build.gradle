@@ -1,28 +1,43 @@
 plugins {
+    // The shadow plugin is used to generate a bundle that 
+    // contains all dependencies in a single jar
+    // https://github.com/johnrengelman/shadow
     id "com.github.johnrengelman.shadow" version "4.0.1"
+    id 'net.researchgate.release' version '2.6.0'
     id 'java'
     id 'application'
 }
 
-version = '3.3.0.1'
-mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
+// This defines the Java version that this project is compiled against
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-compileJava.options.encoding = 'UTF-8'
 
+// The mainClass is the primary entry point for the application
+mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
+
+// This defines the repositories used to download dependencies
 repositories {
+    // jcenter is the main Maven Repository
+    // https://mvnrepository.com/
 	jcenter()
+
+    // flatDir allows access to .jar files inside these folders
+    // use this only for dependencies that are not available in jcenter
     flatDir {
         dirs 'src/client/lib', 'src/types/lib'
     }
 }
 
+
 sourceSets {
     main {
+        // directories defined in java are going to be compiled into the jar.        
         java {
             srcDir file('src/client/src')
             srcDir file('src/types/src')
         }
+        
+        // resources are copied as-is into the output format        
         resources {
             srcDirs = ['src/client/resources']
         }
@@ -31,9 +46,8 @@ sourceSets {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Quickstart',
+        attributes 'Implementation-Title': 'SPECCHIO',
                 'Implementation-Version': version,
-                'Implementation-Build-Time': version,
                 'Implementation-Packagename': 'ch.specchio.gui',
                 'Implementation-Web': 'http://specchio.ch',
                 'Implementation-Project': 'SPECCHIO Spectral Information System',
