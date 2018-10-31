@@ -1,6 +1,14 @@
+# IDE folders
 .idea
+
+# Gradle build artifacts and settings
 .gradle
+.classpath
 gradle
 build
+
+# Compile output for IDE
 out
+
+# Other
 SPECCHIO.iml

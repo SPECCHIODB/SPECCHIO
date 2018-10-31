@@ -64,7 +64,6 @@ class JReleaseInfoSwingViewer extends JFrame {
 
    /**
     * Constructor.
-    * @param c Class 
     */
    public JReleaseInfoSwingViewer(String project, String version, Map props) {
       enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -175,7 +174,6 @@ class JReleaseInfoTextViewer {
 
    /**
     * Constructor.
-    * @param c Class 
     */
    public JReleaseInfoTextViewer(String project, String version, Map props ) {
       this.project = project;
@@ -342,75 +340,42 @@ class JReleaseInfoViewer {
  */
 public class SPECCHIO_ReleaseInfo {
 
-
-   /** buildDate (set during build process to 1537277235238L). */
-   private static Date buildDate = new Date(1537277235238L);
-
    /**
     * Get buildDate (set during build process to Tue Sep 18 15:27:15 CEST 2018).
     * @return Date buildDate
     */
-   public static final Date getBuildDate() { return buildDate; }
+   public static final Date getBuildDate() { return BuildConfig.BUILD_DATE; }
 
-
-   /** project (set during build process to "SPECCHIO Spectral Information System"). */
-   private static String project = "SPECCHIO Spectral Information System";
 
    /**
     * Get project (set during build process to "SPECCHIO Spectral Information System").
     * @return String project
     */
-   public static final String getProject() { return project; }
+   public static final String getProject() { return BuildConfig.DESCRIPTION; }
 
-
-   /** buildTimeStamp (set during build process to "20180918-1527"). */
-   private static String buildTimeStamp = "20180918-1527";
-
-   /**
-    * Get buildTimeStamp (set during build process to "20180918-1527").
-    * @return String buildTimeStamp
-    */
-   public static final String getBuildTimeStamp() { return buildTimeStamp; }
-
-
-   /** copyright (set during build process to "${copyright}"). */
-   private static String copyright = "${copyright}";
 
    /**
     * Get copyright (set during build process to "${copyright}").
     * @return String copyright
     */
-   public static final String getCopyright() { return copyright; }
-
-
-   /** mail (set during build process to "${mail}"). */
-   private static String mail = "${mail}";
+   public static final String getCopyright() { return BuildConfig.COPYRIGHT; }
 
    /**
     * Get mail (set during build process to "${mail}").
     * @return String mail
     */
-   public static final String getMail() { return mail; }
-
-
-   /** version (set during build process to "3.3.0.1"). */
-   private static String version = System.getProperty("version");
-
+   public static final String getMail() { return BuildConfig.MAIL; }
    /**
     * Get version (set during build process to "3.3.0.1").
     * @return String version
     */
-   public static final String getVersion() { return SPECCHIO_ReleaseInfo.class.getPackage().getImplementationVersion(); }
-
-
-   /** company (set during build process to "${company}"). */
-   private static String company = "${company}";
+   public static final String getVersion() { return BuildConfig.VERSION; }
 
    /**
     * Get company (set during build process to "${company}").
     * @return String company
     */
-   public static final String getCompany() { return company; }
+   public static final String getCompany() { return BuildConfig.COMPANY; }
 
 
    /**
@@ -420,14 +385,11 @@ public class SPECCHIO_ReleaseInfo {
    public static final int getBuildNumber() { return 376; }
 
 
-   /** home (set during build process to "http://specchio.ch"). */
-   private static String home = "http://specchio.ch";
-
    /**
     * Get home (set during build process to "http://specchio.ch").
     * @return String home
     */
-   public static final String getHome() { return home; }
+   public static final String getHome() { return BuildConfig.WEB; }
 
    /**
     * Main method.

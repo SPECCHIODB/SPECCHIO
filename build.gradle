@@ -3,9 +3,19 @@ plugins {
     // contains all dependencies in a single jar
     // https://github.com/johnrengelman/shadow
     id "com.github.johnrengelman.shadow" version "4.0.1"
-    id 'net.researchgate.release' version '2.6.0'
+    
+    // The buildconfig automatically generates a class that  
+    // contains the current version number and project infos
+    // https://github.com/mfuerstenau/gradle-buildconfig-plugin
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
+
+    // required to build java applications
     id 'java'
     id 'application'
+
+    // these plugins provide better support for development environments
+    id 'idea'
+    id 'eclipse'
 }
 
 // This defines the Java version that this project is compiled against
@@ -14,6 +24,7 @@ targetCompatibility = 1.8
 
 // The mainClass is the primary entry point for the application
 mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
+
 
 // This defines the repositories used to download dependencies
 repositories {
@@ -44,9 +55,10 @@ sourceSets {
     }
 }
 
+
 jar {
     manifest {
-        attributes 'Implementation-Title': 'SPECCHIO',
+        attributes 'Implementation-Title': name,
                 'Implementation-Version': version,
                 'Implementation-Packagename': 'ch.specchio.gui',
                 'Implementation-Web': 'http://specchio.ch',
@@ -54,6 +66,7 @@ jar {
                 'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong'
     }
 }
+
 
 dependencies {
     //Client
@@ -76,11 +89,15 @@ dependencies {
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
 }
 
-// This configures the release plugin and sets 
-// the format for the commit messages
-release {
-    preCommitText = ''
-    preTagCommitMessage = 'Pre tag commit: '
-    tagCommitMessage = 'Creating tag: '
-    newVersionCommitMessage = 'Tagged new version: '
+
+// Configuration for the buildConfig plugin
+// https://github.com/mfuerstenau/gradle-buildconfig-plugin
+buildConfig {
+    group 'ch.specchio.gui'
+    buildConfigField 'String', 'DESCRIPTION', project.description
+    buildConfigField 'String', 'COPYRIGHT', project.copyright
+    buildConfigField 'String', 'MAIL', project.mail
+    buildConfigField 'String', 'COMPANY', project.company
+    buildConfigField 'String', 'WEB', project.web
+    buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
 }
