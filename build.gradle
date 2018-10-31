@@ -1,5 +1,5 @@
 plugins {
-    // The shadow plugin is used to generate a bundle that 
+    // The shadow plugin is used to generate a bundle that
     // contains all dependencies in a single jar
     // https://github.com/johnrengelman/shadow
     id "com.github.johnrengelman.shadow" version "4.0.1"
@@ -31,13 +31,13 @@ repositories {
 
 sourceSets {
     main {
-        // directories defined in java are going to be compiled into the jar.        
+        // directories defined in java are going to be compiled into the jar.
         java {
             srcDir file('src/client/src')
             srcDir file('src/types/src')
         }
-        
-        // resources are copied as-is into the output format        
+
+        // resources are copied as-is into the output format
         resources {
             srcDirs = ['src/client/resources']
         }
@@ -74,4 +74,13 @@ dependencies {
     // Types
     compile fileTree(include: ['*.jar'], dir: 'src/types/lib')
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
+}
+
+// This configures the release plugin and sets 
+// the format for the commit messages
+release {
+    preCommitText = ''
+    preTagCommitMessage = 'Pre tag commit: '
+    tagCommitMessage = 'Creating tag: '
+    newVersionCommitMessage = 'Tagged new version: '
 }
