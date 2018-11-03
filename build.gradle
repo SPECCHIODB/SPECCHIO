@@ -50,7 +50,7 @@ sourceSets {
 
         // resources are copied as-is into the output format
         resources {
-            srcDirs = ['src/client/resources']
+            srcDirs = ['src/client/resources', 'conf']
         }
     }
 }
