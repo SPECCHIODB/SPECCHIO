@@ -9,6 +9,8 @@ plugins {
     // https://github.com/mfuerstenau/gradle-buildconfig-plugin
     id 'de.fuerstenau.buildconfig' version '1.1.8'
 
+    id 'edu.sc.seis.launch4j' version '2.4.4'
+
     // required to build java applications
     id 'java'
     id 'application'
@@ -100,4 +102,12 @@ buildConfig {
     buildConfigField 'String', 'COMPANY', project.company
     buildConfigField 'String', 'WEB', project.web
     buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
+}
+
+launch4j {
+    outfile = 'SPECCHIO_Installer.exe'
+    mainClassName = project.mainClassName
+    icon = "${projectDir}/src/client/resources/SPECCHIO.ico"
+    copyConfigurable = project.tasks.shadowJar.outputs.files
+    jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
