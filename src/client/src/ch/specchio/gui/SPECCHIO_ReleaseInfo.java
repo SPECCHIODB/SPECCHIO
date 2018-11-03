@@ -26,8 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import ch.oscg.jreleaseinfo.info.AppReleaseInfo;
-
 
 /**
  * A simple application which uses the generated JReleaseInfo file as
@@ -390,18 +388,4 @@ public class SPECCHIO_ReleaseInfo {
     * @return String home
     */
    public static final String getHome() { return BuildConfig.WEB; }
-
-   /**
-    * Main method.
-    */
-   public static void main(String[] args) throws Exception {
-      if ((args.length != 0) && args[0].equals("-t")) {
-	     JReleaseInfoViewer view = new JReleaseInfoViewer(AppReleaseInfo.class);
-	     view.showText();
-      }
-      else {
-	     JReleaseInfoViewer view = new JReleaseInfoViewer(AppReleaseInfo.class);
-	     view.showInfo();
-	  }
-   }
 }
