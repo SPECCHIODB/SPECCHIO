@@ -9,7 +9,7 @@ plugins {
     // https://github.com/mfuerstenau/gradle-buildconfig-plugin
     id 'de.fuerstenau.buildconfig' version '1.1.8'
 
-    id 'edu.sc.seis.launch4j' version '2.4.4'
+    id "com.bmuschko.izpack" version "3.0"
 
     // required to build java applications
     id 'java'
@@ -89,6 +89,9 @@ dependencies {
     // Types
     compile fileTree(include: ['*.jar'], dir: 'src/types/lib')
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
+
+    // IzPack
+    izpack 'org.codehaus.izpack:izpack-ant:5.1.3'
 }
 
 
@@ -104,10 +107,15 @@ buildConfig {
     buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
 }
 
-launch4j {
-    outfile = 'SPECCHIO_Installer.exe'
-    mainClassName = project.mainClassName
-    icon = "${projectDir}/src/client/resources/SPECCHIO.ico"
-    copyConfigurable = project.tasks.shadowJar.outputs.files
-    jar = "lib/${project.tasks.shadowJar.archiveName}"
+izpack {
+    baseDir = file("src/client/osdep")
+    installFile = file('src/client/install.xml')
+    outputFile = file("$buildDir/distributions/SPECCHIO-${version}-installer.jar")
+    compression = 'deflate'
+    compressionLevel = 9
+    appProperties = ['app.group': 'ch.specchio.gui', 
+                     'app.name': 'SPECCHIO Spectral Information System',
+                     'app.title': name,
+                     'app.version': version, 
+                     'app.subpath': "SPECCHIO-$version"]
 }
