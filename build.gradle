@@ -52,7 +52,7 @@ sourceSets {
 
         // resources are copied as-is into the output format
         resources {
-            srcDirs = ['src/client/resources', 'conf']
+            srcDirs = ['src/client/resources', 'src/client/osdep', 'conf']
         }
     }
 }
@@ -67,6 +67,7 @@ jar {
                 'Implementation-Project': 'SPECCHIO Spectral Information System',
                 'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong'
     }
+    baseName = 'specchio'
 }
 
 
@@ -95,6 +96,14 @@ dependencies {
 }
 
 
+// Configuration for the shadow plugin
+// https://imperceptiblethoughts.com/shadow/configuration/
+shadowJar {
+    baseName = 'specchio-client'
+    classifier = null
+    version = null
+}
+
 // Configuration for the buildConfig plugin
 // https://github.com/mfuerstenau/gradle-buildconfig-plugin
 buildConfig {
@@ -108,8 +117,8 @@ buildConfig {
 }
 
 izpack {
-    baseDir = file("src/client/osdep")
-    installFile = file('src/client/install.xml')
+    baseDir = file("$buildDir")
+    installFile = file('src/client/installer.xml')
     outputFile = file("$buildDir/distributions/SPECCHIO-${version}-installer.jar")
     compression = 'deflate'
     compressionLevel = 9

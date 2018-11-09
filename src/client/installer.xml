@@ -1,0 +1,70 @@
+<izpack:installation version="5.0"
+                     xmlns:izpack="http://izpack.org/schema/installation"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
+
+    <!-- package information -->
+    <info>
+        <appname>SPECCHIO</appname>
+        <appversion>0.0</appversion>
+        <authors>
+            <author name="Andreas Hueni" email="andreas.hueni@geo.uzh.ch" />
+            <author name="Nicholas Sheppard" email="nicholas@intersect.org.au" />
+            <author name="Karl Hermann" email="kherman@uow.edu.au" />
+        </authors>
+        <javaversion>1.8</javaversion>
+        <requiresjdk>no</requiresjdk>
+    </info>
+
+    <!-- language configuration -->
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+
+    <!-- GUI preferences -->
+    <guiprefs height="480" width="640" resizable="yes" />
+
+    <!-- resources -->
+    <resources>
+        <res src="resources/main/macosx/shortcutSpec.xml" id="shortcutSpec.xml" />
+        <res src="resources/main/win32/shortcutSpec.xml" id="Win_shortcutSpec.xml" />
+    </resources>
+
+    <!-- panels -->
+    <panels>
+        <panel classname="TargetPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel" />
+        <panel classname="FinishPanel"/>
+    </panels>
+
+    <!-- packs -->
+    <packs>
+        <pack name="SPECCHIO Client" required="yes">
+            <description>The SPECCHIO client application and supporting libraries</description>
+
+            <!-- copy all files, over-writing existing files -->
+            <fileset dir="resources/main" targetdir="${INSTALL_PATH}" override="true">
+                <include name="**/*" />
+            </fileset>
+
+            <!-- include jar -->
+            <singlefile src="libs/specchio-client.jar" target="${INSTALL_PATH}/specchio-client.jar" override="true"/>
+
+            <!-- insert installation path into start-up scripts -->
+            <parsable targetfile="${INSTALL_PATH}/macosx/specchio" type="shell" />
+            <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" />
+            <parsable targetfile="${INSTALL_PATH}/win64/specchio.bat" type="shell" />
+
+            <!-- set executable bit on start-up files -->
+            <executable targetfile="${INSTALL_PATH}/macosx/specchio" keep="yes" stage="never" />
+        </pack>
+    </packs>
+
+    <!-- native libraries -->
+    <natives>
+        <native type="izpack" name="ShellLink.dll" />
+        <native type="izpack" name="ShellLink_x64.dll" />
+    </natives>
+
+</izpack:installation>
