@@ -26,8 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import ch.oscg.jreleaseinfo.info.AppReleaseInfo;
-
 
 /**
  * A simple application which uses the generated JReleaseInfo file as
@@ -274,14 +272,14 @@ class JReleaseInfoViewer {
 
          // Feature request from rgisler 20040430
          if (methodName.equalsIgnoreCase("getProject")) {
-            Object objP = method.invoke(obj, null);
+            Object objP = method.invoke(obj, (Object) null);
             if (objP instanceof String) {
                project = (String)objP;
             }
          }
 
          if (methodName.equalsIgnoreCase("getVersion")) {
-            Object objV = method.invoke(obj, null);
+            Object objV = method.invoke(obj, (Object) null);
             if (objV instanceof String) {
                version = (String)objV;
             } else {
@@ -292,12 +290,12 @@ class JReleaseInfoViewer {
          if (methodName.startsWith("get")) {
             String field = methodName.substring(3);
             v.add(field);
-            v.add(method.invoke(obj, null));
+            v.add(method.invoke(obj, (Object) null));
             sortedProps.put(field, v);
          } else if (methodName.startsWith("is")) {
             String field = methodName.substring(2);
             v.add(field);
-            v.add(method.invoke(obj, null));
+            v.add(method.invoke(obj, (Object) null));
             sortedProps.put(field, v);
          }
       }
@@ -342,104 +340,54 @@ class JReleaseInfoViewer {
  */
 public class SPECCHIO_ReleaseInfo {
 
-
-   /** buildDate (set during build process to 1531234786329L). */
-   private static Date buildDate = new Date(1531234786329L);
-
    /**
-    * Get buildDate (set during build process to Tue Jul 10 16:59:46 CEST 2018).
+    * Get buildDate (set during build process to Tue Sep 18 15:27:15 CEST 2018).
     * @return Date buildDate
     */
-   public static final Date getBuildDate() { return buildDate; }
+   public static final Date getBuildDate() { return BuildConfig.BUILD_DATE; }
 
-
-   /** project (set during build process to "SPECCHIO Spectral Information System"). */
-   private static String project = "SPECCHIO Spectral Information System";
 
    /**
     * Get project (set during build process to "SPECCHIO Spectral Information System").
     * @return String project
     */
-   public static final String getProject() { return project; }
+   public static final String getProject() { return BuildConfig.DESCRIPTION; }
 
-
-   /** buildTimeStamp (set during build process to "20180710-1659"). */
-   private static String buildTimeStamp = "20180710-1659";
-
-   /**
-    * Get buildTimeStamp (set during build process to "20180710-1659").
-    * @return String buildTimeStamp
-    */
-   public static final String getBuildTimeStamp() { return buildTimeStamp; }
-
-
-   /** copyright (set during build process to "${copyright}"). */
-   private static String copyright = "${copyright}";
 
    /**
     * Get copyright (set during build process to "${copyright}").
     * @return String copyright
     */
-   public static final String getCopyright() { return copyright; }
-
-
-   /** mail (set during build process to "${mail}"). */
-   private static String mail = "${mail}";
+   public static final String getCopyright() { return BuildConfig.COPYRIGHT; }
 
    /**
     * Get mail (set during build process to "${mail}").
     * @return String mail
     */
-   public static final String getMail() { return mail; }
-
-
-   /** version (set during build process to "3.3.0.1"). */
-   private static String version = "3.3.0.1";
-
+   public static final String getMail() { return BuildConfig.MAIL; }
    /**
     * Get version (set during build process to "3.3.0.1").
     * @return String version
     */
-   public static final String getVersion() { return version; }
-
-
-   /** company (set during build process to "${company}"). */
-   private static String company = "${company}";
+   public static final String getVersion() { return BuildConfig.VERSION; }
 
    /**
     * Get company (set during build process to "${company}").
     * @return String company
     */
-   public static final String getCompany() { return company; }
+   public static final String getCompany() { return BuildConfig.COMPANY; }
 
 
    /**
-    * Get buildNumber (set during build process to 75).
+    * Get buildNumber (set during build process to 376).
     * @return int buildNumber
     */
-   public static final int getBuildNumber() { return 75; }
+   public static final int getBuildNumber() { return 376; }
 
-
-   /** home (set during build process to "http://specchio.ch"). */
-   private static String home = "http://specchio.ch";
 
    /**
     * Get home (set during build process to "http://specchio.ch").
     * @return String home
     */
-   public static final String getHome() { return home; }
-
-   /**
-    * Main method.
-    */
-   public static void main(String[] args) throws Exception {
-      if ((args.length != 0) && args[0].equals("-t")) {
-	     JReleaseInfoViewer view = new JReleaseInfoViewer(AppReleaseInfo.class);
-	     view.showText();
-      }
-      else {
-	     JReleaseInfoViewer view = new JReleaseInfoViewer(AppReleaseInfo.class);
-	     view.showInfo();
-	  }
-   }
+   public static final String getHome() { return BuildConfig.WEB; }
 }

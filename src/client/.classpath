@@ -1,29 +1,198 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/SPECCHIO Types"/>
-	<classpathentry kind="lib" path="lib/jcalendar.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-core.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf4obj.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
-	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph.jar"/>
-	<classpathentry kind="lib" path="lib/jxl.jar"/>
-	<classpathentry kind="lib" path="lib/ptplot5.8.jar"/>
-	<classpathentry kind="lib" path="lib/jcommon-1.0.17.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart-1.0.14.jar"/>
-	<classpathentry kind="lib" path="lib/qcchart3djava.jar"/>
-	<classpathentry kind="lib" path="lib/joda-time-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/jreleaseinfo-1.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/SunPosition.jar"/>
-	<classpathentry kind="lib" path="/Users/andyhueni/git/dc10/src/client/lib/py4j0.10.3.jar"/>
-	<classpathentry kind="lib" path="/Users/andyhueni/git/dc10/src/client/lib/filedrop.jar"/>
-	<classpathentry kind="lib" path="/Users/andyhueni/git/dc10/src/client/lib/commons-io-2.5.jar"/>
-	<classpathentry kind="lib" path="/Users/andyhueni/git/dc10/src/client/lib/javaapiforkml-2.2.0.jar"/>
-	<classpathentry kind="lib" path="/Users/andyhueni/git/dc10/src/client/lib/jsoup-1.10.3.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry output="bin/main" kind="src" path="osdep">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry output="bin/main" kind="src" path="src">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry output="bin/main" kind="src" path="resources">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry output="bin/main" kind="src" path="conf">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry output="bin/main" kind="src" path="types-src">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin/default"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="src" path="/src/types"/>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.5/caf033a4a7c37b4a8ff3ea084cba591539b0b69/commons-io-2.5-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.5/2852e6e05fbb95076fc091f6d1780f1f8fe35e0f/commons-io-2.5.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-csv/1.2/9eab4ea5bdf1a2da060cd86549a9c1231104c653/commons-csv-1.2-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-csv/1.2/bfb42d67ff2e16c78c3c322f4fb7c73fbed1965c/commons-csv-1.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.7/e7e36219edde1c66c93495a75490d8f526c377cb/commons-lang3-3.7-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.7/557edd918fd41f9260963583ebf5a61a43a6b423/commons-lang3-3.7.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/de.micromata.jak/JavaAPIforKml/2.2.0/3c94c43611904f4e8cee2adb4b079c2167f74323/JavaAPIforKml-2.2.0-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/de.micromata.jak/JavaAPIforKml/2.2.0/c8b0219444ab0e8f32f2ca28ae4373e3e6153e05/JavaAPIforKml-2.2.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jfree/jfreechart/1.0.14/744eda8a0c969531f970849d5d8fd3c542207ae7/jfreechart-1.0.14-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jfree/jfreechart/1.0.14/fa67c798b0ae80b84f3854d69e341abacd3867c5/jfreechart-1.0.14.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jfree/jcommon/1.0.17/77f17ad06d89cee0156cd6caffe4d03618ba9cc4/jcommon-1.0.17-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jfree/jcommon/1.0.17/7bcb68fde08258e59fe7bcc758c08af830fb2c1d/jcommon-1.0.17.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.jersey/jersey-bundle/1.19.4/251d93d778acfe366923f2d97d4b759959ed8082/jersey-bundle-1.19.4-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.jersey/jersey-bundle/1.19.4/7c94e9f63ad044c1c7d459b3d9b6c9a63b77bd4a/jersey-bundle-1.19.4.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/jgraph/jgraph/5.13.0.0/970751ee4fb74a3b96aed1ca01342a18d470bfcf/jgraph-5.13.0.0-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/jgraph/jgraph/5.13.0.0/577a30b3c2cf7decbb68471f5c96bfa1647b98dd/jgraph-5.13.0.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jsoup/jsoup/1.10.3/89116c309401a6457942135ee47be41ea0eb1ab7/jsoup-1.10.3-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/org.jsoup/jsoup/1.10.3/b842f960942503cf1abbcc8c173a7f2c19d43726/jsoup-1.10.3.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/net.sourceforge.jexcelapi/jxl/2.6.12/7e5ce7fe751bac58c5fe9eaf4600fd7f2d1bb112/jxl-2.6.12-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/net.sourceforge.jexcelapi/jxl/2.6.12/7faf62e0697f7a88954622dfe8c8de33ed142ac7/jxl-2.6.12.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/net.sf.py4j/py4j/0.10.3/3e7f5594a863c88c1882efb1fb849ef1b17805f1/py4j-0.10.3-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/net.sf.py4j/py4j/0.10.3/f78688d671ca3c83341c64a23910b716434908bb/py4j-0.10.3.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/net.e175.klaus/solarpositioning/0.0.9/6180eca49d84d872fbd3883cceb1e4bf0ec6b23b/solarpositioning-0.0.9-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/net.e175.klaus/solarpositioning/0.0.9/2fe9f3adc8027ec037f6949aadbb51a3aca0458a/solarpositioning-0.0.9.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.xml.bind/jaxb-xjc/2.2/5668cc3c9fd22d687121e9155bd061bd1f358b3d/jaxb-xjc-2.2-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.xml.bind/jaxb-xjc/2.2/a2c1f445e24b9aa4ad2ae499c246bfdc07e5ad79/jaxb-xjc-2.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.xml.bind/jaxb-impl/2.2/ce672a2bb2d2e0df2eb5a10f706cabec99e76de2/jaxb-impl-2.2-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/com.sun.xml.bind/jaxb-impl/2.2/43b5ca50bcae275910515749dfc302a679a89714/jaxb-impl-2.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/xmlunit/xmlunit/1.2/9a8543988f6a1a1e584ae7bef34fd88825c54e1e/xmlunit-1.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.ws.rs/jsr311-api/1.1.1/bcc4b7b569ef8bb9b82e48cf23b5aaac29a4fb4e/jsr311-api-1.1.1-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.ws.rs/jsr311-api/1.1.1/59033da2a1afd56af1ac576750a8d0b1830d59e6/jsr311-api-1.1.1.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/xml-apis/xml-apis/1.3.04/d89105ccbe3fd823865330fd964233baf2b53e88/xml-apis-1.3.04-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/xml-apis/xml-apis/1.3.04/90b215f48fe42776c8c7f6e3509ec54e84fd65ef/xml-apis-1.3.04.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/com.lowagie/itext/2.1.5/2b717400d483c77dee402a5a0f3ee0f8a7cee410/itext-2.1.5-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/com.lowagie/itext/2.1.5/a25c4c425ebf812c65184e81d4c84d22e8641b35/itext-2.1.5.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.14/6510b674f5e119177c13badf3ec5f77995ebdc05/log4j-1.2.14-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.14/3b254c872b95141751f414e353a25c2ac261b51/log4j-1.2.14.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.6/828b58d9c5a47da48bc1bcc2515e0ffd3b2dbb07/joda-time-2.6-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.6/5015880733b0bc0ce813a3ed5601064c1d413671/joda-time-2.6.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.xml.bind/jaxb-api/2.2/bb17675f5f7bb5654e95962944ca1e3620963460/jaxb-api-2.2-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.xml.bind/jaxb-api/2.2/d68570e722cffe2000358ce9c661a0b0bf1ebe11/jaxb-api-2.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/bouncycastle/bcmail-jdk14/138/14ff2dfec8578f5f6838c4d6a77a86789afe5382/bcmail-jdk14-138.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/bouncycastle/bcprov-jdk14/138/de366c3243a586eb3c0e2bcde1ed9bb1bfb985ff/bcprov-jdk14-138.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.xml.stream/stax-api/1.0-2/dd58a0151c110e27c6c18abd45b01792f46d3fcd/stax-api-1.0-2-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.xml.stream/stax-api/1.0-2/d6337b0de8b25e53e81b922352fbea9f9f57ba0b/stax-api-1.0-2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.activation/activation/1.1/3697e9f67a2ed7ac5f589cff30f21173299440/activation-1.1-sources.jar" kind="lib" path="/home/ralph/.gradle/caches/modules-2/files-2.1/javax.activation/activation/1.1/e6cb541461c2834bdea3eb920f1884d1eb508b50/activation-1.1.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/filedrop.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jcalendar.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/ptplot5.8.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdfobj.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdf5obj.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdf5.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/types/lib/ujmp-complete-0.2.5.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/build/gen/buildconfig/classes/main" exported="true"/>
 </classpath>

@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+
+    id 'idea'
+    id 'eclipse'
+}
+
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir file('src')
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'lib')
+    compile group: 'joda-time', name: 'joda-time', version: '2.6'
+}

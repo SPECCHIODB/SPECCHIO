@@ -1,0 +1,54 @@
+plugins {
+    id 'war'
+    id 'org.gretty' version '2.2.0'
+
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
+
+    id 'idea'
+    id 'eclipse'
+}
+
+webAppDirName = 'WebContent'
+
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir file('src')
+        }
+    }
+}
+
+dependencies {
+    compile group: 'joda-time', name: 'joda-time', version: '2.6'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.0.1'
+
+    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    compile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.2'
+
+    compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'xmlunit', name: 'xmlunit', version: '1.4'
+    compile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
+
+    // Types
+    compile project(':src/types')
+
+    runtime group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+    runtime group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'
+    runtime group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: '2.27'
+}
+
+buildConfig {
+    group 'ch.specchio.services'
+    buildConfigField 'String', 'DESCRIPTION', project.description
+    buildConfigField 'String', 'COPYRIGHT', project.copyright
+    buildConfigField 'String', 'MAIL', project.mail
+    buildConfigField 'String', 'COMPANY', project.company
+    buildConfigField 'String', 'WEB', project.web
+    buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
+}

@@ -1,0 +1,126 @@
+plugins {
+    // The shadow plugin is used to generate a bundle that
+    // contains all dependencies in a single jar
+    // https://github.com/johnrengelman/shadow
+    id "com.github.johnrengelman.shadow" version "4.0.1"
+    
+    // The buildconfig automatically generates a class that  
+    // contains the current version number and project infos
+    // https://github.com/mfuerstenau/gradle-buildconfig-plugin
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
+
+    // IzPack is used to generate Cross-platform installers
+    // http://izpack.org/
+    id "com.bmuschko.izpack" version "3.0"
+
+    // required to build java applications
+    id 'java'
+    id 'application'
+
+    // these plugins provide better support for development environments
+    id 'idea'
+    id 'eclipse'
+}
+
+// This defines the Java version that this project is compiled against
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+// The mainClass is the primary entry point for the application
+mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
+
+
+// This defines the repositories used to download dependencies
+repositories {
+    // flatDir allows access to .jar files inside these folders
+    // use this only for dependencies that are not available in jcenter
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+
+sourceSets {
+    main {
+        // directories defined in java are going to be compiled into the jar.
+        java {
+            srcDir file('src')
+        }
+
+        // resources are copied as-is into the output format
+        resources {
+            srcDirs = ['resources', 'osdep', '../../conf']
+        }
+    }
+}
+
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': name,
+                'Implementation-Version': version,
+                'Implementation-Packagename': 'ch.specchio.gui',
+                'Implementation-Web': 'http://specchio.ch',
+                'Implementation-Project': 'SPECCHIO Spectral Information System',
+                'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong'
+    }
+    baseName = 'specchio'
+}
+
+
+dependencies {
+    //Client
+    compile fileTree(include: ['*.jar'], dir: 'lib')
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile group: 'org.apache.commons', name: 'commons-csv', version: '1.2'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'de.micromata.jak', name: 'JavaAPIforKml', version: '2.2.0'
+    compile group: 'org.jfree', name: 'jcommon', version: '1.0.17'
+    compile group: 'com.sun.jersey', name: 'jersey-bundle', version: '1.19.4'
+    compile group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
+    compile group: 'jgraph', name: 'jgraph', version: '5.13.0.0'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
+    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
+    compile group: 'net.sf.py4j', name: 'py4j', version: '0.10.3'
+    compile group: 'net.e175.klaus', name: 'solarpositioning', version: '0.0.9'
+
+    // Types
+    compile project(':src/types')
+
+    // IzPack
+    izpack 'org.codehaus.izpack:izpack-ant:5.1.3'
+}
+
+
+// Configuration for the shadow plugin
+// https://imperceptiblethoughts.com/shadow/configuration/
+shadowJar {
+    baseName = 'specchio-client'
+    classifier = null
+    version = null
+}
+
+// Configuration for the buildConfig plugin
+// https://github.com/mfuerstenau/gradle-buildconfig-plugin
+buildConfig {
+    group 'ch.specchio.gui'
+    buildConfigField 'String', 'DESCRIPTION', project.description
+    buildConfigField 'String', 'COPYRIGHT', project.copyright
+    buildConfigField 'String', 'MAIL', project.mail
+    buildConfigField 'String', 'COMPANY', project.company
+    buildConfigField 'String', 'WEB', project.web
+    buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
+}
+
+izpack {
+    baseDir = file("$buildDir")
+    installFile = file('src/client/installer.xml')
+    outputFile = file("$buildDir/distributions/SPECCHIO-${version}-installer.jar")
+    compression = 'deflate'
+    compressionLevel = 9
+    appProperties = ['app.group': 'ch.specchio.gui', 
+                     'app.name': 'SPECCHIO Spectral Information System',
+                     'app.title': name,
+                     'app.version': version, 
+                     'app.subpath': "SPECCHIO-$version"]
+}
