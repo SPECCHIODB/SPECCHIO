@@ -164,17 +164,7 @@
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jcalendar.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/ptplot5.8.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="main,test"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdfobj.jar">
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdf5.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
@@ -184,7 +174,17 @@
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdf5.jar">
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/ptplot5.8.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jcalendar.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/ralph/IdeaProjects/SPECCHIO/src/client/lib/jhdfobj.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>

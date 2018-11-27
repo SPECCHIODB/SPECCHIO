@@ -114,7 +114,7 @@ buildConfig {
 
 izpack {
     baseDir = file("$buildDir")
-    installFile = file('src/client/installer.xml')
+    installFile = file('installer.xml')
     outputFile = file("$buildDir/distributions/SPECCHIO-${version}-installer.jar")
     compression = 'deflate'
     compressionLevel = 9
