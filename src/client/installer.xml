@@ -55,9 +55,11 @@
             <parsable targetfile="${INSTALL_PATH}/macosx/specchio" type="shell" />
             <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" />
             <parsable targetfile="${INSTALL_PATH}/win64/specchio.bat" type="shell" />
+            <parsable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Info.plist" type="shell" />
 
             <!-- set executable bit on start-up files -->
             <executable targetfile="${INSTALL_PATH}/macosx/specchio" keep="yes" stage="never" />
+            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" keep="yes" stage="never" />
         </pack>
     </packs>
 

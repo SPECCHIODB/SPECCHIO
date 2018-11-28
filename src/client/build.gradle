@@ -13,6 +13,9 @@ plugins {
     // http://izpack.org/
     id "com.bmuschko.izpack" version "3.0"
 
+    // used to create an appbundle for macos
+    id "edu.sc.seis.macAppBundle" version "2.3.0"
+
     // required to build java applications
     id 'java'
     id 'application'
@@ -125,6 +128,16 @@ izpack {
                      'app.version': version, 
                      'app.subpath': "SPECCHIO-$version"]
 }
+
+// config for macAppBundle
+macAppBundle {
+    mainClassName = mainClassName
+    icon = "./resources/SPECCHIO.icns"
+    javaProperties.put("apple.laf.useScreenMenuBar", "true")
+    runtimeConfigurationName = 'shadow'
+    jarTask = 'shadowJar'
+}
+
 
 // configuration for javadoc
 javadoc { 
