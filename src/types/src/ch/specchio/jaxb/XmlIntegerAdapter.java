@@ -103,7 +103,7 @@ public class XmlIntegerAdapter extends XmlAdapter<XmlInteger, Integer> {
 	/**
 	 * Convert a list of XmlInteger objects into a list of Integer objects
 	 * 
-	 * @param xml	the list
+	 * @param xmlInts	the list
 	 * 
 	 * @return a list of Integer objects
 	 */

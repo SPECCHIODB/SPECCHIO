@@ -23,7 +23,7 @@ public class TableWriterFactory {
 	 * @param os	the output stream
 	 * @param type	FileTypes.CAMPAIGN_EXPORT_XML
 	 *
-	 * @returns a new TableWriter
+	 * @return a new TableWriter
 	 * 
 	 * @throws IllegalArgumentException	type is not a valid file type
 	 */

@@ -99,7 +99,7 @@ public abstract class SpectrumWriter {
 	/**
 	 * Start writing a new space.
 	 * 
-	 * @param space	the space
+	 * @param spaceIn	the space
 	 * 
 	 * @throws IOException	could not write to output
 	 */
@@ -149,7 +149,7 @@ public abstract class SpectrumWriter {
 	/**
 	 * Write a spectrum to the output stream.
 	 * 
-	 * @param sp	the spectrum to be written
+	 * @param s	the spectrum to be written
 	 * 
 	 * @throws IOException	could not write to the output stream
 	 */

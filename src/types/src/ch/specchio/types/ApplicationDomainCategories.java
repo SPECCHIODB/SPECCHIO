@@ -10,7 +10,7 @@ import ch.specchio.jaxb.XmlMapAdapter;
 
 /**
  * This class represents a table of metadata categories per application domain. It is basically
- * a wrapper around Hashtable<Integer,Integer[]>.
+ * a wrapper around Hashtable.
  */
 @XmlRootElement(name="application_domain_categories_table")
 public class ApplicationDomainCategories {

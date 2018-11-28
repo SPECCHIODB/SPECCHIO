@@ -80,7 +80,7 @@ public class MetadataUpdateDescriptor {
 	 * Constructor.
 	 * 
 	 * @param mp	the new metadata
-	 * @params ids	the identifiers to be updated
+	 * @param ids	the identifiers to be updated
 	 */
 	public MetadataUpdateDescriptor(MetaParameter mp, ArrayList<Integer> ids) {
 		

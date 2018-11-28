@@ -63,7 +63,7 @@ public class XmlMap<K, V> implements Map<K, V> {
 	/**
 	 * Check for the existence of a key in the map.
 	 * 
-	 * @param value	the value
+	 * @param key
 	 * 
 	 * @return true if the value is in the map, false otherwise
 	 */
@@ -200,7 +200,7 @@ public class XmlMap<K, V> implements Map<K, V> {
 	/**
 	 * Remove an entry from the map. Not supported.
 	 * 
-	 * @param the key of the entry to be removed
+	 * @param key  the key of the entry to be removed
 	 * 
 	 * @return the value corresponding to the key
 	 * 

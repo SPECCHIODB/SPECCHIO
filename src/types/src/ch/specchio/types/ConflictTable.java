@@ -10,7 +10,7 @@ import ch.specchio.jaxb.XmlMapAdapter;
 
 /**
  * This class represents a table of metadata conflicts. It is basically
- * a wrapper around Hashtable<String, ConflictInfo>.
+ * a wrapper around Hashtable.
  */
 @XmlRootElement(name="conflict_table")
 @XmlSeeAlso(ConflictInfo.class)

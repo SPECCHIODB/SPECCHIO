@@ -112,6 +112,7 @@ buildConfig {
     buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
 }
 
+// configuration for izpack
 izpack {
     baseDir = file("$buildDir")
     installFile = file('src/client/installer.xml')
@@ -123,4 +124,9 @@ izpack {
                      'app.title': name,
                      'app.version': version, 
                      'app.subpath': "SPECCHIO-$version"]
+}
+
+// configuration for javadoc
+javadoc { 
+    failOnError = false
 }
