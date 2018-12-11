@@ -1279,7 +1279,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	
 	/**
-	 * Get values for spectrum ids and EAV attribute (distinct values by default)
+	 * Get values for spectrum ids and EAV attribute (non-distinct values by default)
 	 * 
 	 * @param ids		spectrum ids
 	 * @param attribute_name		attribute name
@@ -1288,7 +1288,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 */
 	public MatlabAdaptedArrayList<Object> getMetaparameterValues(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOWebClientException {
 		
-		return getMetaparameterValues(ids, attribute_name, true);
+		return getMetaparameterValues(ids, attribute_name, false);
 		
 //		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(ids, attribute_name);
 //		

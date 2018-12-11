@@ -1055,7 +1055,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	
 	
 	/**
-	 * Get values for spectrum ids and EAV attribute
+	 * Get values for spectrum ids and EAV attribute  (non-distinct values by default)
 	 * 
 	 * @param ids				spectrum ids
 	 * @param attribute_name	attribute name

@@ -1082,9 +1082,19 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 				if(field.getLevel() == MetaParameter.HIERARCHY_LEVEL && field.getClass() == MD_EAV_Field.class && field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).isInherited())
 				{				
 					label.setForeground(Color.BLUE);
-					label.setToolTipText("<html> " + (field.getDescription() != null ? field.getDescription() + "." : "") + "<br>" + "This metaparameter is inherited from a hierarchy." + "</html>");
+					label.setToolTipText("<html> " + ((field.getDescription() != null && field.getDescription().length() > 0) ? field.getDescription() + "." + "<br>": "")  + "This metaparameter is inherited from a hierarchy." + "</html>");
 					
 				}
+				
+				if(field.getLevel() == MetaParameter.HIERARCHY_LEVEL && field.getClass() == MD_EAV_Field.class && field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).getNumberOfSharingRecords()>1  && !field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).isInherited())
+				{
+					Color c = Color.getHSBColor(0.45f, 1f, 0.5f);
+					label.setForeground(c);
+					label.setToolTipText("<html> " + ((field.getDescription() != null && field.getDescription().length() > 0) ? field.getDescription() + "." + "<br>": "")  + "This metaparameter is shared by a total of " 
+					+ field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).getNumberOfSharingRecords() +" hierarchies ." + "</html>");
+					
+				}
+				
 				
 				if(field.getLevel() == MetaParameter.SPECTRUM_LEVEL && field.getClass() == MD_EAV_Field.class && field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).getNumberOfSharingRecords() > 1)
 				{	
@@ -1093,7 +1103,7 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 					Color c2 = Color.BLUE;
 					
 					label.setForeground(c);
-					label.setToolTipText("<html> " + (field.getDescription() != null ? field.getDescription() + "." : "") + "<br>" + "This metaparameter is shared with " + field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).getNumberOfSharingRecords() + " other spectra." + "</html>");
+					label.setToolTipText("<html> " + (field.getDescription() != null ? field.getDescription() + "." + "<br>": "")  + "This metaparameter is shared with " + field.getConflict().getConflictData(((MD_EAV_Field)field).getMetaParameter().getEavId()).getNumberOfSharingRecords() + " other spectra." + "</html>");
 
 				}
 			

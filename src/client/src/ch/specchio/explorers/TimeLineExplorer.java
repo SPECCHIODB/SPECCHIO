@@ -16,7 +16,7 @@ import ch.specchio.plots.swing.TimelinePlot;
 import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.MatlabAdaptedArrayList;
 
-public class TimeLineExplorer extends JPanel implements PlotsCallback
+public class TimeLineExplorer extends Explorer implements PlotsCallback
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -24,7 +24,6 @@ public class TimeLineExplorer extends JPanel implements PlotsCallback
 	
 	TimelinePlot time_line_plot;
 	SpectralPlot sp;
-	ProgressReportInterface pr;
 	
 	public TimeLineExplorer(SPECCHIOClient specchio_client , SpectralSpace space, ProgressReportInterface pr) throws SPECCHIOClientException, SPECCHIOPlotException
 	{

@@ -308,9 +308,12 @@ public class MetadataFactory extends SPECCHIOFactory {
 
 					}
 					
-					query = query + getStatementBuilder().conc_values(values, false);
-
-					stmt.executeUpdate(query);					
+					// only insert into temporary table if any propagated values exist
+					if(values.size() > 0)
+					{
+						query = query + getStatementBuilder().conc_values(values, false);
+						stmt.executeUpdate(query);	
+					}
 
 					
 					
@@ -636,6 +639,54 @@ public class MetadataFactory extends SPECCHIOFactory {
 				}
 
 				rs.close();
+				
+				
+				// for hierarchies: figure out if these data are shared by parallel hierarchies that are not selected
+				if (metadata_level == MetaParameter.HIERARCHY_LEVEL && calling_level == MetaParameter.HIERARCHY_LEVEL)
+				{
+										
+					temp_tablename = getStatementBuilder().prefix(getTempDatabaseName(), "parallel_eav_entries");
+
+
+					// create temporary table: counting in left joins did somehow not work due to grouping issues; this way is also more transparent ...
+					ddl_string = "CREATE TEMPORARY TABLE IF NOT EXISTS " + temp_tablename + " " +
+							"(eav_id INT NOT NULL, " +
+							"attr_id INT NOT NULL, " +
+							"hierarchy_level_id INT NOT NULL)";
+					stmt.executeUpdate(ddl_string);		
+					
+
+					query = "insert into " + temp_tablename + " " +
+							"select distinct hxe.eav_id, eav.attribute_id, hxe.hierarchy_level_id from " + eav_info.primary_x_eav_tablename + " sxe left join eav eav on sxe.eav_id = eav.eav_id left join hierarchy_x_eav hxe on (sxe.eav_id = hxe.eav_id and hxe.hierarchy_level_id <> sxe.hierarchy_level_id) where hxe.hierarchy_level_id not in" + " (" +	conc_ids +")";				
+				
+					stmt.executeUpdate(query);
+					
+					
+					query = "select attr_id, eav_id, count(hierarchy_level_id) from " + temp_tablename + " group by eav_id, attr_id";
+
+					rs = stmt.executeQuery(query);
+					
+					while (rs.next()) {
+						i = 1;
+						attribute_id = rs.getInt(i++);
+						eav_id = rs.getInt(i++);
+						int parallel_sharing_cnt = rs.getInt(i++);
+
+						conflict = attr_id_conflict_hash.get(attribute_id);
+						
+						conflict.setNumberOfSharingRecords(parallel_sharing_cnt + conflict.getNumberOfSelectedRecords());
+						
+						int x = 1;
+						
+						
+					}
+					
+					query = "delete from " + temp_tablename;
+					stmt.executeUpdate(query);
+					
+				}
+				
+				
 
 				// get min/max values for numerical values
 				if(conflicting_int_and_double_attribute_ids.size()>0)
@@ -857,35 +908,37 @@ public class MetadataFactory extends SPECCHIOFactory {
 
 					
 				// second query to figure out the number of total spectra referring to the eav entries (number of shared records)
+			if (metadata_level == MetaParameter.SPECTRUM_LEVEL)
+			{
 				query = "SELECT count(sxe." + eav_info.primary_id_name + "), attribute_id, eav.eav_id from " + eav_info.primary_x_eav_tablename + " sxe, eav eav where sxe.eav_id in (" +
-				getStatementBuilder().conc_ids(eav_ids_to_double_check) +
-					") and sxe.eav_id = eav.eav_id group by eav.eav_id order by attribute_id";			
-				
+						getStatementBuilder().conc_ids(eav_ids_to_double_check) +
+						") and sxe.eav_id = eav.eav_id group by eav.eav_id order by attribute_id";			
+
 				rs = stmt.executeQuery(query);
-	
+
 				while (rs.next()) {
-					
+
 					multi_value_cnt = rs.getDouble(1);	
 					attribute_id  = rs.getInt(2);				
 					eav_id = rs.getInt(3);		
-					
+
 					if(multi_value_cnt > 1)
 					{
 						// update existing conflict data
 						ConflictInfo conflict_info = statuses.get(attribute_id);
-						
+
 						conflict = conflict_info.getConflictData(eav_id);
 						conflict.setStatus(ConflictInfo.no_conflict); // used to be set to a value of 3 ... I wonder why (AH, 12.07.2017)
 						conflict.setNumberOfSharingRecords((int) multi_value_cnt);
-	
+
 					}					
-						
+
 				}				
-					
+
 				rs.close();						
 				stmt.close();
-				
-		
+			}
+
 			
 			
 		} catch (SQLException ex) {
@@ -1375,21 +1428,24 @@ public class MetadataFactory extends SPECCHIOFactory {
 				if(attr.getDefaultStorageField().equals("spatial_val"))
 					storage_field = "ST_AsText(" + SQL.prefix("eav", "spatial_val") + ")";				
 				
-				String query = "select " + ((distinct)? "distinct " : "") + storage_field + ", eav.eav_id, " + SQL.prefix(primary_x_eav_tablename, primary_id_name) + ", eav.unit_id" +
+				String query = "select " + ((distinct)? "distinct " : "") + storage_field + ", eav.eav_id " + ((!distinct)? "," + SQL.prefix(primary_x_eav_tablename, primary_id_name) : "") + ", eav.unit_id" +
 						" from " + primary_x_eav_tablename + ", eav eav  where " + SQL.prefix(primary_x_eav_tablename, primary_id_name) + " in (" + conc_ids + ") and " +
-						primary_x_eav_tablename + ".eav_id =" + " eav.eav_id and eav.attribute_id = "  + Integer.toString(attrId) + " order by FIELD (" + SQL.prefix(primary_x_eav_tablename, primary_id_name) + ", "+ conc_ids +")";
+						primary_x_eav_tablename + ".eav_id =" + " eav.eav_id and eav.attribute_id = "  + Integer.toString(attrId) + ((!distinct)? " order by FIELD (" + SQL.prefix(primary_x_eav_tablename, primary_id_name) + ", "+ conc_ids +")" : "");
 
 				
 				
 				ResultSet rs = stmt.executeQuery(query);
 				
 				Object o;
+				Integer spectrum_id = 0;
+				int ind;
 
 				while (rs.next()) 
 				{
+					int i = 1;
 					if(attr.getDefaultStorageField().equals("datetime_val"))
 					{
-							o = rs.getString(1);
+							o = rs.getString(i++);
 							DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
 							DateTime d = formatter.parseDateTime((String) o); 
 							o = d;
@@ -1411,15 +1467,20 @@ public class MetadataFactory extends SPECCHIOFactory {
 //						
 //					}
 					else
-						o = rs.getObject(1);
+						o = rs.getObject(i++);
 						
 
-					Integer id = rs.getInt(2);
-					Integer spectrum_id = rs.getInt(3);
-					Integer unit_id = rs.getInt(4);
+					Integer id = rs.getInt(i++);
+					if(!distinct)
+					{
+						spectrum_id = rs.getInt(i++);
+						// get position of this spectrum in the list
+						ind = ids.indexOf(spectrum_id);
+					}
+					Integer unit_id = rs.getInt(i++);
 					
 					// get position of this spectrum in the list
-					int ind = ids.indexOf(spectrum_id);
+					ind = ids.indexOf(spectrum_id);
 					
 					
 					if (o != null) {
@@ -1474,15 +1535,19 @@ public class MetadataFactory extends SPECCHIOFactory {
 					primary_x_eav_tablename = getEavServices().get_primary_x_eav_tablename(MetaParameter.HIERARCHY_LEVEL);
 					ArrayList<Integer> hierarchy_ids = getEavServices().getHierarchyIds(ids);
 					
-					query = "select " + ((distinct)? "distinct " : "") + storage_field + ", eav.eav_id, " + SQL.prefix("hxs", primary_id_name) + ", eav.unit_id" +
+					query = "select " + ((distinct)? "distinct " : "") + storage_field + ", eav.eav_id " + ((!distinct)? SQL.prefix(", hxs", primary_id_name) : "") + ", eav.unit_id" +
 							" from " + primary_x_eav_tablename + ", eav eav, hierarchy_level_x_spectrum hxs  where " + SQL.prefix(primary_x_eav_tablename, "hierarchy_level_id") + " in (" + SQL.conc_ids(hierarchy_ids) + ") and " +
-							primary_x_eav_tablename + ".eav_id =" + " eav.eav_id and eav.attribute_id = " + Integer.toString(attrId) + " and " + primary_x_eav_tablename + ".hierarchy_level_id = hxs.hierarchy_level_id and hxs.spectrum_id in (" + conc_ids + ")"   + " order by FIELD (" + SQL.prefix("hxs", primary_id_name) + ", "+ conc_ids +")";
+							primary_x_eav_tablename + ".eav_id =" + " eav.eav_id and eav.attribute_id = " + Integer.toString(attrId) + " and " + primary_x_eav_tablename + ".hierarchy_level_id = hxs.hierarchy_level_id and hxs.spectrum_id in (" + conc_ids + ")"   + ((!distinct)? " order by FIELD (" + SQL.prefix("hxs", primary_id_name) + ", "+ conc_ids +")" : "");
 					
 
 					rs = stmt.executeQuery(query);
 					
+					spectrum_id = 0;
+					ind = 0;
+					
 					while (rs.next()) 
 					{
+						int i = 1;
 						if(attr.getDefaultStorageField().equals("datetime_val"))
 						{
 								o = rs.getString(1);
@@ -1491,15 +1556,17 @@ public class MetadataFactory extends SPECCHIOFactory {
 								o = d;
 						}
 						else
-							o = rs.getObject(1);
+							o = rs.getObject(i++);
 							
 
-						Integer id = rs.getInt(2);
-						Integer spectrum_id = rs.getInt(3);
-						Integer unit_id = rs.getInt(4);
-						
-						// get position of this spectrum in the list
-						int ind = ids.indexOf(spectrum_id);
+						Integer id = rs.getInt(i++);
+						if(!distinct)
+						{
+							spectrum_id = rs.getInt(i++);
+							// get position of this spectrum in the list
+							ind = ids.indexOf(spectrum_id);
+						}
+						Integer unit_id = rs.getInt(i++);
 						
 						
 						if (o != null) {

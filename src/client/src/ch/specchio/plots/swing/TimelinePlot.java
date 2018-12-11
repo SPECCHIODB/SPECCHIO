@@ -37,6 +37,7 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.joda.time.DateTime;
 
+import ch.specchio.explorers.Explorer;
 import ch.specchio.gui.GridbagLayouter;
 import ch.specchio.interfaces.ProgressReportInterface;
 import ch.specchio.plots.PlotsCallback;
@@ -45,7 +46,7 @@ import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.MatlabAdaptedArrayList;
 
 
-public class TimelinePlot extends JPanel implements ListSelectionListener, ChartMouseListener{
+public class TimelinePlot extends Explorer implements ListSelectionListener, ChartMouseListener{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -55,7 +56,6 @@ public class TimelinePlot extends JPanel implements ListSelectionListener, Chart
 	Integer band = 0;
 	int time_ind = 0;
 	PlotsCallback cb;
-	ProgressReportInterface pr;
 	
 	boolean indicator_enabled = false;
 	

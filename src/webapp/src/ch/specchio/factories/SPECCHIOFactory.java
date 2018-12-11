@@ -583,7 +583,7 @@ public class SPECCHIOFactory {
 				line.replace("\t", "");				
 					
 				// process line
-				//	process_line(line);	
+				process_line(line);	
 			}
 		}
 			

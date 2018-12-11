@@ -525,7 +525,10 @@ public abstract class Module extends ProcessingChainComponent  implements Module
 		if(input_spaces.size() > 0)
 			return input_spaces.get(0);
 		else
+		{
+			System.out.println("Empty space found!");
 			return null;
+		}
 	}
 	
 	public SpaceProcessingChainComponent get_main_output_space()

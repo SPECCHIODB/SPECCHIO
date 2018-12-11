@@ -16,12 +16,15 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.file.reader.campaign.SpecchioCampaignDataLoader;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
+import ch.specchio.types.MetaSpatialPoint;
 import ch.specchio.types.Metadata;
+import ch.specchio.types.Point2D;
 import ch.specchio.types.SpecchioMessage;
 import ch.specchio.types.SpectralFile;
 import ch.specchio.types.spatial_pos;
@@ -30,7 +33,7 @@ public class RoX_FileLoader extends JB_FileLoader {
 
 
 	
-	String spectrum_number, date, time, measurement_designator, IT_WR, IT_VEG, mainboard_temp, mainboard_humidity, outside_temp, box_rel_hum, rel_hum, instrument_number, instrument_name, gps_time, gps_date, lat, lon;
+	String date, time, measurement_designator, IT_WR, IT_VEG, mainboard_temp, mainboard_humidity, outside_temp, box_rel_hum, rel_hum, instrument_number, instrument_name;
 	ArrayList<ArrayList<Float>> DNs = new ArrayList<ArrayList<Float>>();
 	Metadata smd;
 
@@ -81,6 +84,10 @@ public class RoX_FileLoader extends JB_FileLoader {
 					String[] tmp = instrument_name.split("-");
 					instrument_number = tmp[2];					
 					gps_time  = r.get(16);
+					
+					// remove decimal point from time string if existing
+					gps_time = gps_time.replace(".", "");		
+					
 					gps_date = r.get(18);
 					lat = r.get(20);
 					lon = r.get(22);
@@ -147,40 +154,69 @@ public class RoX_FileLoader extends JB_FileLoader {
 					}
 					smd.addEntry(mp);	
 					
-					mp = MetaParameter.newInstance(this.attributes_name_hash.get("Spectrum Number"));
-					mp.setValue(Integer.valueOf(spectrum_number), "RAW");
-					smd.addEntry(mp);						
-					
 					// add coordinates
-					spatial_pos pos = new spatial_pos();
-					String[] lat_tokens = lat.split(" ");
-					int lat_sign = 1;
-					if(lat_tokens.length>1)
-					{
-						if(lat_tokens[1].equals("N"))
-						{
-							// remains positive
-						}
-						else
-							lat_sign = -1;
+					if(isGPSValid())
+					{	
+						// add to metadata of this spectrum rather than the obsolete position array of the spec_file
+						// this allows dealing with missing positions much easier
+						mp = MetaParameter.newInstance(this.attributes_name_hash.get("Spatial Position"));
+						Point2D coord = new Point2D(pos.latitude, pos.longitude);
+						((MetaSpatialPoint) mp).setValue(coord);
+						smd.addEntry(mp);							
 					}
 					
-					String[] lon_tokens = lon.split(" ");
-					int lon_sign = 1;
-					if(lon_tokens.length>1)
+					// GPS Time
+					if(isGPSValid())
 					{
-						if(lon_tokens[1].equals("E"))
-						{
-							// remains positive
-						}
-						else
-							lon_sign = -1;
-					}					
+						utc = getUTC();
+						mp = MetaParameter.newInstance(this.attributes_name_hash.get("Acquisition Time (UTC)"));
+						mp.setValue(utc);
+						smd.addEntry(mp);							
+					}
 					
-					pos.latitude = Double.valueOf(lat_tokens[0]) * lat_sign;
-					pos.longitude = Double.valueOf(lon_tokens[0]) * lon_sign;
 					
-					spec_file.addPos(pos);
+					// Spectrum number to include either GPS time stamp, or if that is not available use Acquisition Time
+					// This is due to the spectrum number restarting from zero if instrument gets restarted during the day
+					if(isGPSValid())
+						spectrum_number_ext = spectrum_number + utc.toString(DateTimeFormat.forPattern("HHmmss"));
+					else
+						spectrum_number_ext = spectrum_number + dt.toString(DateTimeFormat.forPattern("HHmmss"));
+
+					
+					mp = MetaParameter.newInstance(this.attributes_name_hash.get("Spectrum Number"));
+					mp.setValue(Integer.valueOf(spectrum_number_ext), "RAW");
+					smd.addEntry(mp);						
+					
+//					// add coordinates
+//					spatial_pos pos = new spatial_pos();
+//					String[] lat_tokens = lat.split(" ");
+//					int lat_sign = 1;
+//					if(lat_tokens.length>1)
+//					{
+//						if(lat_tokens[1].equals("N"))
+//						{
+//							// remains positive
+//						}
+//						else
+//							lat_sign = -1;
+//					}
+//					
+//					String[] lon_tokens = lon.split(" ");
+//					int lon_sign = 1;
+//					if(lon_tokens.length>1)
+//					{
+//						if(lon_tokens[1].equals("E"))
+//						{
+//							// remains positive
+//						}
+//						else
+//							lon_sign = -1;
+//					}					
+//					
+//					pos.latitude = Double.valueOf(lat_tokens[0]) * lat_sign;
+//					pos.longitude = Double.valueOf(lon_tokens[0]) * lon_sign;
+//					
+//					spec_file.addPos(pos);
 					
 					spec_file.addEavMetadata(smd);
 					
@@ -200,6 +236,9 @@ public class RoX_FileLoader extends JB_FileLoader {
 		
 		reader.close();
 		csvParser.close();
+		
+		// post processing for GPS related data gaps
+		post_process();
 		
 		// add measurements as float matrix
 		Float[][] f = new Float[DNs.size()][DNs.get(0).size()];

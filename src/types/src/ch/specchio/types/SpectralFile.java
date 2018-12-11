@@ -20,6 +20,7 @@ import ch.specchio.jaxb.XmlDateTimeAdapter;
  * Class representing a spectral file.
  */
 @XmlRootElement(name="spectral_file")
+//@XmlSeeAlso({spatial_pos.class})
 public class SpectralFile {
 	
 	// static file error code definitions
@@ -562,8 +563,8 @@ public class SpectralFile {
 	public void setPolarizationDirection(int i, Double polarization_dir) { this.polarization_dir[i] = polarization_dir; }
 	
 	@XmlElement(name="pos")
-	public ArrayList<spatial_pos> getPos() { return this.pos; }
-	public void setPos(ArrayList<spatial_pos> pos) { this.pos = pos; }
+	public ArrayList<spatial_pos> getPos() { return (ArrayList<spatial_pos>) this.pos; }
+	public void setPos(ArrayList<spatial_pos> pos) { this.pos=pos; }
 	public spatial_pos getPos(int i) { return this.pos.get(i); }
 	public void addPos(spatial_pos pos) { this.pos.add(pos); }
 	public void addPos(int i, spatial_pos pos) { 

@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
 import ch.specchio.constants.SpaceTypes;
+import ch.specchio.explorers.Explorer;
 import ch.specchio.explorers.SingleHemisphereExplorer;
 import ch.specchio.explorers.SpectralMultiPlot;
 import ch.specchio.explorers.TimeLineExplorer;
@@ -23,7 +24,7 @@ import ch.specchio.types.MatlabAdaptedArrayList;
 
 public class VisualisationModule extends Module implements ModuleCallback {
 
-	JPanel vis_panel;
+	Explorer vis_panel;
 	String vis_module_type = "No module selected yet.";
 	
 	
@@ -117,9 +118,17 @@ public class VisualisationModule extends Module implements ModuleCallback {
 		{
 			JFrame frame = new JFrame(vis_module_type + " (Space no " + Integer.toString(get_main_input_space().getNumber()) + ")");
 			frame.getContentPane().setLayout(new BorderLayout());
+			//System.out.println(vis_panel.plot_ready);
 			frame.getContentPane().add("Center", vis_panel);
 			frame.pack();
+			try {
+				sleep(100); // solves the problem that sometimes a plot would remain blank till it is clicked : http://www.scs.ryerson.ca/~mes/courses/cps530/programs/threads/Repaint/index.html
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			frame.setVisible(true);
+			
 		}
 		
 	}

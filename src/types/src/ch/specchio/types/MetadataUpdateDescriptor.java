@@ -1,7 +1,6 @@
 package ch.specchio.types;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.bind.annotation.*;
 
@@ -13,7 +12,7 @@ import javax.xml.bind.annotation.*;
 @XmlSeeAlso({SerialisableBufferedImage.class, ArrayListWrapper.class})
 public class MetadataUpdateDescriptor {
 	
-	/** the new metadata */
+	/** the new metadata */	
 	private MetaParameter mp;
 	
 	/** the identifiers of the objects to be updated */
@@ -37,7 +36,7 @@ public class MetadataUpdateDescriptor {
 		this.ids = new ArrayListWrapper<Integer>(ids);
 		this.mp = mp;
 		this.mp_old = mp_old;
-		
+		if(mp != null) this.level = mp.getLevel();
 	}
 	
 	

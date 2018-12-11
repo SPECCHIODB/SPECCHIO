@@ -510,6 +510,11 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 			constraints.gridy++;
 			matching_details_panel_l.insertComponent(new JLabel("Number of matches: " + model.getNumber_of_matches()), constraints);
 			constraints.gridy++;
+			JLabel pl = new JLabel("Problems: " + (model.getMatching_problems().length()>0?model.getMatching_problems():"NIL"));
+			if(model.getMatching_problems().length() > 0) pl.setForeground(Color.RED);
+			else pl.setForeground(Color.GRAY);
+			matching_details_panel_l.insertComponent(pl, constraints);
+			constraints.gridy++;			
 //			matching_details_panel_l.insertComponent(new JLabel("Number of missed matches: " + model.getNumber_of_missing_matches()), constraints);
 //			constraints.gridy++;
 			
@@ -817,7 +822,7 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 		constraints.gridy = 0;
 		constraints.gridx = 0;
 
-		mdAssignmentInfoPanel_l.insertComponent(new JLabel("Number of assignable columns: " + model.getNumberOfAssignableColumns()), constraints);
+		mdAssignmentInfoPanel_l.insertComponent(new JLabel("Number of unassigned columns: " + model.getNumberOfAssignableColumns()), constraints);
 		constraints.gridy++;
 
 		
@@ -1209,7 +1214,7 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 		        	progressMonitor.close();
 		        	JOptionPane.showMessageDialog(
 		        			this, 
-		        			"Updated " + worker.get() + " attributes.",
+		        			"Updated " + worker.get() + " metaparameters.",
 		        			"Metadata inserted",
 		        			JOptionPane.INFORMATION_MESSAGE
 		        		);

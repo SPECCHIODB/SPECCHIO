@@ -15,6 +15,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
+import ch.specchio.metadata.MD_EAV_Field;
 import ch.specchio.metadata.MD_Field;
 import ch.specchio.types.MetaParameter;
 
@@ -81,7 +82,7 @@ public class SharedMD_Dialog extends JDialog implements ActionListener {
 		
 		String verb = (op == DELETE)? "delete" : "update";
 		
-		String level_name, explanation, action, inherit_prefix, inherit_postfix;
+		String level_name, explanation, action, inherit_prefix, inherit_postfix, parallel_sharing_prefix = "", parallel_sharing_postfix = "", prefix, postfix, midfix = " ";
 		if(hierarchyLevel == MetaParameter.SPECTRUM_LEVEL)
 		{
 			level_name = "spectra";
@@ -93,10 +94,14 @@ public class SharedMD_Dialog extends JDialog implements ActionListener {
 		else
 		{
 			level_name = "hierarchies";
-			explanation = "The data in the fields listed below are inherited from a hierarchy N levels further up.";
-			action = "You can only " + verb + " the metadata of all spectra.";
+			explanation = "The data in the fields listed below are inherited from a hierarchy further up or shared by parallel hierarchies.";
+			action = "You can only " + verb + " the metadata of all hierarchies.";
 			inherit_prefix = "Inherited from N=";
 			inherit_postfix = " further up";
+			
+			parallel_sharing_prefix = "Shared with N=";
+			parallel_sharing_postfix = " parallel ";
+			
 		}
 		
 		// set up the root pane with a border layout
@@ -117,7 +122,20 @@ public class SharedMD_Dialog extends JDialog implements ActionListener {
 		String fieldDescriptions[] = new String[fields.size()];
 		int i = 0;
 		for (MD_Field field : fields) {
-			fieldDescriptions[i++] = field.getLabel() + " (" + inherit_prefix + field.getNoOfSharingRecords() + " " + level_name + inherit_postfix + ")";
+			
+			if(field instanceof MD_EAV_Field && field.getConflict().getConflictData(((MD_EAV_Field) field).getMetaParameter().getEavId()).isInherited() && hierarchyLevel != MetaParameter.SPECTRUM_LEVEL)
+			{
+				prefix = inherit_prefix;
+				postfix = inherit_postfix;
+			}
+			else
+			{
+				prefix = parallel_sharing_prefix;
+				postfix = "";	
+				midfix = parallel_sharing_postfix;
+			}
+
+			fieldDescriptions[i++] = field.getLabel() + " (" + prefix + field.getNoOfSharingRecords() + midfix + level_name + postfix + ")";
 		}
 		fieldList = new JList<String>(fieldDescriptions);
 		fieldList.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));

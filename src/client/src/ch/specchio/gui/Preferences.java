@@ -24,7 +24,7 @@ public class Preferences extends JFrame implements ActionListener {
 	private JCheckBox asd_unit_folder;
 	private JCheckBox asd_DN_folder;
 	private JCheckBox db_config_file_creation_and_editing;
-	private JTextField input_directory, output_directory;
+	private JTextField input_directory, output_directory, flox_cal_file, rox_cal_file;
 	
 	SPECCHIOPreferencesStore prefs;
 	
@@ -71,6 +71,17 @@ public class Preferences extends JFrame implements ActionListener {
 			output_directory.setText(prefs.getStringPreference("OUTPUT_DIRECTORY"));
 			output_directory.setToolTipText("Defines where files, like XLS files or SPECCHIO XML files are written to by default.");
 
+			flox_cal_file = new JTextField();
+			flox_cal_file.setActionCommand("flox_cal_file_definition");
+			flox_cal_file.addActionListener((ActionListener) this);
+			flox_cal_file.setText(prefs.getStringPreference("FLOX_CAL_FILE"));
+			flox_cal_file.setToolTipText("Defines the default FloX calibration file to be used if cal file is not stored alongside FloX data files.");
+			
+			rox_cal_file = new JTextField();
+			rox_cal_file.setActionCommand("rox_cal_file_definition");
+			rox_cal_file.addActionListener((ActionListener) this);
+			rox_cal_file.setText(prefs.getStringPreference("ROX_CAL_FILE"));
+			rox_cal_file.setToolTipText("Defines the default RoX calibration file to be used if cal file is not stored alongside RoX data files.");
 			
 			constraints = new GridBagConstraints();
 			
@@ -107,7 +118,21 @@ public class Preferences extends JFrame implements ActionListener {
 			l.insertComponent(new JLabel("Output Directory"), constraints);
 			
 			constraints.gridx = 2;
-			l.insertComponent(output_directory, constraints);
+			l.insertComponent(output_directory, constraints);			
+			
+			constraints.gridy++;
+			constraints.gridx = 1;
+			l.insertComponent(new JLabel("FloX Cal. File"), constraints);
+			
+			constraints.gridx = 2;
+			l.insertComponent(flox_cal_file, constraints);			
+			
+			constraints.gridy++;
+			constraints.gridx = 1;
+			l.insertComponent(new JLabel("RoX Cal. File"), constraints);			
+			
+			constraints.gridx = 2;
+			l.insertComponent(rox_cal_file, constraints);
 
 
 			pack();
@@ -189,6 +214,30 @@ public class Preferences extends JFrame implements ActionListener {
 				e1.printStackTrace();
 			}
 		}		
+		
+		if(e.getActionCommand().equals("flox_cal_file_definition"))
+		{
+			
+			try {
+				prefs.setStringPreference(this.flox_cal_file.getText(), "FLOX_CAL_FILE");				
+				
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}		
+		
+		if(e.getActionCommand().equals("rox_cal_file_definition"))
+		{
+			
+			try {
+				prefs.setStringPreference(this.rox_cal_file.getText(), "ROX_CAL_FILE");				
+				
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}				
 
 
 	}

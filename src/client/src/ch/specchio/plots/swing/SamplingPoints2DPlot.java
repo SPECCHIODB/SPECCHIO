@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
+import ch.specchio.explorers.Explorer;
 import ch.specchio.plots.GonioPosition;
 import ch.specchio.plots.GonioSamplingPoints;
 import ch.specchio.plots.PlotsCallback;
@@ -31,7 +32,7 @@ import ch.specchio.spaces.SpectralSpace;
 //import com.quinncurtis.chart3djava.SimpleScatterPlot;
 
 
-public class SamplingPoints2DPlot  extends JPanel{
+public class SamplingPoints2DPlot  extends Explorer{
 
 	private static final long serialVersionUID = 1L;
 	

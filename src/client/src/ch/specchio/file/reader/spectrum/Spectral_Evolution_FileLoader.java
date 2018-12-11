@@ -149,7 +149,7 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		contains_Ls = line.contains("Rad.");
 		contains_Ref = line.contains("Ref.");
 		contains_Tgt = line.contains("Target");
-		contains_R = line.contains("Reflect. %");
+		contains_R = line.contains("Reflect.");
 		
 		
 		// build measurement type metadata, measurand designators and assign correct capture times
@@ -159,7 +159,7 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 			
 			if(data_headers[i].contains("Rad")) this.spec_file.addMeasurementUnits(MeasurementUnit.Radiance);
 			
-			if(data_headers[i].contains("Reflect. %")) this.spec_file.addMeasurementUnits(MeasurementUnit.Reflectance);
+			if(data_headers[i].contains("Reflect.")) this.spec_file.addMeasurementUnits(MeasurementUnit.Reflectance);
 			
 			// measurand designators
 			if(data_headers[i].contains("Ref.")) this.spec_file.addMeasurandDesignator(SpectralFile.REFERENCE);
@@ -194,6 +194,11 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 			String[] instr_data = tokens[1].split("_SN");	
 			
 			String[] family_and_type_no = instr_data[0].split("-");
+			
+			if(family_and_type_no.length == 1)
+			{	// try to split on + sign (for strings like PSR+3500
+				family_and_type_no = instr_data[0].split("\\+");
+			}
 			
 			String[] serial_no_et_al = instr_data[1].split(" ");
 			
@@ -301,7 +306,10 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		}
 		else
 		{
-			hour_format =" hh:mm:ss.SS";
+			if(time_str.contains("."))
+				hour_format =" HH:mm:ss.SS";
+			else
+				hour_format =" HH:mm:ss";
 		}
 		
 		DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy" +  hour_format).withZoneUTC();

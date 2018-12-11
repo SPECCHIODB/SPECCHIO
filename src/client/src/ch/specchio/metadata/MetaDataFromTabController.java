@@ -68,7 +68,7 @@ public class MetaDataFromTabController  {
 
 			int col_index = 0;
 			int delta_progress = 1;
-			int attr_count = 0;
+			int param_count = 0;
 			boolean spatial_attribute_present = false;
 			int lat_col = -1;
 			int lon_col = -1;
@@ -229,7 +229,7 @@ public class MetaDataFromTabController  {
 								ids.add(spectrum_id);
 
 								specchio_client.updateEavMetadata(mp, ids);
-								attr_count++;
+								param_count++;
 							}
 							catch (MetaParameterFormatException ex) {
 								// could not convert the table value to a meta-parameter of appropriate type
@@ -253,7 +253,7 @@ public class MetaDataFromTabController  {
 				setProgress(progress);
 				col_index++;
 			}
-			return attr_count;
+			return param_count;
 
 		}
 
@@ -354,6 +354,7 @@ public class MetaDataFromTabController  {
 			
 			ArrayList<Object> matched_table_values = new ArrayList<Object>();
 			
+			model.setMatching_problems("");
 			int i =0;
 			for(Object db_val : model.getMatching_col_db_values())
 			{
@@ -383,9 +384,10 @@ public class MetaDataFromTabController  {
 					
 					matched_table_values.add(table_values.get(first_table_pos));
 				}
-				else if(first_table_pos == last_table_pos)
+				else if(first_table_pos >= 0 && first_table_pos != last_table_pos)
 				{
 					//System.out.println("Warning: Ambiguous values!");
+					model.setMatching_problems("Ambiguous values in matching column!");
 					matched_table_values.add(null);
 				}
 				else

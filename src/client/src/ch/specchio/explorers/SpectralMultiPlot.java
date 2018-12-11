@@ -11,14 +11,13 @@ import ch.specchio.plots.swing.SpectralPlot;
 import ch.specchio.plots.swing.SpectralScatterPlot;
 import ch.specchio.spaces.SpectralSpace;
 
-public class SpectralMultiPlot  extends JPanel implements PlotsCallback
+public class SpectralMultiPlot  extends Explorer implements PlotsCallback
 {
 	private static final long serialVersionUID = 1L;
 	
 	SpectralSpace space;
 	
 	SpectralPlot sp;
-	ProgressReportInterface pr;
 	
 	public SpectralMultiPlot(SpectralSpace space, ProgressReportInterface pr, int plot_type)
 	{
@@ -37,6 +36,8 @@ public class SpectralMultiPlot  extends JPanel implements PlotsCallback
 			sp.plot_all();
 					
 			this.add(sp);
+			
+			plot_ready = true;
 		}
 		catch(Exception e)
 		{

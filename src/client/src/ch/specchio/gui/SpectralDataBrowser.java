@@ -2,26 +2,30 @@ package ch.specchio.gui;
 
 
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.jws.WebParam.Mode;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -42,7 +46,7 @@ import ch.specchio.types.spectrum_node;
 public class SpectralDataBrowser extends JScrollPane implements ActionListener, TreeWillExpandListener, TreeExpansionListener
 {
 	private static final long serialVersionUID = 1L;
-	public JTree tree;
+	public SpectralJTree tree;
 	public SpectralDataBrowserNode root;
 	private int directly_select_number_of_spectra = 0;
 	
@@ -65,7 +69,7 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 		// build GUI (without the tree)
 		
 		// create panel for level selection and for tree
-		tree = new JTree();
+		tree = new SpectralJTree();
 		tree.addTreeWillExpandListener(this);
 		tree.addTreeExpansionListener(this);		
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -505,6 +509,80 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 		SpectralDataBrowserNode bn = (SpectralDataBrowserNode)arg0.getPath().getLastPathComponent();
 		bn.defineChildNodes();
 		
+	}
+	
+	
+	// http://www.java2s.com/Tutorials/Java/Swing/JTree/Add_a_popup_menu_to_JTree_in_Java.htm
+	class SpectralJTree extends JTree implements ActionListener {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		JPopupMenu popup = new JPopupMenu();
+		JMenuItem cp_name = new JMenuItem("Copy hierarchy name to clipboard");
+		JMenuItem cp_path = new JMenuItem("Copy hierarchy path to clipboard");
+		JMenuItem cp_id = new JMenuItem("Copy hierarchy id to clipboard");
+		SpectralDataBrowserNode last_menu_clicked_node = null;
+		TreePath last_menu_clicked_path = null;
+
+		SpectralJTree() {
+			cp_name.addActionListener(this);
+			cp_name.setActionCommand("CopyName");
+			popup.add(cp_name);
+			cp_path.addActionListener(this);
+			cp_path.setActionCommand("CopyPath");
+			popup.add(cp_path);		
+			cp_id.addActionListener(this);
+			cp_id.setActionCommand("CopyID");
+			popup.add(cp_id);				
+			addMouseListener(new MouseAdapter() {
+				// listen for both for pressed and released due to differnt platform support (In Mac OS X, the pop-up trigger is set on MOUSE_PRESSED.In Windows it is set on MOUSE_RELEASED.)
+				// https://github.com/zaproxy/zaproxy/issues/131
+				public void mouseReleased(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+					}
+				}
+				public void mousePressed(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						// set selected path based on path of node that was clicked on
+						last_menu_clicked_path = tree.getPathForLocation(e.getX(), e.getY());
+
+						last_menu_clicked_node = (SpectralDataBrowserNode) last_menu_clicked_path.getLastPathComponent();
+
+						popup.show((JComponent) e.getSource(), e.getX(), e.getY());
+					}
+				}		      
+			});
+
+		}
+
+		  public void actionPerformed(ActionEvent ae) {
+   
+		    if (ae.getActionCommand().equals("CopyName")) {
+		    	
+				StringSelection stringSelection = new StringSelection(last_menu_clicked_node.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			    clipboard.setContents(stringSelection , null );		    		
+		    }
+		    
+		    if (ae.getActionCommand().equals("CopyPath")) {
+		    	
+				StringSelection stringSelection = new StringSelection(last_menu_clicked_path.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			    clipboard.setContents(stringSelection , null );		    		
+		    }		    
+		    
+		    if (ae.getActionCommand().equals("CopyID")) {
+		    	
+		    	Integer id = last_menu_clicked_node.getNodeId();
+				StringSelection stringSelection = new StringSelection(id.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			    clipboard.setContents(stringSelection , null );		    		
+		    }		    		    
+		    
+		  }	
+		  
 	}
 
 }

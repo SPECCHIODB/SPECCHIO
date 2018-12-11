@@ -1240,7 +1240,13 @@ public class DataCache {
 					return s.getSensorId();
 				else
 				{
-					s = get_sensor(spec_file.getWvls(spec_no)); // fallback option
+					s = get_sensor(spec_file.getWvls(spec_no)); // fallback option: wrong selection can happen if the blueprints of two different companies 
+					
+					// check if company names are matching ...
+					if(!s.getManufacturerShortName().equals(spec_file.getCompany()))
+					{
+						s = null;
+					}
 				}
 			}
 			else

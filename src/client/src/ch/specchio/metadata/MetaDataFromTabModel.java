@@ -47,8 +47,11 @@ public class MetaDataFromTabModel {
 	
 	String regex_start = "";
 	String regex_end = "";
+	String matching_problems = "";
 	
 	
+
+
 	public MetaDataFromTabModel()
 	{
 		try {
@@ -509,5 +512,12 @@ public class MetaDataFromTabModel {
 		this.categories_hash = categories_hash;
 	}
 
+	public String getMatching_problems() {
+		return matching_problems;
+	}
+
+	public void setMatching_problems(String matching_problems) {
+		this.matching_problems = matching_problems;
+	}	
 	
 }

@@ -23,7 +23,7 @@ import ch.specchio.plots.swing.SpectralLinePlot;
 import ch.specchio.plots.swing.VectorStatisticsPanel;
 import ch.specchio.spaces.SpectralSpace;
 
-public class SingleHemisphereExplorer extends JPanel implements ChangeListener, PlotsCallback{
+public class SingleHemisphereExplorer extends Explorer implements ChangeListener, PlotsCallback{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -36,8 +36,7 @@ public class SingleHemisphereExplorer extends JPanel implements ChangeListener, 
 	VectorStatisticsPanel vsp;
 	SamplingPoints2DPlot spp;
 	GonioAnglePointInfoPanel gap;
-	
-	ProgressReportInterface pr;
+
 	
 	public SingleHemisphereExplorer(SpectralSpace space, ProgressReportInterface pr, SPECCHIOClient specchio_client) throws SPECCHIOClientException
 	{

@@ -80,6 +80,8 @@ public abstract class SpectralPlot extends JPanel
 	
 	public void plot_all()
 	{
+//		System.out.println(space.getVectors().size());
+		
 		ArrayList<double[]> vectors = space.getVectors();		
     	ArrayList<Integer> ids = space.getSpectrumIds();
     	double[] vector;

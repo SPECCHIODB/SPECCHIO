@@ -132,18 +132,19 @@ public class SpectralMetaDataBase extends JFrame {
 				{
 					pr.set_operation("Loading space " + i);
 					pr.set_progress(0);
-					Space s = specchio_client.loadSpace(space);
+					space = specchio_client.loadSpace(space);
 					pr.set_progress(50);
 					
 					//System.out.println(s.getNumberOfDataPoints()); // switch this on when debugging ; my machine got runtime issues in the debugger and not always plots the spectra ...
 					
 					pr.set_operation("Building plot");
 					VM = new VisualisationModule(SpectralMetaDataBase.this, specchio_client);
-					SpaceProcessingChainComponent c = new SpaceProcessingChainComponent(SpectralMetaDataBase.this, s);
+					SpaceProcessingChainComponent c = new SpaceProcessingChainComponent(SpectralMetaDataBase.this, space);
 					c.setNumber(i);
 					VM.add_input_space(c, -1);
 					VM.set_vis_module_type(plotType);
-					VM.transform();
+					//VM.transform();
+					VM.process();
 					pr.set_progress(100);
 					
 					i++;

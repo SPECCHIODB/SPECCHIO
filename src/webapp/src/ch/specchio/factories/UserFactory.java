@@ -1025,7 +1025,8 @@ public class UserFactory extends SPECCHIOFactory {
 			stmt.executeUpdate(query);
 			
 			// update password: Attention: this appears to create some problems on some MySQL systems: ERROR 1396 (HY000): Operation CREATE USER failed for 'jack'@'localhost'
-			query = "ALTER USER " + SQL.quote_string(user.getUsername()) + " IDENTIFIED BY " + SQL.quote_string(user.getPassword());
+			// works on MySQL 5.7.18: the problem on some databases is that the host must get constrained with e.g. localhost and @'%' wont work.
+			query = "ALTER USER " + SQL.quote_string(user.getUsername()) +"@" + SQL.quote_string(getDatabaseUserHost()) + " IDENTIFIED BY " + SQL.quote_string(user.getPassword());
 
 			stmt.executeUpdate(query);			
 			

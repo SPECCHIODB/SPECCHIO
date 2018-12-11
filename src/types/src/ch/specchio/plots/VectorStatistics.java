@@ -71,7 +71,7 @@ public class VectorStatistics {
 			for(band = start_ind; band <= end_ind;band++)
 			{
 
-				if(!Double.isNaN(vectors.get(i)[band])) // filter NaNs
+				if(!Double.isNaN(vectors.get(i)[band]) && !Double.isInfinite(vectors.get(i)[band])) // filter NaNs
 				{
 				
 					
@@ -100,7 +100,7 @@ public class VectorStatistics {
 
 				for(band = start_ind; band <= end_ind;band++)
 				{
-					if(!Double.isNaN(vectors.get(i)[band])) // filter NaNs
+					if(!Double.isNaN(vectors.get(i)[band]) && !Double.isInfinite(vectors.get(i)[band])) // filter NaNs
 					{
 						sum += Math.pow(vectors.get(i)[band] - mean, 2);	
 					}

@@ -1160,7 +1160,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			query = "delete from campaign_path_view where " + campaign_cond;
 			stmt.executeUpdate(query);
 		
-			// get the approprate view name
+			// get the appropriate view name
 			String table_name = (is_admin)? "campaign" : "campaign_view";
 			
 			// save a reference to the research group associated with this campaign

@@ -926,6 +926,15 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		// sensor zenith
 		// sensor fov
 		
+		// check if calculations are to be done on hierarchy or spectrum level
+		int level = MetaParameter.SPECTRUM_LEVEL;
+		if(mdec_s.getOnlyHierarchiesAreSelected())
+		{
+			level = MetaParameter.HIERARCHY_LEVEL;
+		}
+		
+		boolean identical_geometry = false; // inital assumption: geometry differs between spectra
+		
 		ArrayList<Integer> ids_with_dist = specchio_client.filterSpectrumIdsByHavingAttribute(mdec_s.getIds(), "Sensor Distance");
 		ArrayList<Integer> ids_with_dist_and_zenith = specchio_client.filterSpectrumIdsByHavingAttribute(ids_with_dist, "Sensor Zenith");
 		ArrayList<Integer> ids_with_dist_and_zenith_and_fov = specchio_client.filterSpectrumIdsByHavingAttribute(ids_with_dist_and_zenith, "FOV");
@@ -935,8 +944,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		ArrayList<Double> minor_axes = new ArrayList<Double>();
 		ArrayList<Double> areas_nadir = new ArrayList<Double>();
 		ArrayList<Double> areas_oblique = new ArrayList<Double>();
-		ArrayList<Integer> ids_nadir = new ArrayList<Integer>();
-		ArrayList<Integer> ids_oblique = new ArrayList<Integer>();
+//		ArrayList<Integer> ids_nadir = new ArrayList<Integer>();
+//		ArrayList<Integer> ids_oblique = new ArrayList<Integer>();
 		
 		if(ids_with_dist_and_zenith_and_fov.size() > 0)
 		{
@@ -945,14 +954,28 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 			MatlabAdaptedArrayList<Object> zen = specchio_client.getMetaparameterValues(ids_with_dist_and_zenith_and_fov, "Sensor Zenith");
 			MatlabAdaptedArrayList<Object> fov = specchio_client.getMetaparameterValues(ids_with_dist_and_zenith_and_fov, "FOV");
 			
-			// get existing metaparameters
-			ArrayList<Integer> attribute_ids = new ArrayList<Integer>();
-			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Radius").getId());
-			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Area").getId());
-			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Major Axis").getId());
-			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Minor Axis").getId());
+			// check if all parameters are the same
+			MatlabAdaptedArrayList<Object> dist_distinct = specchio_client.getMetaparameterValues(ids_with_dist_and_zenith_and_fov, "Sensor Distance", true);
+			MatlabAdaptedArrayList<Object> zen_distinct = specchio_client.getMetaparameterValues(ids_with_dist_and_zenith_and_fov, "Sensor Zenith", true);
+			MatlabAdaptedArrayList<Object> fov_distinct = specchio_client.getMetaparameterValues(ids_with_dist_and_zenith_and_fov, "FOV", true);		
 			
-			ArrayList<ArrayList<MetaParameter>> existing_parameters = specchio_client.getMetaparameters(ids_with_dist_and_zenith_and_fov, attribute_ids);
+			if(dist_distinct.size()==1 && zen_distinct.size()==1 && fov_distinct.size()==1)
+			{
+				identical_geometry = true;
+				
+				dist = dist_distinct;
+				zen = zen_distinct;
+				fov = fov_distinct;
+			}
+			
+			// get existing metaparameters
+//			ArrayList<Integer> attribute_ids = new ArrayList<Integer>();
+//			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Radius").getId());
+//			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Area").getId());
+//			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Major Axis").getId());
+//			attribute_ids.add(specchio_client.getAttributesNameHash().get("Measurement Support Minor Axis").getId());
+//			
+//			ArrayList<ArrayList<MetaParameter>> existing_parameters = specchio_client.getMetaparameters(ids_with_dist_and_zenith_and_fov, attribute_ids);
 			
 			// calculate the footprint, where the circle is a special form of the ellipse
 			for(int i=0;i<zen.size();i++)
@@ -974,35 +997,47 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 				
 				if(phi == 0)
 				{
-					ids_nadir.add(ids_with_dist_and_zenith_and_fov.get(i));
+//					ids_nadir.add(ids_with_dist_and_zenith_and_fov.get(i));
 					radii.add(a);
 					areas_nadir.add(A);
 					
 					ArrayList<Integer> ids = new ArrayList<Integer>();
 					try {
-						ids.add(ids_with_dist_and_zenith_and_fov.get(i));
+						if(identical_geometry && mdec_s.getOnlyHierarchiesAreSelected())
+							ids = mdec_h.getIds();
+						else if (identical_geometry)
+							ids = ids_with_dist_and_zenith_and_fov; // single update call for all spectra
+						else
+							ids.add(ids_with_dist_and_zenith_and_fov.get(i));
+							
 						
-						mp = existing_parameters.get(0).get(i);
-						
-						if(mp.getValue() != null)
-						{
-							mp.setValue(a);
-						}
-						else				
+//						mp = existing_parameters.get(0).get(i);
+//						
+//						if(mp.getValue() != null)
+//						{
+//							mp.setValue(a);
+//						}
+//						else				
 							mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Radius"), a);
+							mp.setLevel(level);
+//						
+//						specchio_client.updateEavMetadata(mp, ids);
 						
-						specchio_client.updateEavMetadata(mp, ids);
+						specchio_client.updateOrInsertEavMetadata(mp, ids);
 
-						mp = existing_parameters.get(1).get(i);
-						
-						if(mp.getValue() != null)
-						{
-							mp.setValue(A);
-						}
-						else							
+//						mp = existing_parameters.get(1).get(i);
+//						
+//						if(mp.getValue() != null)
+//						{
+//							mp.setValue(A);
+//						}
+//						else							
 							mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"), A);
-						
-						specchio_client.updateEavMetadata(mp, ids);
+							mp.setLevel(level);
+//						
+//						specchio_client.updateEavMetadata(mp, ids);
+							
+							specchio_client.updateOrInsertEavMetadata(mp, ids);
 						
 					} catch (SPECCHIOClientException e1) {
 						// TODO Auto-generated catch block
@@ -1015,22 +1050,29 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 				}
 				else
 				{
-					ids_oblique.add(ids_with_dist_and_zenith_and_fov.get(i));				
+//					ids_oblique.add(ids_with_dist_and_zenith_and_fov.get(i));				
 					major_axes.add(a);
 					minor_axes.add(b);
 					areas_oblique.add(A);
 					
 					ArrayList<Integer> ids = new ArrayList<Integer>();
 					try {
-						ids.add(ids_with_dist_and_zenith_and_fov.get(i));
+						if(identical_geometry)
+							ids = ids_with_dist_and_zenith_and_fov;
+						else
+							ids.add(ids_with_dist_and_zenith_and_fov.get(i));
+
 						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Major Axis"), a);
-						specchio_client.updateEavMetadata(mp, ids);
+						mp.setLevel(level);
+						specchio_client.updateOrInsertEavMetadata(mp, ids);
 
 						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Minor Axis"), b);
-						specchio_client.updateEavMetadata(mp, ids);
+						mp.setLevel(level);
+						specchio_client.updateOrInsertEavMetadata(mp, ids);
 						
 						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"), A);
-						specchio_client.updateEavMetadata(mp, ids);
+						mp.setLevel(level);
+						specchio_client.updateOrInsertEavMetadata(mp, ids);
 						
 					} catch (SPECCHIOClientException e1) {
 						// TODO Auto-generated catch block

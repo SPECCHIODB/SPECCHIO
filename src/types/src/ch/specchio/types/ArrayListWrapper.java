@@ -11,7 +11,9 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 // see: http://blog.bdoughan.com/2012/11/creating-generic-list-wrapper-in-jaxb.html
 
 @XmlRootElement(name="array_list_wrapper")
+//@XmlSeeAlso({Point2D.class, spatial_pos.class})
 @XmlSeeAlso({Point2D.class})
+
 
 public class ArrayListWrapper<T> {
 	

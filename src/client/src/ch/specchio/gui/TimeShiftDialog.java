@@ -326,11 +326,13 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 
 					
 				ArrayList<MetaParameter> mpAcquisitionTimes = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time");
-				ArrayList<MetaParameter> mpExisting_utc = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time (UTC)");
+//				ArrayList<MetaParameter> mpExisting_utc = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time (UTC)");
 				
 				ListIterator<MetaParameter> mp_li = mpAcquisitionTimes.listIterator();
-				ListIterator<MetaParameter> utcmp_li = mpExisting_utc.listIterator();
+//				ListIterator<MetaParameter> utcmp_li = mpExisting_utc.listIterator();
 				ListIterator<Integer> spectrum_li = spectrumIdsIn.listIterator();
+				
+				attribute utc_attribute = specchioClient.getAttributesNameHash().get("Acquisition Time (UTC)");
 				
 				while(mp_li.hasNext())
 				{
@@ -338,12 +340,12 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 					
 					DateTime t = (DateTime) mp.getValue();
 					
-					if(mp.getEavId() == 0)
-					{
-						not_updatedIds.add(spectrum_li.next());
-					}
-					else
-					{
+//					if(mp.getEavId() == 0)
+//					{
+//						not_updatedIds.add(spectrum_li.next());
+//					}
+//					else
+//					{
 						DateTime modified_t = t.minusHours(shift);
 					
 						//mp.setValue(modified_t);
@@ -351,27 +353,33 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 						ArrayList<Integer> tmpId = new ArrayList<Integer>();
 						tmpId.add(spectrum_li.next());
 						
-						MetaParameter existing_utc = null;
-						if(utcmp_li.hasNext())
-						{
-							existing_utc = utcmp_li.next();
-						}
+//						MetaParameter existing_utc = null;
+//						if(utcmp_li.hasNext())
+//						{
+//							existing_utc = utcmp_li.next();
+//						}
+//						
+//
+//						if (existing_utc == null || existing_utc.getEavId() == 0)
+//						{
+//							attribute utc_attribute = specchioClient.getAttributesNameHash().get("Acquisition Time (UTC)");
+//							existing_utc = MetaParameter.newInstance(utc_attribute);						
+//						}
+//						
+//						existing_utc.setValue(modified_t);
+//						
+//						specchioClient.updateEavMetadata(existing_utc, tmpId);
+//						
+		
 						
-
-						if (existing_utc == null || existing_utc.getEavId() == 0)
-						{
-							attribute utc_attribute = specchioClient.getAttributesNameHash().get("Acquisition Time (UTC)");
-							existing_utc = MetaParameter.newInstance(utc_attribute);						
-						}
-						
-						existing_utc.setValue(modified_t);
-						
-						specchioClient.updateEavMetadata(existing_utc, tmpId);
+						MetaParameter utc = MetaParameter.newInstance(utc_attribute);		
+						utc.setValue(modified_t);
+						specchioClient.updateOrInsertEavMetadata(utc, tmpId);
 						
 						// add the identifier to the list of updated identifiers
-						updatedIds.add(tmpId.get(0));					
+						updatedIds.add(tmpId.get(0));						
 	
-					}
+//					}
 					
 					pr.set_progress(++progress * 100.0 / tot);
 				}
@@ -381,7 +389,7 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 					
 					attribute attr = specchioClient.getAttributesNameHash().get("UTC Time Computation");
 					
-					specchioClient.removeEavMetadata(attr, updatedIds, MetaParameter.SPECTRUM_LEVEL); // remove any existing UTC time computation entries
+//					specchioClient.removeEavMetadata(attr, updatedIds, MetaParameter.SPECTRUM_LEVEL); // remove any existing UTC time computation entries
 					
 					// create a metaparameter noting that the time was shifted
 					MetaParameter mpShift = MetaParameter.newInstance(
@@ -389,9 +397,20 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 							"UTC Acquisition Time computed by shifting " + shift + " hours East using the SPECCHIO UTC function."
 						);
 					
+					
 					// add the metaparameter to the database
 					pr.set_operation("Updating database");
-					specchioClient.updateEavMetadata(mpShift, updatedIds);
+					
+					// check if the info can be stored on hierarchy level
+					if(sdb.onlyHierarchiesAreSelected())
+					{
+						mpShift.setLevel(MetaParameter.HIERARCHY_LEVEL);
+						specchioClient.updateOrInsertEavMetadata(mpShift, sdb.get_selected_hierarchy_ids());
+					}
+					else
+					{
+						specchioClient.updateOrInsertEavMetadata(mpShift, updatedIds);
+					}
 					
 				}
 				
@@ -430,3 +449,4 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 	}
 
 }
+//
