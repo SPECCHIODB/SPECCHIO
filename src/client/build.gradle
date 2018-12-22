@@ -106,7 +106,7 @@ shadowJar {
 // Configuration for the buildConfig plugin
 // https://github.com/mfuerstenau/gradle-buildconfig-plugin
 buildConfig {
-    group 'ch.specchio.gui'cd Ide
+    group 'ch.specchio.gui'
     buildConfigField 'String', 'DESCRIPTION', project.description
     buildConfigField 'int', 'BUILDNUMBER', System.getenv('BUILD_NUMBER') ?: "0"
     buildConfigField 'String', 'COPYRIGHT', project.copyright
