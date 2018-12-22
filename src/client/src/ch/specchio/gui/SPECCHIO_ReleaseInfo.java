@@ -339,52 +339,60 @@ class JReleaseInfoViewer {
 public class SPECCHIO_ReleaseInfo {
 
    /**
-    * Get buildDate (set during build process to Tue Sep 18 15:27:15 CEST 2018).
+    * Get buildDate.
+    *
     * @return Date buildDate
     */
    public static final Date getBuildDate() { return BuildConfig.BUILD_DATE; }
 
 
    /**
-    * Get project (set during build process to "SPECCHIO Spectral Information System").
+    * Get project.
+    *
     * @return String project
     */
    public static final String getProject() { return BuildConfig.DESCRIPTION; }
 
 
    /**
-    * Get copyright (set during build process to "${copyright}").
+    * Get copyright.
+    *
     * @return String copyright
     */
    public static final String getCopyright() { return BuildConfig.COPYRIGHT; }
 
    /**
-    * Get mail (set during build process to "${mail}").
+    * Get mail.
+    *
     * @return String mail
     */
    public static final String getMail() { return BuildConfig.MAIL; }
    /**
-    * Get version (set during build process to "3.3.0.1").
+    * Get version.
+    *
     * @return String version
     */
    public static final String getVersion() { return BuildConfig.VERSION; }
 
    /**
-    * Get company (set during build process to "${company}").
+    * Get company.
+    *
     * @return String company
     */
    public static final String getCompany() { return BuildConfig.COMPANY; }
 
 
    /**
-    * Get buildNumber (set during build process to 376).
+    * Get buildNumber.
+    *
     * @return int buildNumber
     */
-   public static final int getBuildNumber() { return 376; }
+   public static final int getBuildNumber() { return BuildConfig.BUILDNUMBER; }
 
 
    /**
-    * Get home (set during build process to "http://specchio.ch").
+    * Get home.
+    *
     * @return String home
     */
    public static final String getHome() { return BuildConfig.WEB; }

@@ -126,7 +126,7 @@ public class SPECCHIOApplication {
 	   {
 		   System.out.println("Welcome to " + SPECCHIO_ReleaseInfo.getVersion());
 	      //Create and set up the window.
-	      frame = new JFrame(SPECCHIO_ReleaseInfo.getVersion() + " - Build " + SPECCHIO_ReleaseInfo.getBuildNumber());
+	      frame = new JFrame(SPECCHIO_ReleaseInfo.getVersion());
 	      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	      SPECCHIOApplication app = SPECCHIOApplication.getInstance();

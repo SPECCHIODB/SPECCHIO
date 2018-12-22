@@ -769,7 +769,7 @@ private JMenuItem dbConfigmenuItem;
          
          JButton button = new JButton();
         
-         button.setText("<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" + 
+         button.setText("<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" +
          "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
          "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
         		 + "<br><br>" +
