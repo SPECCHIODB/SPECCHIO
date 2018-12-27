@@ -1,11 +1,11 @@
-plugins {
-
-}
-
 allprojects {
     repositories {
         // jcenter is the main Maven Repository
         // https://mvnrepository.com/
         jcenter()
     }
+}
+
+project(":src/webapp") {
+    tasks.withType(Javadoc).all { enabled = false }
 }

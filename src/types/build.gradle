@@ -23,3 +23,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'lib')
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
 }
+
+// configuration for javadoc
+javadoc {
+    failOnError = false
+}
