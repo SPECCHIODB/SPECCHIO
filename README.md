@@ -1,12 +1,10 @@
 <div align="center">
   <a href="https://github.com/SPECCHIODB/SPECCHIO">
-    <img width="488" height="288" src="https://github.com/SPECCHIODB/Artwork/raw/master/SPECCHIO_Icon_High_Res.jpg">
+    <img width="293" height="173" src="https://github.com/SPECCHIODB/Artwork/raw/master/SPECCHIO_Icon_High_Res.jpg">
   </a>
   <br>
   <br>
 </div>
-
-# SPECCHIO
 
 This is the SPECCHIO Spectral Information System.
 
