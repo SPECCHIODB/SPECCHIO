@@ -4,9 +4,8 @@
   </a>
   <br>
   <br>
+  This is the SPECCHIO Spectral Information System.
 </div>
-
-This is the SPECCHIO Spectral Information System.
 
 
 ## Introduction
