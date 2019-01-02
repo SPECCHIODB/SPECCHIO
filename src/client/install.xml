@@ -4,7 +4,6 @@
 	<!-- package information -->
 	<info>
 		<appname>SPECCHIO</appname>
-		<appversion>3.2.1.2</appversion>
 		<url>http://www.specchio.ch</url>
 		<authors>
 			<author name="Andreas Hueni" email="andreas.hueni@geo.uzh.ch" />

@@ -51,6 +51,11 @@
             <!-- include jar -->
             <singlefile src="libs/specchio-client.jar" target="${INSTALL_PATH}/specchio-client.jar" override="true"/>
 
+            <!-- include maxOS customizations -->
+            <fileset dir="macApp/src/client.app" targetdir="${INSTALL_PATH}/SPECCHIO.app" override="true">
+                <include name="**/*" />
+            </fileset>
+
             <!-- insert installation path into start-up scripts -->
             <parsable targetfile="${INSTALL_PATH}/macosx/specchio" type="shell" />
             <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" />
