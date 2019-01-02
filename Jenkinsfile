@@ -20,5 +20,15 @@ pipeline {
                 archiveArtifacts artifacts: 'src/webapp/build/libs/src/*.war', fingerprint: true
             }
         }
+        stage('Build Javadoc') {
+            steps {
+                sh './gradlew aggregatedJavadocs'
+            }
+        }
+        stage('Publish Javadoc') {
+            steps {
+                sh 'cp -r build/docs/. /var/www/javadoc/'
+            }
+        }
     }
 }
