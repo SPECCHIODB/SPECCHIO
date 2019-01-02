@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Preparation') {
             steps {
-               git branch: 'SPECCHIO_Master', url: 'https://github.com/SPECCHIODB/SPECCHIO.git'
+               git branch: 'master', url: 'https://github.com/SPECCHIODB/SPECCHIO.git'
             }
         }
         stage('Build') {
