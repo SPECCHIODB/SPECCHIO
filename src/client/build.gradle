@@ -123,7 +123,7 @@ izpack {
     outputFile = file("$buildDir/distributions/specchio-installer.jar")
     compression = 'deflate'
     compressionLevel = 9
-    appProperties = ['app.group': 'ch.specchio.gui', 
+    appProperties = ['app.group': 'ch.specchio.gui',
                      'app.name': 'SPECCHIO Spectral Information System',
                      'app.title': name,
                      'app.version': version, 
@@ -137,6 +137,7 @@ macAppBundle {
     javaProperties.put("apple.laf.useScreenMenuBar", "true")
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
+    appName = 'SPECCHIO'
 }
 
 
