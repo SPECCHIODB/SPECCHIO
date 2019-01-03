@@ -132,7 +132,7 @@ izpack {
 
 // config for macAppBundle
 macAppBundle {
-    mainClassName = mainClassName
+    mainClassName = "ch.specchio.gui.SPECCHIOApplication"
     icon = "./resources/SPECCHIO.icns"
     javaProperties.put("apple.laf.useScreenMenuBar", "true")
     runtimeConfigurationName = 'shadow'
