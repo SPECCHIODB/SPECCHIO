@@ -56,11 +56,11 @@ buildConfig {
 
 // create zip with webapp and schemas
 distributions {
-    shadow {
+    main {
         baseName = 'specchio-webapp'
         contents {
+            from war.outputs
             from '../../conf'
-            from 'build/libs/src'
         }
     }
 }
