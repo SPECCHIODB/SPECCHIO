@@ -17,7 +17,7 @@ pipeline {
             steps {
                 archiveArtifacts artifacts: 'src/client/build/distributions/*.zip', fingerprint: true
                 archiveArtifacts artifacts: 'src/client/build/distributions/*.jar', fingerprint: true
-                archiveArtifacts artifacts: 'src/webapp/build/libs/src/*.war', fingerprint: true
+                archiveArtifacts artifacts: 'src/webapp/build/distributions/*.zip', fingerprint: true
             }
         }
         stage('Build Javadoc') {

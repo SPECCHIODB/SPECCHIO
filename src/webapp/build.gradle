@@ -6,6 +6,7 @@ plugins {
 
     id 'idea'
     id 'eclipse'
+    id 'distribution'
 }
 
 webAppDirName = 'WebContent'
@@ -51,4 +52,15 @@ buildConfig {
     buildConfigField 'String', 'COMPANY', project.company
     buildConfigField 'String', 'WEB', project.web
     buildConfigField 'java.util.Date', 'BUILD_DATE', 'new java.util.Date(' + System.currentTimeMillis() + 'L)'
+}
+
+// create zip with webapp and schemas
+distributions {
+    shadow {
+        baseName = 'specchio-webapp'
+        contents {
+            from '../../conf'
+            from 'build/libs/src'
+        }
+    }
 }
