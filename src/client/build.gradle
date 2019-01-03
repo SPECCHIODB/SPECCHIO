@@ -101,6 +101,8 @@ shadowJar {
     baseName = 'specchio-client'
     classifier = null
     version = null
+    preserveFileTimestamps = false
+    minimize()
 }
 
 // Configuration for the buildConfig plugin
@@ -143,7 +145,7 @@ macAppBundle {
 
 // create zip with application, schemas and resources
 distributions {
-    main {
+    shadow {
         baseName = 'specchio-client'
         contents {
             from 'resources'
