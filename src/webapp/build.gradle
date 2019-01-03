@@ -64,3 +64,4 @@ distributions {
         }
     }
 }
+distZip.setArchiveName('specchio-webapp.zip')

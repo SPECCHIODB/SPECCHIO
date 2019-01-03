@@ -153,6 +153,7 @@ distributions {
         }
     }
 }
+shadowDistZip.setArchiveName('specchio-client.zip')
 
 // configuration for javadoc
 javadoc { 

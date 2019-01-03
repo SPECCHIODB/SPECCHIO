@@ -15,9 +15,9 @@ pipeline {
         }
         stage('Upload Archive') {
             steps {
-                archiveArtifacts artifacts: 'src/client/build/distributions/*.zip', fingerprint: true
-                archiveArtifacts artifacts: 'src/client/build/distributions/*.jar', fingerprint: true
-                archiveArtifacts artifacts: 'src/webapp/build/distributions/*.zip', fingerprint: true
+                archiveArtifacts artifacts: 'src/client/build/distributions/specchio-installer.jar', fingerprint: true
+                archiveArtifacts artifacts: 'src/client/build/distributions/specchio-client.zip', fingerprint: true
+                archiveArtifacts artifacts: 'src/webapp/build/distributions/specchio-webapp.zip', fingerprint: true
             }
         }
         stage('Build Javadoc') {
