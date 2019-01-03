@@ -15,8 +15,8 @@ pipeline {
         }
         stage('Upload Archive') {
             steps {
-                archiveArtifacts artifacts: 'src/client/build/libs/specchio-client.jar', fingerprint: true
                 archiveArtifacts artifacts: 'src/client/build/distributions/*.zip', fingerprint: true
+                archiveArtifacts artifacts: 'src/client/build/distributions/*.jar', fingerprint: true
                 archiveArtifacts artifacts: 'src/webapp/build/libs/src/*.war', fingerprint: true
             }
         }
