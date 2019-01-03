@@ -145,15 +145,18 @@ macAppBundle {
 
 // create zip with application, schemas and resources
 distributions {
-    shadow {
+    client {
         baseName = 'specchio-client'
         contents {
+            from shadowJar
             from 'resources'
             from '../../conf'
         }
     }
 }
-shadowDistZip.setArchiveName('specchio-client.zip')
+clientDistZip.setArchiveName('specchio-client.zip')
+clientDistTar.setArchiveName('specchio-client.tar')
+
 
 // configuration for javadoc
 javadoc { 

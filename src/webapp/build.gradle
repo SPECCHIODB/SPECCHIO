@@ -65,3 +65,4 @@ distributions {
     }
 }
 distZip.setArchiveName('specchio-webapp.zip')
+distTar.setArchiveName('specchio-webapp.tar')
