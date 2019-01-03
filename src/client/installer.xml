@@ -52,7 +52,7 @@
             <singlefile src="libs/specchio-client.jar" target="${INSTALL_PATH}/specchio-client.jar" override="true"/>
 
             <!-- include maxOS customizations -->
-            <fileset dir="macApp/src/client.app" targetdir="${INSTALL_PATH}/SPECCHIO.app" override="true">
+            <fileset dir="macApp/SPECCHIO.app" targetdir="${INSTALL_PATH}/SPECCHIO.app" override="true">
                 <include name="**/*" />
             </fileset>
 
