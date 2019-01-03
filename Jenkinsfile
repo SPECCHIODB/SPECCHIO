@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Preparation') {
             steps {
-               git branch: 'SPECCHIO_Master', url: 'https://github.com/SPECCHIODB/SPECCHIO.git'
+               git branch: 'master', url: 'https://github.com/SPECCHIODB/SPECCHIO.git'
             }
         }
         stage('Build') {
@@ -17,6 +17,17 @@ pipeline {
             steps {
                 archiveArtifacts artifacts: 'src/client/build/libs/specchio-client.jar', fingerprint: true
                 archiveArtifacts artifacts: 'src/client/build/distributions/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'src/webapp/build/libs/src/*.war', fingerprint: true
+            }
+        }
+        stage('Build Javadoc') {
+            steps {
+                sh './gradlew aggregatedJavadocs'
+            }
+        }
+        stage('Publish Javadoc') {
+            steps {
+                sh 'cp -r build/docs/. /var/www/javadoc/'
             }
         }
     }
