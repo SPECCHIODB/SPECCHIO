@@ -141,6 +141,17 @@ macAppBundle {
 }
 
 
+// create zip with application, schemas and resources
+distributions {
+    main {
+        baseName = 'specchio-client'
+        contents {
+            from 'resources'
+            from '../../conf'
+        }
+    }
+}
+
 // configuration for javadoc
 javadoc { 
     failOnError = false
