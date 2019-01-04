@@ -108,6 +108,8 @@ shadowJar {
     // and you will get a ClassNotFound Exception
     minimize {
         exclude(dependency('com.sun.jersey:.*:.*'))
+        exclude(dependency('com.sun.xml.*:.*:.*'))
+        exclude(dependency('javax.ws.rs:.*:.*'))
     }
 }
 
