@@ -102,7 +102,6 @@ shadowJar {
     classifier = null
     version = null
     preserveFileTimestamps = false
-    minimize()
 }
 
 // Configuration for the buildConfig plugin
