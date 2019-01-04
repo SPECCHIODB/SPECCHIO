@@ -102,6 +102,13 @@ shadowJar {
     classifier = null
     version = null
     preserveFileTimestamps = false
+    
+    // classes that are referenced dynamically need to be excluded here
+    // otherwise they will be removed when compiling the jar file
+    // and you will get a ClassNotFound Exception
+    minimize {
+        exclude(dependency('com.sun.jersey:.*:.*'))
+    }
 }
 
 // Configuration for the buildConfig plugin
