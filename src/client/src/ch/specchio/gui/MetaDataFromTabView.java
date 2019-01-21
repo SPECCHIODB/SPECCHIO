@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
@@ -117,6 +118,8 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 	
 	SwingWorker<Integer, Void> worker;
 	ProgressMonitor progressMonitor;
+	private JTextArea update_report;
+	private String update_report_txt;
 	
 	public MetaDataFromTabView() throws SPECCHIOClientException {
 		super("Metadata Augmentation from Tabular Data");	
@@ -172,6 +175,12 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 		
 		constraints.gridy++;
 		control_panel_l.insertComponent(insert, constraints);
+		
+		update_report_txt = "Update Process Report\n---------------\n";
+		update_report = new JTextArea(update_report_txt);
+		
+		constraints.gridy++;
+		control_panel_l.insertComponent(update_report, constraints);
 		
 		// menu
 		JMenu menu;
@@ -1231,6 +1240,14 @@ public class MetaDataFromTabView extends JFrame implements ActionListener, Prope
 	        }
 		}
 		
+	}
+
+	public void addMessageToReport(String message) {
+		// TODO Auto-generated method stub
+		
+		this.update_report_txt = update_report_txt + message + "\n";
+		this.update_report.setText(update_report_txt);
+		this.update_report.repaint();
 	}
 	
 	

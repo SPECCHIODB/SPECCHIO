@@ -24,6 +24,7 @@ import ch.specchio.types.MetaDate;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.MetaSpatialPoint;
+import ch.specchio.types.MetaTaxonomy;
 import ch.specchio.types.Point2D;
 import ch.specchio.types.attribute;
 
@@ -222,6 +223,15 @@ public class MetaDataFromTabController  {
 								
 								if(mp instanceof MetaSpatialPoint)
 									((MetaSpatialPoint) mp).setValue((Point2D) table_value);
+								else if (mp instanceof MetaTaxonomy)
+								{
+									// try and find taxonomy node that matches with supplied string
+									Hashtable<String, Integer> hash = specchio_client.getTaxonomyHash(attr.getId());
+																		
+									int tax_id = hash.get(table_value);
+									
+									mp.setValue(tax_id);
+								}
 								else
 									mp.setValue(table_value);
 
@@ -233,9 +243,17 @@ public class MetaDataFromTabController  {
 							}
 							catch (MetaParameterFormatException ex) {
 								// could not convert the table value to a meta-parameter of appropriate type
-								String message = "Skipped column " + (assigned_col+1) + ", row " + (row+1) + " : " + ex.getMessage();
+								String message = "Skipped col " + (assigned_col+1) + ", row " + (row+1) + " : " + ex.getMessage();
 								progressMonitor.setNote(message);
 								System.err.println(message);
+								view.addMessageToReport(message);
+							}
+							catch(NullPointerException ex)
+							{
+								String message = "Skipped col " + (assigned_col+1) + ", row " + (row+1) + " : Could not find matching taxonomy entry for '" + table_value + "'";
+								progressMonitor.setNote(message);
+								System.err.println(message);
+								view.addMessageToReport(message);
 							}
 						}
 						else
