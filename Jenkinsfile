@@ -13,16 +13,17 @@ pipeline {
                 sh './gradlew izPackCreateInstaller'
             }
         }
+        stage('Build Javadoc') {
+            steps {
+                sh './gradlew bundleJavadocs'
+            }
+        }
         stage('Upload Archive') {
             steps {
                 archiveArtifacts artifacts: 'src/client/build/distributions/specchio-installer.jar', fingerprint: true
                 archiveArtifacts artifacts: 'src/client/build/distributions/specchio-client.zip', fingerprint: true
                 archiveArtifacts artifacts: 'src/webapp/build/distributions/specchio-webapp.zip', fingerprint: true
-            }
-        }
-        stage('Build Javadoc') {
-            steps {
-                sh './gradlew aggregatedJavadocs'
+                archiveArtifacts artifacts: 'build/docs/javadoc.zip', fingerprint: true
             }
         }
         stage('Publish Javadoc') {

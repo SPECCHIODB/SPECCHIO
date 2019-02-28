@@ -30,3 +30,11 @@ task aggregatedJavadocs(type: Javadoc, description: 'Generate javadocs from all 
     }
 }
 
+task bundleJavadocs(type:Zip, dependsOn:aggregatedJavadocs){
+    aggregatedJavadocs.outputs.files.each {
+        from it.getPath() // adds every single file to the archive
+    }
+    
+    baseName = "build/docs/javadoc"
+    from "build/docs/javadoc"
+}
