@@ -48,6 +48,7 @@ import ch.specchio.types.SpectralFiles;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.types.SpectrumFactorTable;
+import ch.specchio.types.Taxonomy;
 import ch.specchio.types.TaxonomyNodeObject;
 import ch.specchio.types.Units;
 import ch.specchio.types.User;
@@ -1510,12 +1511,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 */
 	public Hashtable<String, Integer> getTaxonomyHash(int attribute_id)  throws SPECCHIOClientException {
 		
-		taxonomiesHash.put(attribute_id, realClient.getTaxonomyHash(attribute_id));
+		if(!taxonomiesHash.containsKey(attribute_id))
+			taxonomiesHash.put(attribute_id, realClient.getTaxonomyHash(attribute_id));
 				
 		return taxonomiesHash.get(attribute_id);
 	}
 	
-	
+	/**
+	 * Get the ID to name hash for a given taxonomy
+	 * 
+	 * @param attribute_id	attribute_id that defines the taxonomy
+	 * 
+	 */
+	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException {
+		
+		return realClient.getTaxonomyIdToNameHash(attribute_id);		
+	}	
 	
 	/**
 	 * Get a list of all of the users in the database.

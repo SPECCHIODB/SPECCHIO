@@ -61,6 +61,22 @@ public abstract class Space {
 	public void clearDataVectors() { vectors.clear(); }
 	public int getNumberOfDataPoints() { return vectors.size(); }
 	public double[] getVector(int spectrum_id) { return vectors.get(spectrum_ids.indexOf(spectrum_id)); }
+	public double[][] getVectorsAsArray(ArrayList<Integer> in_spectrum_ids) { 
+		
+		double[][] array = new double[in_spectrum_ids.size()][getDimensionality()];		
+		
+		int i = 0;
+		int j = 0;
+		for(double[] v : vectors)
+		{
+			if(in_spectrum_ids.contains(spectrum_ids.get(j)))
+				array[i++] = v;
+			j++;
+		}	
+
+		return array;
+
+	}
 	public double[][] getVectorsAsArray()
 	{
 		double[][] array = new double[getNumberOfDataPoints()][getDimensionality()];		

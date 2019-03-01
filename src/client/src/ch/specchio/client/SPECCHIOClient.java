@@ -42,6 +42,7 @@ import ch.specchio.types.SpectralFiles;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.types.SpectrumFactorTable;
+import ch.specchio.types.Taxonomy;
 import ch.specchio.types.TaxonomyNodeObject;
 import ch.specchio.types.User;
 import ch.specchio.types.attribute;
@@ -977,6 +978,14 @@ public interface SPECCHIOClient {
 	 */
 	public Hashtable<String, Integer> getTaxonomyHash(int attribute_id)  throws SPECCHIOClientException;
 		
+	
+	/**
+	 * Get the ID to name hash for a given taxonomy
+	 * 
+	 * @param attribute_id	attribute_id that defines the taxonomy
+	 * 
+	 */
+	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException;
 	
 	
 	/**

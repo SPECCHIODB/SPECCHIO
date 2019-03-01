@@ -1792,6 +1792,21 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return t.getHashtable();
 		
 	}
+	
+	/**
+	 * Get the ID to name hash for a given taxonomy
+	 * 
+	 * @param attribute_id	attribute_id that defines the taxonomy
+	 * 
+	 */
+	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException {
+		
+		Taxonomy t = getObject(Taxonomy.class, "metadata", "get_taxonomy",Integer.toString( attribute_id));
+		
+		return t.getIdToNameHashtable();
+		
+	}
+	
 		
 	
 	

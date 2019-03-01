@@ -20,6 +20,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import ch.specchio.factories.SPECCHIOFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.types.EAVTableAndRelationsInfoStructure;
 import ch.specchio.types.MetaDate;
@@ -48,6 +49,7 @@ public class EAVDBServices extends Thread {
 	private boolean spatially_enabled= false;
 	
 	private String databaseUserName;
+	public SPECCHIOFactory specchioFactory;
 	
 	public EAVDBServices(SQL_StatementBuilder SQL, Attributes ATR, String databaseUserName) 
 	{				
@@ -2174,6 +2176,12 @@ public class EAVDBServices extends Thread {
 
 	public boolean isSpatially_enabled() {
 		return spatially_enabled;
+	}
+
+
+	public void setSPECCHIOFactory(SPECCHIOFactory specchioFactory) {
+		// TODO Auto-generated method stub
+		this.specchioFactory  = specchioFactory;
 	}
 	
 

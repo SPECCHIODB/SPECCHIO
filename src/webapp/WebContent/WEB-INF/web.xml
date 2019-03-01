@@ -14,7 +14,7 @@
     </init-param>
     <init-param>
     	<param-name>au.org.ands.researchdata</param-name>
-    	<param-value>enabled</param-value>
+    	<param-value>disabled</param-value>
     </init-param>
     <init-param>
     	<param-name>END_USER_LICENSE</param-name>

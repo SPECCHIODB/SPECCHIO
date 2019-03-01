@@ -33,6 +33,20 @@ public class Taxonomy {
 	public Hashtable<String,Integer> getHashtable() { return this.table; }
 	public void setHashtable(Hashtable<String,Integer> table) { this.table = table; }
 	
+	public Hashtable<Integer, String> getIdToNameHashtable() {
+		
+		Hashtable<Integer, String> inverted_table = new Hashtable<Integer, String>();
+		
+		Enumeration<String> keys = table.keys();
+		while( keys.hasMoreElements() )
+		{
+			String key = keys.nextElement();
+			Integer content = table.get(key);
+			inverted_table.put(content, key);
+		}
+		return inverted_table;
+	}
+	
 	public Integer get(String name) { return this.table.get(name); }
 	public Enumeration<String> keys() { return this.table.keys(); }
 	public void put(String name, int id) { this.table.put(name, id); }

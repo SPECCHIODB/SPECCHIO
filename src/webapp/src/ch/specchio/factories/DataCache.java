@@ -439,7 +439,7 @@ public class DataCache {
 					if(instrument_name == null || instrument_name.equals(""))
 						instrument = s;	
 					else
-						if(instrument_name != null && instrument_name.equals(s.getInstrumentName())) instrument = s;	
+						if(instrument_name != null && instrument_name.equals(s.getInstrumentName().value)) instrument = s;	
 				}
 							
 			}

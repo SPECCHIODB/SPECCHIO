@@ -21,6 +21,7 @@ import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.queries.EAVQueryConditionObject;
 import ch.specchio.queries.Query;
 import ch.specchio.queries.QueryCondition;
+import ch.specchio.queries.QueryConditionObject;
 import ch.specchio.types.AVMatchingList;
 import ch.specchio.types.AVMatchingListCollection;
 import ch.specchio.types.EAVTableAndRelationsInfoStructure;
@@ -50,7 +51,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	private Integer current_spectrum_collection_table_no;
 	private String current_spectrum_collection_source_table;
 	private String current_spectrum_collection_target_table;
-	private boolean iteration_result_exists;
+	private boolean iteration_result_exists, standardQueryStringExists;
 	private Integer current_hierarchy_collection_table_no;
 	private String current_hierarchy_collection_source_table;
 	private String current_hierarchy_collection_target_table;
@@ -111,7 +112,6 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		String qco_cond = "";
 		boolean valid_conds_available = false;
 		
-		tables.add(query.getTableName()); // spectrum or frame must always be in the table list
 		
 		// make sure we have the primary key name for the table
 		String primary_key_name = SB.get_primary_key_name(query.getTableName()); 
@@ -124,11 +124,16 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			
 			if(!co.getValue().equals("0")) // this assumes that only foreign key conditions are added here, and hence, zero keys stemming from NIL selections in comboboxes are not added as conditions
 			{
-				qco_cond = SB.prefix(co.getTableName(), co.getFieldName()) + " " + co.getOperator() + " " + SB.quote_value(co.getValue());
+				qco_cond = SB.prefix(co.getTableName(), co.getFieldName()) + " " + co.getOperator() + " " + (co.QuoteValue() ? SB.quote_value(co.getValue()) : co.getValue());
 				conds = SB.conc_cond(conds, qco_cond);		
 				valid_conds_available = true;
 			}
 		}	
+		
+		// spectrum or frame must always be in the table list
+		if(!tables.contains(query.getTableName()))
+			tables.add(query.getTableName()); 
+		
 		
 		String queryString = "";
 		
@@ -451,41 +456,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			delete_string = "delete from " + SB.prefix(getTempDatabaseName(), "hierarchy_collection1");
 			stmt.executeUpdate(delete_string);						
 			
-			iteration_result_exists = true;
-
+			//iteration_result_exists = true;
+			standardQueryStringExists = false;
 			
-			// step 1: use standard field query, if there are any standard conditions at all
-			if(query.getStandardConditionFields().size() > 0)
-			{
-				String org_query_type = query.getQueryType();
-				query.setQueryType(Query.SELECT_QUERY); // we want to get ids!
-				String standardQueryString = buildNonEAVQuery(query);
-				
-				if(!standardQueryString.equals(""))
-				{
-					standardQueryString = "insert into " + current_spectrum_collection_target_table + "("+ eav_info_0.primary_id_name + ") " + standardQueryString;
-					stmt.executeUpdate(standardQueryString);
-					
-					// count ids for that standard query
-					ResultSet rs = stmt.executeQuery("select count(*) from " + current_spectrum_collection_target_table);
-					while (rs.next()) {
-					count = rs.getInt(1);
-					}
-					rs.close();	
-				
-				}
-				else
-				{
-					iteration_result_exists = false;
-				}
-				
-				query.setQueryType(org_query_type);
-				
-			}
-			else
-			{
-				iteration_result_exists = false;
-			}
+
 			
 			
 			// step 2: EAV iterations over all conditions for the hierarchy based EAVs
@@ -495,6 +469,64 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			
 			// step 3: EAV iterations over all conditions
 			getSpectraMatchingQuery(query, MetaParameter.SPECTRUM_LEVEL);
+			
+			
+			// step 1: use standard field query, if there are any standard conditions at all
+			if(query.getStandardConditionFields().size() > 0)
+			{
+				String org_query_type = query.getQueryType();
+				query.setQueryType(Query.SELECT_QUERY); // we want to get ids!
+				
+				if(this.iteration_result_exists)
+				{
+					QueryConditionObject condition = new QueryConditionObject(this.current_spectrum_collection_source_table, "spectrum_id");
+					condition.setOperator("=");
+					condition.setValue(query.getTableName()+".spectrum_id");
+					condition.setQuoteValue(false);
+					query.add_condition(condition);
+				}
+				
+				
+//				QueryConditionObject cond = new QueryConditionObject(this.current_spectrum_collection_source_table, "spectrum)_id");
+//				cond.setOperator("=");
+//				
+////				query.add_condition(cond);
+				
+				//query.add_join(this.current_spectrum_collection_source_table, condition);
+				
+				String standardQueryString = buildNonEAVQuery(query);
+				
+				EAVTableAndRelationsInfoStructure eav_info = new EAVTableAndRelationsInfoStructure(this.getEavServices().getEAVTableAndRelationsInfoStructure(MetaParameter.SPECTRUM_LEVEL));
+				String primary_key_name = eav_info.primary_id_name;
+				String primary_x_eav_table_name = eav_info.primary_x_eav_tablename;
+				
+				if(!standardQueryString.equals(""))
+				{
+					String insertQueryString = "insert into " + current_spectrum_collection_target_table + "("+ eav_info_0.primary_id_name + ") " + standardQueryString;
+					stmt.executeUpdate(insertQueryString);
+					
+					// count ids for that standard query
+					ResultSet rs = stmt.executeQuery("select count(*) from " + current_spectrum_collection_target_table);
+					while (rs.next()) {
+					count = rs.getInt(1);
+					}
+					rs.close();	
+					
+					standardQueryStringExists = true;
+				
+				}
+				else
+				{
+					//iteration_result_exists = false;
+				}
+				
+				query.setQueryType(org_query_type);
+				
+			}
+			else
+			{
+				//iteration_result_exists = false;
+			}			
 			
 
 			if(query.getQueryType().equals(Query.COUNT_QUERY))
@@ -516,7 +548,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					current_spectrum_collection_target_table
 				);
 				
-				if (query.getOrderBy() != null) {
+				if (query.getOrderBy() != null && (query.getOrderBy().length() > 0)) {
 					// join to the attribute by which ordering will be done
 					int order_by_attribute_id = getAttributes().get_attribute_id(query.getOrderBy());
 					String order_by_storage_field = getAttributes().get_default_storage_field(order_by_attribute_id);
@@ -747,7 +779,12 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 							queryString = "insert into " + this.current_spectrum_collection_target_table + "(spectrum_id) " 
 									+ "select distinct spectrum_id from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
-							stmt.executeUpdate(queryString);						
+							stmt.executeUpdate(queryString);			
+							
+							this.current_spectrum_collection_table_no = (this.current_spectrum_collection_table_no + 1) % 2;
+							this.current_spectrum_collection_source_table = this.current_spectrum_collection_target_table;
+							this.current_spectrum_collection_target_table = SB.prefix(getTempDatabaseName(), "spectrum_collection" + this.current_spectrum_collection_table_no.toString());
+							
 						}
 						// the iteration result status must not be changed here; in case the hierarchies did not turn up a result, the variable iteration_result_exists must remain unchanged
 //						else

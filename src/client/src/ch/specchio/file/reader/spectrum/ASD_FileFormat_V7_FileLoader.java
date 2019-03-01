@@ -340,9 +340,15 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 
 		String file_version = read_string(in, 3);
 		
-		if(!file_version.substring(0, 2).equals("as"))
+		try{
+			if(!file_version.substring(0, 2).equals("as"))
+			{
+				throw new IOException("Corrupted ASD file: File format string = " + file_version + ".\n Expecting 'asN' where N is a file version number.");			
+			}
+		}
+		catch(java.lang.StringIndexOutOfBoundsException ex)
 		{
-			throw new IOException("Corrupted ASD file: File format string = " + file_version + ".\n Expecting 'asN' where N is a file version number.");			
+			throw new IOException("Corrupted ASD file: File format string = " + file_version + ".\n Expecting 'asN' where N is a file version number.");
 		}
 		
 		file_version_number = Integer.parseInt(file_version.substring(2, 3));

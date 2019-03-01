@@ -123,6 +123,7 @@ public class SPECCHIOFactory {
 			this.is_admin = is_admin;
 			String table_name = (is_admin)? "eav" : "eav_view";
 			this.eav.set_eav_view_name(table_name);			
+			this.eav.setSPECCHIOFactory(this);
 		}
 		catch (SQLException ex) {
 			// bad username or password

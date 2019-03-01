@@ -19,4 +19,9 @@ public class FrameMetaparameterStructure {
 		mps.add(mp);
 		
 	}
+	
+	public void addAll(ArrayList<MetaParameter> mps) {
+		this.mps.addAll(mps);
+		
+	}	
 }

@@ -68,6 +68,7 @@ import ch.specchio.queries.RQueryBuilder;
 import ch.specchio.query_builder.QueryController;
 import ch.specchio.spaces.Space;
 import ch.specchio.types.Campaign;
+import ch.specchio.types.MatlabAdaptedArrayList;
 import ch.specchio.types.Spectrum;
 
 public class QueryBuilder extends SpectralMetaDataBase  implements ActionListener, TreeSelectionListener, ChangeListener, ClipboardOwner, QueryConditionChangeInterface, ListSelectionListener 
@@ -891,7 +892,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    		  
 	    		  
 	    		  
-	    		  specchio_client.copyHierarchy(540, 538, "New Name");
+//	    		  specchio_client.copyHierarchy(540, 538, "New Name");
 	    		  
 //	    		  ArrayList<Integer> ids = get_ids_matching_query();
 //	    		  
@@ -904,7 +905,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    		  
 //	    		  MatlabAdaptedArrayList<Object> out = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Site ID");
 	    		  
-//	    		  MatlabAdaptedArrayList<Object> joda_time = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Acquisition Time");
+	    		  MatlabAdaptedArrayList<Object> joda_time = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Acquisition Time");
 	    		  
 //	    		  System.out.println(joda_time.size());
 	    		  

@@ -1,11 +1,15 @@
 package ch.specchio.eav_db;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 
+import ch.specchio.factories.SpectralBrowserFactory;
 import ch.specchio.types.AVMatchingList;
 import ch.specchio.types.AVMatchingListCollection;
 import ch.specchio.types.MetaParameter;
+import ch.specchio.types.hierarchy_node;
+import ch.specchio.types.spectral_node_object;
 
 
 public class AVSorter {
@@ -27,17 +31,46 @@ public class AVSorter {
 		}
 		
 		
-		// load all metaparameters
+		// load all metaparameters of all storage levels
 		ArrayList<FrameMetaparameterStructure> fms_list = eav.load_metaparameters(MetaParameter.SPECTRUM_LEVEL, av_input.getSpectrumIds(), attr_ids);
+		ArrayList<Integer> hierarchy_ids = eav.getHierarchyIds(av_input.getSpectrumIds());
+		ArrayList<FrameMetaparameterStructure> fms_list_hierarchy_level = eav.load_metaparameters(MetaParameter.HIERARCHY_LEVEL, hierarchy_ids, attr_ids);
+		
+		ListIterator<FrameMetaparameterStructure> li = fms_list_hierarchy_level.listIterator();			
 
-		ListIterator<FrameMetaparameterStructure> li = fms_list.listIterator();			
-
+		// get fms on spectrum level, but spectra must be within original list as well!
+		SpectralBrowserFactory factory = new SpectralBrowserFactory(eav.specchioFactory);
+		while(li.hasNext())
+		{
+			FrameMetaparameterStructure fms = li.next();		
+			spectral_node_object node = new hierarchy_node(fms.frame_id, "", "");
+			List<Integer> ids = factory.getDescendentSpectrumIds(node);
+			
+			ListIterator<Integer> li_spec = ids.listIterator();
+			while(li_spec.hasNext())
+			{
+				Integer current_spec_id = li_spec.next();
+				
+				if(av_input.getSpectrumIds().contains(current_spec_id))
+				{
+					FrameMetaparameterStructure fms_new = new FrameMetaparameterStructure(current_spec_id);
+					fms_new.addAll(fms.mps);
+					fms_list.add(fms_new);
+				}
+			}
+		}
+		factory.dispose();
+		
+				
+		li = fms_list.listIterator();			
 
 		while(li.hasNext())
 		{			
 			FrameMetaparameterStructure fms = li.next();			
 			insert_into_lists(fms.frame_id, fms.mps);	
 		}
+		
+		
 		
 
 	}
