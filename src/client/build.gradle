@@ -86,6 +86,8 @@ dependencies {
     compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
     compile group: 'net.sf.py4j', name: 'py4j', version: '0.10.3'
     compile group: 'net.e175.klaus', name: 'solarpositioning', version: '0.0.9'
+    compile group: 'joda-time', name: 'joda-time', version: '2.6'
+    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
 
     // Types
     compile project(':src/types')
