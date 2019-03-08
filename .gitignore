@@ -4,6 +4,7 @@
 
 # Eclipse
 .metadata
+.project
 bin/
 tmp/
 *.tmp

@@ -88,6 +88,7 @@ dependencies {
     compile group: 'net.e175.klaus', name: 'solarpositioning', version: '0.0.9'
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
     compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.12'
 
     // Types
     compile project(':src/types')
