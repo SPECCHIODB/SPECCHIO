@@ -142,6 +142,7 @@ izpack {
                      'app.version': version, 
                      'app.subpath': "SPECCHIO-$version"]
 }
+izPackCreateInstaller.dependsOn build
 
 // config for macAppBundle
 macAppBundle {
