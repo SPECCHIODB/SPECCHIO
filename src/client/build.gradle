@@ -91,7 +91,7 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.12'
 
     // Types
-    compile project(':src/types')
+    compile project(':src:types')
 
     // IzPack
     izpack 'org.codehaus.izpack:izpack-ant:5.1.3'

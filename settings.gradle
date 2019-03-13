@@ -1,3 +1,4 @@
-include 'src/client'
-include 'src/types'
-include 'src/webapp'
+rootProject.name = 'SPECCHIO'
+include ':src:client'
+include ':src:types'
+include ':src:webapp'

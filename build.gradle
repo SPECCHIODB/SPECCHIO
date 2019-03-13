@@ -6,11 +6,11 @@ allprojects {
     }
 }
 
-project(":src/client") {
+project(":src:client") {
     apply plugin: 'java'
 }
 
-project(":src/types") {
+project(":src:types") {
     apply plugin: 'java'
 }
 
