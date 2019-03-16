@@ -182,12 +182,6 @@ public class SPECCHIOClientFactory {
 			return file.getPath();
 		}
 
-		// check if the file is present in the jar bundle
-		if (ClassLoader.getSystemClassLoader().getResource(name) != null)
-		{
-			return ClassLoader.getSystemClassLoader().getResource(name).toString();
-		}
-
 		try {
 			File app_dir = new File(SPECCHIOApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 			file = new File(app_dir.getParent() + File.separator + name);

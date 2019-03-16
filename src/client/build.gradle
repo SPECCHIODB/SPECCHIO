@@ -97,6 +97,13 @@ dependencies {
     izpack 'org.codehaus.izpack:izpack-ant:5.1.3'
 }
 
+// copy the specchio certificate into the current build directory
+// this allows us to connect with the vm
+task copyKeystore (type: Copy) {
+    from file('resources/specchio.keystore')
+    into sourceSets.main.output.classesDirs.asPath
+}
+run.dependsOn copyKeystore
 
 // Configuration for the shadow plugin
 // https://imperceptiblethoughts.com/shadow/configuration/
