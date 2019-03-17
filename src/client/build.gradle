@@ -101,7 +101,7 @@ dependencies {
 // this allows us to connect with the vm
 task copyKeystore (type: Copy) {
     from file('resources/specchio.keystore')
-    into sourceSets.main.output.classesDirs.asPath
+    into sourceSets.main.output.classesDirs.asPath + "/.."
 }
 run.dependsOn copyKeystore
 
