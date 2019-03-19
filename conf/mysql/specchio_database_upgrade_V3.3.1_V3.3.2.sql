@@ -78,7 +78,7 @@ INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field
 INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Chlorophyll B', (select category_id from `specchio`.category where name = 'Vegetation Biophysical Variables'), 'double_val', 'Chlorophyll B pigment', (select unit_id from unit where short_name like 'ugrams/cm2'));
 
 -- correct missing delete from previous spatial upgrade
-delete from attribute where name = 'Latitude' OR name = 'Longitude'
+delete from attribute where name = 'Latitude' OR name = 'Longitude';
 
 -- remove empty file comments
 CREATE TEMPORARY TABLE IF NOT EXISTS `specchio_temp`.`temp_spectrum_x_eav_table` AS (select * from spectrum_x_eav where eav_id in (select sxe.eav_id from eav eav, spectrum_x_eav sxe where eav.eav_id = sxe.eav_id and attribute_id = (select attribute_id from attribute where name = 'File Comments') and (string_val is null or CHAR_LENGTH(string_val) = 0)));
