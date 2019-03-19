@@ -6,7 +6,7 @@ INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field
 
 INSERT INTO `specchio`.`taxonomy` (`attribute_id`, `name`, `code`, `description`) VALUES ((select `attribute_id` from `specchio`.`attribute` where name = 'Illumination Sources'), 'Dedolight Halogen DLH 4 150W', '', '');
 
-INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Sampling Area', (select category_id from `specchio`.category where name = 'Sampling Scheme'), 'double_val', 'Area covered by sampling scheme, e.g. area covered during a sweep.', (select unit_id from unit where short_name like 'm2'));
+INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Sampling Area', (select category_id from `specchio`.category where name = 'Sampling Design'), 'double_val', 'Area covered by sampling scheme, e.g. area covered during a sweep.', (select unit_id from unit where short_name like 'm2'));
 
 -- Metadata on hierarchy level and campaign level
 CREATE TABLE `hierarchy_x_eav` (
