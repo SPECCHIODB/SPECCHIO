@@ -68,7 +68,7 @@ INSERT INTO `specchio`.`taxonomy` (`attribute_id`, `name`, `code`, `description`
 
 
 
-INSERT INTO `specchio`.`attribute` (`name`, `category_id`, `default_storage_field`, `default_unit_id`, `description`) VALUES ('Surface Saleh Roughness Factor', (select category_id from `specchio`.`category` where name = 'Generic Target Properties'), 'double_val', 'Equivalent to Chain Roughness Index (https://doi.org/10.1016/j.catena.2005.08.005)');
+INSERT INTO `specchio`.`attribute` (`name`, `category_id`, `default_storage_field`, `description`) VALUES ('Surface Saleh Roughness Factor', (select category_id from `specchio`.`category` where name = 'Generic Target Properties'), 'double_val', 'Equivalent to Chain Roughness Index (https://doi.org/10.1016/j.catena.2005.08.005)');
 INSERT INTO `specchio`.`attribute` (`name`, `category_id`, `default_storage_field`, `default_unit_id`, `description`) VALUES ('Surface Random Roughness Factor', (select category_id from `specchio`.`category` where name = 'Generic Target Properties'), 'double_val', (select unit_id from `specchio`.`unit` where short_name = 'mm'), 'Defined as standard deviation of elevations (https://doi.org/10.1016/j.catena.2005.08.005)');
 
 INSERT INTO `specchio`.`attribute` (`name`, `category_id`, `default_storage_field`) VALUES ('Surface Moisture Description', (select category_id from `specchio`.`category` where name = 'Generic Target Properties'), 'taxonomy_id');
