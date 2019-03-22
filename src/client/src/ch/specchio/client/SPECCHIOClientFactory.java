@@ -79,7 +79,7 @@ public class SPECCHIOClientFactory {
 		// load server descriptors from the legacy db_config.txt file
 		if (legacyConfigFile.exists()) {
 			try {
-				System.out.println("Loading server descriptors from the legacy db_config.txt file");
+				System.out.println("Loading server descriptors from the legacy db_config.txt file: " + legacyConfigFile.getAbsolutePath());
 				SPECCHIOServerDescriptorStore s = new SPECCHIOServerDescriptorLegacyStore(legacyConfigFile);
 				Iterator<SPECCHIOServerDescriptor> iter = s.getIterator();
 				while (iter.hasNext()) {
@@ -176,15 +176,27 @@ public class SPECCHIOClientFactory {
 	public static String getApplicationFilepath(String name)
 	{
 		// check if the file is found in the current directory
-		File file = new File(name);
-		if (file.isFile())
+		File file = new File(System.getProperty("user.dir") + File.separator + name);
+		System.out.println("Working Directory = " + System.getProperty("user.dir"));
+		if (file.exists() && file.isFile() && file.canRead())
 		{
+			System.out.println(name + " found in current dir. Trying to locate here: " + file.getParent());
 			return file.getPath();
 		}
+
+		// check if the file is present in the jar bundle
+//		if (ClassLoader.getSystemClassLoader().getResource(name) != null)
+//		{
+//			System.out.println(ClassLoader.getSystemClassLoader().getResource(name).toString());
+//			return ClassLoader.getSystemClassLoader().getResource(name).toString();
+//		}
 
 		try {
 			File app_dir = new File(SPECCHIOApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 			file = new File(app_dir.getParent() + File.separator + name);
+			
+			System.out.println(name + " not found in current dir. Trying to locate here: " + app_dir.getParent());
+			
 			return file.getPath();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
