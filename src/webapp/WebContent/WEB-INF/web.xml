@@ -26,7 +26,7 @@
     </init-param>
     <init-param>
     	<param-name>END_USER_LICENSE_URL</param-name>
-    	<param-value>http://specchio.ch/SPECCHIO_UZH_License_V1.pdf</param-value>
+    	<param-value>https://github.com/SPECCHIODB/Guides/raw/master/Data_License.pdf</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
