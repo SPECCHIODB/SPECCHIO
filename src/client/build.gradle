@@ -161,6 +161,33 @@ macAppBundle {
     appName = 'SPECCHIO'
 }
 
+task copyKeystoreAndJARsIntoMacApp (type: Copy) {
+    from file('resources/specchio.keystore')
+    into sourceSets.main.output.resourcesDir.path + "/../../MacApp/SPECCHIO.app/Contents/Java"
+    from file('resources/jettison-1.3.8.jar')
+    into sourceSets.main.output.resourcesDir.path + "/../../MacApp/SPECCHIO.app/Contents/Java"
+    from file('resources/rome-0.8.jar')
+    into sourceSets.main.output.resourcesDir.path + "/../../MacApp/SPECCHIO.app/Contents/Java"
+}
+build.dependsOn copyKeystoreAndJARsIntoMacApp
+
+task copyMySQLIntoMacApp (type: Copy) {
+	from '../../conf/mysql'
+	include '*upgrade*.sql'
+	into sourceSets.main.output.resourcesDir.path + "/../../MacApp/SPECCHIO.app/Contents/Java/mysql"
+}
+
+build.dependsOn copyMySQLIntoMacApp
+
+// ToDo: copy only upgrade scripts into the 
+//task copyMySQLIntoGeneric (type: Copy) {
+//	from '../../conf/mysql'
+//	include '*upgrade*.sql'
+//	into sourceSets.main.output.resourcesDir.path + "/mysql"
+//}
+
+//build.dependsOn copyMySQLIntoGeneric
+
 
 // create zip with application, schemas and resources
 distributions {
