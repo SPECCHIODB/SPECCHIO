@@ -90,8 +90,13 @@ public class Query {
 		ListIterator<QueryCondition> li = cond_fields.listIterator();
 		while(li.hasNext())
 		{
-			EAVQueryConditionObject co = (EAVQueryConditionObject)li.next();
-			exists = cond.matches(co);
+			QueryCondition co = li.next();
+			 
+//			if(co.getClass() == EAVQueryConditionObject.class)
+//				exists = cond.matches( (EAVQueryConditionObject)co);
+//			else
+				exists = cond.matches(co);
+
 		}
 		
 		if (!exists)
