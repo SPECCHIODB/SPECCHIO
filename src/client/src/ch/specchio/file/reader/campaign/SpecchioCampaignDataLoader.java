@@ -524,6 +524,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		c.setInstrumentId(instr.getInstrumentId());
 		c.setCalibrationNumber(loader.getSpec_file().getCalibrationSeries());
 		c.setCalibration_type(Calibration.RADIOMETRIC_CALIBRATION);
+        c.setField_of_view(loader.getSpec_file().getForeopticDegrees());
 		
 		boolean exists = specchio_client.instrumentCalibrationExists(c);
 		
@@ -575,7 +576,10 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		
 		Calibration c = new Calibration();																		
 		c.setInstrumentId(instr.getInstrumentId());
-		c.setCalibrationNumber(loader.getSpec_file().getCalibrationSeries());		
+		c.setCalibrationNumber(loader.getSpec_file().getCalibrationSeries());	
+		c.setField_of_view(loader.getSpec_file().getForeopticDegrees());
+		c.setCalibration_type(Calibration.RADIOMETRIC_CALIBRATION);
+
 		
 		// lamp
 		if(cal_type == "LMP")
