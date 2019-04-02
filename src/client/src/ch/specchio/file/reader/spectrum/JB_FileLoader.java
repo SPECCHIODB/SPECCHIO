@@ -32,6 +32,7 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 	boolean is_fluoresence_sensor = false;
 	boolean valid_gps_data_found = false;
 	String voltage;
+	Integer first_valid_gps_time_index = -1;
 	
 	String spectrum_number, spectrum_number_ext, gps_time, gps_date, lat, lon;
 	spatial_pos pos;
@@ -224,7 +225,7 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 				file_errors = new ArrayList<SpecchioMessage>();						
 			}
 
-			file_errors.add(new SpecchioMessage("No calibration file (cal.csv) could be found alongside the spectral file. You moron!!!", SpecchioMessage.ERROR));
+			file_errors.add(new SpecchioMessage("No calibration file (cal.csv) could be found alongside the spectral file.", SpecchioMessage.ERROR));
 			spec_file.setFileErrors(file_errors);
 			
 		}
@@ -381,9 +382,10 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 		// restoration of missing data is possible if some records have GPS information
 		if(valid_gps_data_found)
 		{
-			// at this point, we assume that only ever the first record can be compromised due to instrument switch-on
+			// at this point, we used to assume that only ever the first record can be compromised due to instrument switch-on
+			// This is however not true, sometimes it takes a few measurements to get a valid GPS position
 			
-			if(spec_file.getEavMetadata(0).get_first_entry("Spatial Position") == null && spec_file.getEavMetadata().size() > 5)
+			if(spec_file.getEavMetadata(0).get_first_entry("Spatial Position") == null && first_valid_gps_time_index > 5)
 			{
 				// copy position from second set of readings
 				MetaParameter pos_ = spec_file.getEavMetadata(5).get_first_entry("Spatial Position");
@@ -395,32 +397,41 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 				DateTime gap = dt1.minus(dt2.getMillis());
 				long millis = gap.getMillis();
 
-				DateTime utc_2 = (DateTime) ((MetaDate) spec_file.getEavMetadata(5).get_first_entry("Acquisition Time (UTC)")).getValue();
-				DateTime utc_1 = new DateTime(utc_2.plus(millis));
+				DateTime utc_2 = (DateTime) ((MetaDate) spec_file.getEavMetadata(this.first_valid_gps_time_index).get_first_entry("Acquisition Time (UTC)")).getValue();
+				
+				int number_of_blocks_without_utc = first_valid_gps_time_index / 5;
+				
+				// correct all wrong blocks
+				for(int n=0;n<number_of_blocks_without_utc-1;n++)
+				{
 
-				MetaParameter mp = MetaParameter.newInstance(this.attributes_name_hash.get("Acquisition Time (UTC)"));
-				try {
-					mp.setValue(utc_1);
-					for(int i=0;i<5;i++) spec_file.getEavMetadata(i).add_entry(mp); // enter UTC for first block of spectra
+					DateTime utc_1 = new DateTime(utc_2.plus(millis*(number_of_blocks_without_utc - n)));
+
+					MetaParameter mp = MetaParameter.newInstance(this.attributes_name_hash.get("Acquisition Time (UTC)"));
+					try {
+						mp.setValue(utc_1);
+						for(int i=0 + n*5;i<n*5+5;i++) spec_file.getEavMetadata(i).add_entry(mp); // enter UTC for first block of spectra
 
 
 
-					// adjust spectrum number
-					MetaParameter spec_no = spec_file.getEavMetadata(0).get_first_entry("Spectrum Number");
+						// adjust spectrum number
+						MetaParameter spec_no = spec_file.getEavMetadata(0).get_first_entry("Spectrum Number");
 
-					String tmp = spec_no.getValue().toString();
-					String tmp_no = tmp.substring(0, tmp.length()-6) + utc_1.toString(DateTimeFormat.forPattern("HHmmss"));
-					
-					// enter spectrum_no for first block of spectra
-					for(int i=0;i<5;i++)
-					{						
-						spec_file.getEavMetadata(i).get_first_entry("Spectrum Number").setValue(Integer.valueOf(tmp_no));; 
-					}
-					
-				} catch (MetaParameterFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}				
+						String tmp = spec_no.getValue().toString();
+						String tmp_no = tmp.substring(0, tmp.length()-6) + utc_1.toString(DateTimeFormat.forPattern("HHmmss"));
+
+						// enter spectrum_no for first block of spectra
+						for(int i=0+n*5;i<n*5+5;i++)
+						{						
+							spec_file.getEavMetadata(i).get_first_entry("Spectrum Number").setValue(Integer.valueOf(tmp_no));; 
+						}
+
+					} catch (MetaParameterFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}	
+
+				}
 
 			}
 

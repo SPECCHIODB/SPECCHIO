@@ -68,7 +68,9 @@ public class FloX_FileLoader extends JB_FileLoader {
 		//Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 		
 		try
-		{		
+		{	
+			
+			int measurement_row_index = 0;
 		
 		for (CSVRecord r : csvParser) {
 			
@@ -204,7 +206,12 @@ public class FloX_FileLoader extends JB_FileLoader {
 						utc = getUTC();
 						mp = MetaParameter.newInstance(this.attributes_name_hash.get("Acquisition Time (UTC)"));
 						mp.setValue(utc);
-						smd.addEntry(mp);							
+						smd.addEntry(mp);	
+						
+						if(first_valid_gps_time_index == -1)
+						{
+							first_valid_gps_time_index = measurement_row_index;
+						}
 					}
 					
 					
@@ -225,9 +232,13 @@ public class FloX_FileLoader extends JB_FileLoader {
 					
 					int x  =0;
 					
+					measurement_row_index++;
+					
 				}
 			
 			}
+			
+			
 
 		}
 		
