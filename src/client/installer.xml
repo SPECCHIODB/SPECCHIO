@@ -46,25 +46,61 @@
             <!-- copy all files, over-writing existing files -->
             <fileset dir="resources/main" targetdir="${INSTALL_PATH}" override="true">
                 <include name="**/*" />
+                <os family="windows"/>
+                <os name="linux"/>
+                <os name="ubuntu_linux"/>
+                <os name="debian_linux"/>
+                <os name="fedora_linux"/>
+                <os name="red_hat_linux"/>
+                <os name="suse_linux"/>                
             </fileset>
+            
+         
 
             <!-- include jar -->
-            <singlefile src="libs/specchio-client.jar" target="${INSTALL_PATH}/specchio-client.jar" override="true"/>
+            <!-- <singlefile src="libs/specchio-client.jar" target="${INSTALL_PATH}/specchio-client.jar" override="true" os="windows"/>  -->
+
+            <!-- copy all files, over-writing existing files -->
+            <fileset dir="libs/" targetdir="${INSTALL_PATH}" override="true">
+                <include name="specchio-client.jar" />
+                <os family="windows"/>
+                <os name="linux"/>
+                <os name="ubuntu_linux"/>
+                <os name="debian_linux"/>
+                <os name="fedora_linux"/>
+                <os name="red_hat_linux"/>
+                <os name="suse_linux"/>
+            </fileset>
 
             <!-- include maxOS customizations -->
             <fileset dir="macApp/SPECCHIO.app" targetdir="${INSTALL_PATH}/SPECCHIO.app" override="true">
                 <include name="**/*" />
+                <os family="mac"/>
             </fileset>
+            
 
             <!-- insert installation path into start-up scripts -->
-            <parsable targetfile="${INSTALL_PATH}/macosx/specchio" type="shell" />
-            <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" />
-            <parsable targetfile="${INSTALL_PATH}/win64/specchio.bat" type="shell" />
-            <parsable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Info.plist" type="shell" />
+            <!-- <parsable targetfile="${INSTALL_PATH}/macosx/specchio" type="shell" /> -->
+            <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" os="windows"/>
+            <parsable targetfile="${INSTALL_PATH}/win64/specchio.bat" type="shell" os="windows"/>
+            <parsable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Info.plist" type="shell" os="mac"/>
 
             <!-- set executable bit on start-up files -->
-            <executable targetfile="${INSTALL_PATH}/macosx/specchio" keep="yes" stage="never" />
-            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" keep="yes" stage="never" />
+            <!-- <executable targetfile="${INSTALL_PATH}/macosx/specchio" keep="yes" stage="never" /> -->
+            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" keep="true" stage="never" os="mac"/>
+
+			<executable
+				targetfile="$INSTALL_PATH/specchio-client.jar"
+				stage="never" failure="warn" keep="true">
+                <os name="linux"/>
+                <os name="ubuntu_linux"/>
+                <os name="debian_linux"/>
+                <os name="fedora_linux"/>
+                <os name="red_hat_linux"/>
+                <os name="suse_linux"/>
+			</executable>
+            
+            
         </pack>
     </packs>
 
