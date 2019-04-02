@@ -843,6 +843,8 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 			id_and_op_struct cal_factor = SQL.is_null_key_get_val_and_op(cal_factor_id);
 			id_and_op_struct cal_uncert = SQL.is_null_key_get_val_and_op(uncert_id);
 			String fov = (cal.getField_of_view() != 0)? Integer.toString(cal.getField_of_view()) : "null";
+			String cal_type = (cal.getCalibration_type() != 0)? Integer.toString(cal.getCalibration_type()) : "null";
+
 			
 			String date = "null";
 			if(cal.getCalibrationDate() != null)
@@ -854,11 +856,12 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 			String cal_no = (cal.getCalibrationNumber() != -1)? (new Integer(cal.getCalibrationNumber())).toString() : "null";
 			
 			
-			String query = "insert into calibration (" + id_column + ", cal_factors, uncertainty, comments, calibration_no, fov, name, calibration_date) " +
+			String query = "insert into calibration (" + id_column + ", cal_factors, uncertainty, comments, calibration_no, fov, name, calibration_date, calibration_type) " +
 					"values (" + referenced_id + "," + cal_factor.id + "," + cal_uncert.id + ", '" 
 					+ cal.getComments() + "'," + cal_no + "," + fov  + ", '" 
 					+ cal.getName() + "'" + ", " 
-					+ date  + ")";
+					+ date  + ", "  + cal_type +
+					")";
 			stmt.executeUpdate(query);
 			
 			// get the identifier of the new instrument
