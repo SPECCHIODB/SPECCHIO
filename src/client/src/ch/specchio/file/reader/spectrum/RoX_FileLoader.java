@@ -60,6 +60,7 @@ public class RoX_FileLoader extends JB_FileLoader {
 		
 		try
 		{		
+			int measurement_row_index = 0;
 		
 		for (CSVRecord r : csvParser) {
 			
@@ -171,7 +172,12 @@ public class RoX_FileLoader extends JB_FileLoader {
 						utc = getUTC();
 						mp = MetaParameter.newInstance(this.attributes_name_hash.get("Acquisition Time (UTC)"));
 						mp.setValue(utc);
-						smd.addEntry(mp);							
+						smd.addEntry(mp);
+						
+						if(first_valid_gps_time_index == -1)
+						{
+							first_valid_gps_time_index = measurement_row_index;
+						}						
 					}
 					
 					
@@ -219,6 +225,8 @@ public class RoX_FileLoader extends JB_FileLoader {
 //					spec_file.addPos(pos);
 					
 					spec_file.addEavMetadata(smd);
+					
+					measurement_row_index++;
 					
 					int x  =0;
 					
