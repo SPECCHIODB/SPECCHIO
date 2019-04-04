@@ -540,6 +540,11 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 				// https://github.com/zaproxy/zaproxy/issues/131
 				public void mouseReleased(MouseEvent e) {
 					if (e.isPopupTrigger()) {
+						// set selected path based on path of node that was clicked on
+						last_menu_clicked_path = tree.getPathForLocation(e.getX(), e.getY());
+
+						last_menu_clicked_node = (SpectralDataBrowserNode) last_menu_clicked_path.getLastPathComponent();
+						
 						popup.show((JComponent) e.getSource(), e.getX(), e.getY());
 					}
 				}
