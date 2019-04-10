@@ -1040,6 +1040,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 	
 	/**
+	 * Get metaparameters for spectrum ids and EAV attribute
+	 * 
+	 * @param ids		spectrum ids
+	 * @param attribute_name		attribute name
+	 * @param distinct		defines if distinct values should be returned or repeated values for the given spectrum ids: distinct = false means parameters for all spectra, even if redundant
+	 * 
+	 * @return list of metaparameters, or null if the field does not exist	 
+	 */
+	public ArrayList<MetaParameter> getMetaparameters(ArrayList<Integer> ids, String attribute_name, Boolean distinct) throws SPECCHIOWebClientException {
+
+			return realClient.getMetaparameters(ids, attribute_name, distinct);
+
+	}
+	
+	
+	/**
 	 * Get list of metaparameters for spectrum ids and EAV attributes
 	 * 
 	 * @param ids		spectrum ids

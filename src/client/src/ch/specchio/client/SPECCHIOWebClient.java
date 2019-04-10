@@ -1247,6 +1247,35 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	
 	/**
+	 * Get metaparameters for spectrum ids and EAV attribute
+	 * 
+	 * @param ids		spectrum ids
+	 * @param attribute_name		attribute name
+	 * @param distinct		defines if distinct values should be returned or repeated values for the given spectrum ids: distinct = false means parameters for all spectra, even if redundant
+	 * 
+	 * @return list of metaparameters, or null if the field does not exist	 
+	 */
+	public ArrayList<MetaParameter> getMetaparameters(ArrayList<Integer> ids, String attribute_name, Boolean distinct) throws SPECCHIOWebClientException {
+		
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(ids, attribute_name);
+		mds.setDistinct(distinct);
+		
+		MetaParameter[] mps = postForArray(MetaParameter.class, "metadata", "get_list_of_metaparameter_vals", mds);
+		
+		
+		ArrayList<MetaParameter> out_list = new ArrayList<MetaParameter>();
+		
+		for (int i = 0; i < mps.length; i++) {
+			out_list.add(mps[i]);
+		}		
+		
+		
+		return out_list;
+		
+	}		
+	
+	
+	/**
 	 * Get list of metaparameters for spectrum ids and EAV attributes
 	 * 
 	 * @param ids		spectrum ids
