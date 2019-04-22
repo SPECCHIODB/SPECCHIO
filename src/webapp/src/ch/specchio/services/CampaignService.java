@@ -154,7 +154,7 @@ public class CampaignService extends SPECCHIOService {
 	
 	
 	/**
-	 * Get the identifier of a node in a campaign's hierarchy.
+	 * Get the identifier of a node in a campaign's hierarchy (deprecated)
 	 * 
 	 * @param campaign_type		the type of campaign to test
 	 * @param campaign_id		the identifier of the campaign to be tested
@@ -176,12 +176,41 @@ public class CampaignService extends SPECCHIOService {
 		) throws SPECCHIOFactoryException {
 		
 		SpecchioCampaignFactory factory = new SpecchioCampaignFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		int id = factory.getHierarchyNodeId(campaign_id, name, parent_id);
+		int id = factory.getHierarchyNodeId(name, parent_id);
 		factory.dispose();
 		
 		return new XmlInteger(id);
 		
 	}
+	
+	
+	/**
+	 * Get the identifier of a node in a campaign's hierarchy.
+	 * 
+	 * @param campaign_type		the type of campaign to test
+	 * @param name				the name of the node to test
+	 * @param parent_id			the identifier of the node's parent
+	 * 
+	 * @returns the node's identifier, or -1 if the node does not exist
+	 * 
+	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	@Path("getHierarchyId/{campaign_type}/{name}/{parent_id: [0-9]+}")
+	public XmlInteger getHierarchyId(
+			@PathParam("campaign_type") String campaign_type,
+			@PathParam("name") String name,
+			@PathParam("parent_id") int parent_id
+		) throws SPECCHIOFactoryException {
+		
+		SpecchioCampaignFactory factory = new SpecchioCampaignFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		int id = factory.getHierarchyNodeId(name, parent_id);
+		factory.dispose();
+		
+		return new XmlInteger(id);
+		
+	}	
 	
 	/**
 	 * Get the name of a hierarchy.
@@ -354,7 +383,7 @@ public class CampaignService extends SPECCHIOService {
 		) throws SPECCHIOFactoryException {
 		
 		SpecchioCampaignFactory factory = new SpecchioCampaignFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		int id = factory.insertHierarchyNode(campaign_id, name, parent_id);
+		int id = factory.insertHierarchyNode(name, parent_id);
 		factory.dispose();
 		
 		return new XmlInteger(id);
@@ -363,7 +392,7 @@ public class CampaignService extends SPECCHIOService {
 	
 	/**
 	 * Get the identifier of a sub-hierarchy with a given name, creating the
-	 * hierarchy if it doesn't exist.
+	 * hierarchy if it doesn't exist (deprecated)
 	 * 
 	 * @param campaign	the campaign into which to insert the hierarchy
 	 * @param parent_id			the identifier of the the parent of the hierarchy
@@ -397,6 +426,42 @@ public class CampaignService extends SPECCHIOService {
 		
 		return new XmlInteger(id);		
 	}
+	
+	
+	/**
+	 * Get the identifier of a sub-hierarchy with a given name, creating the
+	 * hierarchy if it doesn't exist.
+	 * 
+	 * @param campaign	the campaign into which to insert the hierarchy
+	 * @param parent_id			the identifier of the the parent of the hierarchy
+	 * @param hierarchy_name	the name of the desired hierarchy
+	 * 
+	 * @return the identifier of the child of parent_id with the name hierarchy_name
+	 *
+	 * @throws SPECCHIOFactoryException
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	@Path("getSubHierarchyId/{campaign_type}/{parent_id: [0-9]+}/{hierarchy_name}")	
+	public XmlInteger getSubHierarchyId(
+			@PathParam("campaign_type") String campaign_type,		
+			@PathParam("parent_id") int parent_id,
+			@PathParam("hierarchy_name") String hierarchy_name
+			) throws SPECCHIOFactoryException {
+		
+		SpectralFileFactory factory = new SpectralFileFactory(
+				getClientUsername(),
+				getClientPassword(),
+				getDataSourceName(),
+				getSecurityContext().isUserInRole(UserRoles.ADMIN)		
+			);		
+		
+		int id = factory.getSubHierarchyId(parent_id, hierarchy_name);
+		
+		factory.dispose();
+		
+		return new XmlInteger(id);		
+	}	
 	
 	
 	/**
