@@ -259,6 +259,30 @@ public class SpectrumService extends SPECCHIOService {
 		return spaces.toArray(new Space[spaces.size()]);
 	}
 	
+
+	/**
+	 * Get the direct hierarchy id of a single spectrum
+	 * 
+	 * @param ids_d		container holding the identifier of the desired spectrum
+	 * 
+	 * @return hierarchy id
+	 * 
+	 */
+	@POST
+	@Path("getDirectHierarchyOfSpectrum")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger getDirectHierarchyOfSpectrum(SpectrumIdsDescriptor ids_d)
+	{
+		int id = 0;
+		
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		id = factory.getDirectHierarchyOfSpectrum(ids_d.getSpectrumIds(1));
+		
+		return new XmlInteger(id);
+	}
+	
+	
 	
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
