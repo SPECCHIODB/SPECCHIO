@@ -19,7 +19,10 @@ public class EAVQueryConditionObject extends QueryCondition {
 	protected String attribute_name;
 	protected Object value = null;
 	protected String operator = "=";
+	
+	@XmlElement(name="quote_value")
 	protected boolean quote_value = true;
+	
 	protected boolean condition_handled_at_hierarchy_level = false;
 	
 	private Integer integerValue = null;
@@ -97,6 +100,10 @@ public class EAVQueryConditionObject extends QueryCondition {
 	public List<?> getListValue() { return this.listValue; }
 	public void setListValue(List<?> listValue) { this.listValue = listValue; this.value = this.listValue; }
 	
+	
+	public boolean QuoteValue() { return this.quote_value; }
+	public void setQuoteValue(boolean quote_value) { this.quote_value = quote_value; }	
+	
 	public Object getValue() { return this.value; }
 	public void setValue(Object[] value) { setArrayValue(value); }
 	public void setValue(Integer value) { setIntegerValue(value); }
@@ -164,13 +171,7 @@ public class EAVQueryConditionObject extends QueryCondition {
 		return matches;
 	}
 
-	public boolean QuoteValue() {
-		return quote_value;
-	}
 
-	public void setQuoteValue(boolean quote_value) {
-		this.quote_value = quote_value;
-	}
 
 	public boolean isCondition_handled_at_hierarchy_level() {
 		return condition_handled_at_hierarchy_level;
