@@ -764,6 +764,28 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	
 	/**
+	 * Get the direct hierarchy id of a single spectrum
+	 * 
+	 * @param spectrum_id		the identifier of the spectrum
+	 * 
+	 * @return hierarchy id
+	 * 
+	 * @throws SPECCHIOFactoryException	
+	 */	
+	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException {
+		
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		ids.add(spectrum_id);
+		SpectrumIdsDescriptor d = new SpectrumIdsDescriptor(ids);
+		
+		Integer id = postForInteger("spectrum", "getDirectHierarchyOfSpectrum", d);
+
+		 return id;
+	}
+	
+	
+	
+	/**
 	 * Get hierarchy ids, directly above these spectra
 	 * 
 	 * @param spectrum_ids		the identifiers of the desired spectra
@@ -1572,6 +1594,45 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return g;
 	}
+	
+	
+	/**
+	 * Get the identifier of a sub-hierarchy with a given name, creating the
+	 * hierarchy if it doesn't exist (deprecated)
+	 * 
+	 * @param campaign	the campaign into which to insert the hierarchy
+	 * @param parent_id			the identifier of the the parent of the hierarchy
+	 * @param hierarchy_name	the name of the desired hierarchy
+	 * 
+	 * @return the identifier of the child of parent_id with the name hierarchy_name
+	 */
+	public int getSubHierarchyId(Campaign campaign, String name, int parent_id) throws SPECCHIOClientException {
+		
+		return getInteger(
+				"campaign", "getSubHierarchyId",
+				"specchio", Integer.toString(campaign.getId()), Integer.toString(parent_id), name
+			);
+		
+	}		
+	
+	
+	/**
+	 * Get the identifier of a sub-hierarchy with a given name, creating the
+	 * hierarchy if it doesn't exist.
+	 * 
+	 * @param name	the name of the desired hierarchy
+	 * @param parent_id			the identifier of the the parent of the hierarchy
+	 * 
+	 * @return the identifier of the child of parent_id with the name hierarchy_name
+	 */
+	public int getSubHierarchyId(String name, int parent_id) throws SPECCHIOClientException {
+		
+		return getInteger(
+				"campaign", "getSubHierarchyId",
+				"specchio", Integer.toString(parent_id), name
+			);		
+	}		
+	
 
 
 	/**
@@ -2864,24 +2925,6 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * Get the identifier of a sub-hierarchy with a given name, creating the
-	 * hierarchy if it doesn't exist.
-	 * 
-	 * @param campaign	the campaign into which to insert the hierarchy
-	 * @param parent_id			the identifier of the the parent of the hierarchy
-	 * @param hierarchy_name	the name of the desired hierarchy
-	 * 
-	 * @return the identifier of the child of parent_id with the name hierarchy_name
-	 */
-	public int getSubHierarchyId(Campaign campaign, String name, int parent_id) throws SPECCHIOClientException {
-		
-		return getInteger(
-				"campaign", "getSubHierarchyId",
-				"specchio", Integer.toString(campaign.getId()), Integer.toString(parent_id), name
-			);
-		
-	}	
 	
 	
 	/**

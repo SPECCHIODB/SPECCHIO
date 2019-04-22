@@ -634,6 +634,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	
 	
 	/**
+	 * Get the direct hierarchy id of a single spectrum
+	 * 
+	 * @param spectrum_id		the identifier of the spectrum
+	 * 
+	 * @return hierarchy id
+	 * 
+	 * @throws SPECCHIOFactoryException	
+	 */	
+	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException {
+		return realClient.getDirectHierarchyId(spectrum_id);
+	}	
+	
+	/**
 	 * Get hierarchy ids, directly above these spectra
 	 * 
 	 * @param spectrum_ids		the identifiers of the desired spectra
@@ -1470,6 +1483,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getSubHierarchyId(campaign, name, parent_id);
 		
 	}
+	
+	/**
+	 * Get the identifier of a sub-hierarchy with a given name, creating the
+	 * hierarchy if it doesn't exist.
+	 * 
+	 * @param name	the name of the desired hierarchy
+	 * @param parent_id			the identifier of the the parent of the hierarchy	 
+	 * 
+	 * @return the identifier of the child of parent_id with the name hierarchy_name
+	 */
+	public int getSubHierarchyId(String name, int parent_id) throws SPECCHIOClientException	{
+		
+		return realClient.getSubHierarchyId(name, parent_id);
+		
+	}
+		
 	
 	
 		
