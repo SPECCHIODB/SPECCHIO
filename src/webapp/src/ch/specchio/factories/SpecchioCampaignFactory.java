@@ -540,7 +540,6 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	/**
 	 * Get the identifier of a node in a campaign's hierarchy.
 	 * 
-	 * @param campaign_id	the identifier of the campaign to be tested
 	 * @param name			the name of the node to test
 	 * @param parent_id		the identifier of the node's parent
 	 * 
@@ -548,7 +547,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 * 
 	 * @throws SPECCHIOFactoryException	the database could not accessed
 	 */
-	public int getHierarchyNodeId(int campaign_id, String name, int parent_id) throws SPECCHIOFactoryException {
+	public int getHierarchyNodeId(String name, int parent_id) throws SPECCHIOFactoryException {
 		
 		try {
 			
@@ -558,10 +557,14 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			
 			// build a statement that will find any existing hierarchy nodes
 			id_and_op_struct p_id_and_op = new id_and_op_struct(parent_id);
+//			String query = "SELECT hierarchy_level_id from hierarchy_level where "
+//					+ "campaign_id = " + campaign_id
+//					+ " and parent_level_id " + p_id_and_op.op + " " + p_id_and_op.id
+//					+ " and name = " + SQL.quote_string(name);
+			
 			String query = "SELECT hierarchy_level_id from hierarchy_level where "
-					+ "campaign_id = " + campaign_id
-					+ " and parent_level_id " + p_id_and_op.op + " " + p_id_and_op.id
-					+ " and name = " + SQL.quote_string(name);
+					+ "parent_level_id " + p_id_and_op.op + " " + p_id_and_op.id
+					+ " and name = " + SQL.quote_string(name);			
 			
 			// execute the statement
 			int id = -1;
@@ -920,7 +923,6 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	/**
 	 * Insert a node into a campaign's hierarchy.
 	 * 
-	 * @param campaign_id	the identifier of the campaign to which the node is to be added
 	 * @param name			the name of the new node
 	 * @param parent_id		the identifier of the new node's parent
 	 * 
@@ -928,24 +930,33 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 * 
 	 * @throws SPECCHIOFactoryException	the node could not be inserted
 	 */
-	public int insertHierarchyNode(int campaign_id, String name, int parent_id) throws SPECCHIOFactoryException {
+	public int insertHierarchyNode(String name, int parent_id) throws SPECCHIOFactoryException {
 		
 		try {
 			
 			// initialise id to a nonsense value
-			int id = 0;
+			int id = 0, campaign_id = 0;
 			
 			// create an SQL statement
 			Statement stmt = getConnection().createStatement();
 			
+			// get campaign id of parent
+			String query = "select campaign_id from hierarchy_level where hierarchy_level_id = " + parent_id;
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next())
+				campaign_id = rs.getInt(1);
+			
+			rs.close();
+			
 			// insert the node
 			id_and_op_struct p_id_and_op = new id_and_op_struct(parent_id);
-			String query = "INSERT INTO hierarchy_level_view (parent_level_id, campaign_id, name) "
+			query = "INSERT INTO hierarchy_level_view (parent_level_id, campaign_id, name) "
 					+ "VALUES (" + p_id_and_op.id + ", " + campaign_id + ", '" + name + "')";
+			
 			stmt.executeUpdate(query);
 			
-			// find out what it id was
-			ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
+			// get id of inserted node
+			rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
 			while (rs.next())
 				id = rs.getInt(1);
 
@@ -1170,6 +1181,26 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			while (rs.next()) {
 				research_group_id = rs.getInt(1);
 			}
+			
+			
+			// ensure that no zombie eav's hang around (this can happen if e.g. a data import fails)
+			ArrayList<Integer> eav_ids_to_delete = new ArrayList<Integer>();
+			query = " select eav_id from eav where " + campaign_cond; 
+			
+			rs = stmt.executeQuery(query);
+			while (rs.next()) {				
+				eav_ids_to_delete.add(rs.getInt(1));	
+			}			
+			rs.close();	
+			
+			if(eav_ids_to_delete.size()>0)
+			{
+				System.err.println("Deleting " + eav_ids_to_delete.size() + " zombie eavs ... Please investigate in case this campaign was supposed to complete.");
+				String cmd = "delete from "+ ((is_admin)? "eav" : "eav_view") +" where " +
+						"eav_id in (" + getStatementBuilder().conc_ids(eav_ids_to_delete) + ")";	
+				stmt.executeUpdate(cmd); 		
+			}
+
 		
 			// remove campaign itself
 			String cmd = "delete from " + table_name + " where " + campaign_cond;
