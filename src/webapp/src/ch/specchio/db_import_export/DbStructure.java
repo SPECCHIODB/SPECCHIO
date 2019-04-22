@@ -102,8 +102,12 @@ public class DbStructure {
 			}
 			
 		}
+		
+		// create a dummy table to avoid null pointer exceptions in case unknown tables are found
+		t = new DbTable();
+		
 			
-		return null;
+		return t;
 	}
 	
 	

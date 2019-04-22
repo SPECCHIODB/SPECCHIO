@@ -813,7 +813,13 @@ public class DbTable
 	DbStructure cex;
 	private ArrayList<TableField> string_cols = new ArrayList<TableField>();
 	private boolean do_info_print = false;
+	private boolean isDummy = false;
 	
+	// default constructor to enable basic handling of table reading for the case of unknown tables in input data stream
+	public DbTable()
+	{		
+		isDummy = true;
+	}
 	
 	public DbTable(SQL_StatementBuilder SQL, String schema, String name, DbStructure cex)
 	{
@@ -2129,6 +2135,11 @@ public class DbTable
 			return true;
 		else
 			return false;
+	}
+
+	public boolean isDummy() {
+		// TODO Auto-generated method stub
+		return isDummy ;
 	}
 	
 }
