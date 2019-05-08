@@ -156,12 +156,14 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 */
 	public int getSubHierarchyId(int parent_id, String hierarchy_name) throws SPECCHIOFactoryException {
 		
+		campaign_factory = new SpecchioCampaignFactory(this);
+		
 		// see if the node already exists
-		int sub_hierarchy_id = campaign_factory.getHierarchyNodeId(campaign.getId(), hierarchy_name, parent_id);
+		int sub_hierarchy_id = campaign_factory.getHierarchyNodeId(hierarchy_name, parent_id);
 		
 		if (sub_hierarchy_id == -1) {
 			// the sub-hierarchy doesn't exist; create it
-			sub_hierarchy_id = campaign_factory.insertHierarchyNode(campaign.getId(), hierarchy_name, parent_id);
+			sub_hierarchy_id = campaign_factory.insertHierarchyNode(hierarchy_name, parent_id);
 		}
 		
 		return sub_hierarchy_id;
