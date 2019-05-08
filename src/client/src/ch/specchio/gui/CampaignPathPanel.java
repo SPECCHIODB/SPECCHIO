@@ -95,10 +95,13 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 		add(buttonPanel);
 		
 		// add the "add path" button
-		addPathButton = new JButton(ADD_PATH);
-		addPathButton.setActionCommand(ADD_PATH);
-		addPathButton.addActionListener(this);
-		buttonPanel.add(addPathButton);
+		if(local)
+		{
+			addPathButton = new JButton(ADD_PATH);
+			addPathButton.setActionCommand(ADD_PATH);
+			addPathButton.addActionListener(this);
+			buttonPanel.add(addPathButton);
+		}
 		
 		if (allowRemove) {
 			// add the "remove path" button
@@ -248,13 +251,29 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 				}
 				
 				File file = new File(path);
-				if (!local || (file.exists() && file.isDirectory())) {
-					pathListModel.addElement(file);
-					if (path.equals(c.getPath())) {
-						// make this path the default selection
-						pathListField.setSelectedIndex(i);
+				if (local)
+				{
+					if (file.exists() && file.isDirectory()) {
+						pathListModel.addElement(file);
+						if (path.equals(c.getPath())) {
+							// make this path the default selection
+							pathListField.setSelectedIndex(i);
+						}
+						i++;
 					}
-					i++;
+				}
+				else // show remote folders (not on this machine)
+				{
+					if (!(file.exists() && file.isDirectory())) {
+						pathListModel.addElement(file);
+//						if (path.equals(c.getPath())) {
+//							// make this path the default selection
+//							//pathListField.setSelectedIndex(i);
+//						}
+						i++;
+					}					
+					
+					
 				}
 			}
 		}
@@ -270,7 +289,9 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 	public void setEnabled(boolean enabled) {
 		
 		pathListField.setEnabled(enabled);
-		addPathButton.setEnabled(enabled);
+		if (addPathButton != null) {
+			addPathButton.setEnabled(enabled);
+		}
 		if (removePathButton != null) {
 			removePathButton.setEnabled(enabled && pathListField.getSelectedValue() != null);
 		}

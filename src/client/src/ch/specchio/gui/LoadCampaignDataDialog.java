@@ -40,10 +40,10 @@ public class LoadCampaignDataDialog extends JDialog implements ActionListener {
 	private JComboBox campaignCombo;
 	
 	/** path selection label */
-	private JLabel pathListLabel;
+	private JLabel pathListLabel, UnavailablePathListLabel;
 	
 	/** path selection panel */
-	private CampaignPathPanel pathPanel;
+	private CampaignPathPanel pathPanel, unavailablePathPanel;
 	
 	/** "load" button */
 	private JButton loadButton;
@@ -98,7 +98,7 @@ public class LoadCampaignDataDialog extends JDialog implements ActionListener {
 		
 		// add the path selection list
 		constraints.gridx = 0;
-		pathListLabel = new JLabel("Path:");
+		pathListLabel = new JLabel("Available Paths:");
 		rootPanel.add(pathListLabel, constraints);
 		constraints.gridx = 1;
 		pathPanel = new CampaignPathPanel(this, true, false);
@@ -112,6 +112,18 @@ public class LoadCampaignDataDialog extends JDialog implements ActionListener {
 		JLabel infoLabel = new JLabel("Spectral data of the selected campaign will be loaded from the selected directory.");
 		rootPanel.add(infoLabel, constraints);
 		constraints.gridy++;
+		
+		// add the unavailable path list
+		constraints.gridx = 0;
+		constraints.anchor = GridBagConstraints.WEST;
+		UnavailablePathListLabel = new JLabel("Unavailable Paths:");
+		UnavailablePathListLabel.setEnabled(false);
+		rootPanel.add(UnavailablePathListLabel, constraints);
+		constraints.gridx = 1;
+		unavailablePathPanel = new CampaignPathPanel(this, false, false);
+		unavailablePathPanel.setEnabled(false);
+		rootPanel.add(unavailablePathPanel, constraints);
+		constraints.gridy++;		
 		
 		// add a panel for the buttons
 		constraints.gridx = 0;
@@ -214,7 +226,7 @@ public class LoadCampaignDataDialog extends JDialog implements ActionListener {
 		
 		// update the path selection panel
 		pathPanel.setCampaign(campaign);
-		
+		unavailablePathPanel.setCampaign(campaign);
 		
 	}
 	
