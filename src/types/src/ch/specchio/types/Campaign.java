@@ -50,6 +50,9 @@ public abstract class Campaign {
 
 	/** metadata space density */
 	private float metadata_space_density;
+	
+	/** metadata details have been loaded */
+	private boolean metadata_details_loaded;	
 
 
 	/**
@@ -58,6 +61,7 @@ public abstract class Campaign {
 	public Campaign()
 	{
 		this.knownPaths = new ArrayList<String>();
+		setMetadata_details_loaded(false);
 	}
 
 
@@ -354,6 +358,16 @@ public abstract class Campaign {
 
 	public void setAverage_location(Point2D average_location) {
 		this.average_location = average_location;
+	}
+
+
+	public boolean isMetadata_details_loaded() {
+		return metadata_details_loaded;
+	}
+
+
+	public void setMetadata_details_loaded(boolean metadata_details_loaded) {
+		this.metadata_details_loaded = metadata_details_loaded;
 	}
 
 }
