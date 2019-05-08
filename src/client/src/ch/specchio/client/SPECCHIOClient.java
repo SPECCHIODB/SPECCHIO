@@ -324,6 +324,15 @@ public interface SPECCHIOClient {
 	 */
 	public Campaign[] getCampaigns() throws SPECCHIOClientException;
 	
+	/**
+	 * Get all of the campaigns in the database.
+	 * 
+	 * @param load_metadata_details		defines if additional detailed metadata should be loaded
+	 *
+	 * @return an array of campaign objects describing each campaign in the database
+	 */
+	public Campaign[] getCampaigns(boolean load_metadata_details) throws SPECCHIOWebClientException;	
+	
 	
 	/**
 	 * Get calibration ids for a list of spectra.

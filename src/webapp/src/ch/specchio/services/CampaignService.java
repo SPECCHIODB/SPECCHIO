@@ -492,6 +492,28 @@ public class CampaignService extends SPECCHIOService {
 	
 	
 	/**
+	 * Get a detailed list of the campaigns in the database.
+	 * 
+	 * @param campaign_type	the type of campaigns to list
+	 * 
+	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * 
+	 * @return a list of the campaigns in the database with additional detailed metadata per campaign
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	@Path("detailed_list/{campaign_type}")
+	public Campaign[] detailed_list(@PathParam("campaign_type") String campaign_type) throws SPECCHIOFactoryException {
+		
+		SpecchioCampaignFactory factory = new SpecchioCampaignFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		Campaign[] campaigns = factory.getCampaigns(getSecurityContext().isUserInRole(UserRoles.ADMIN), true);
+		factory.dispose();
+		
+		return campaigns;
+		
+	}
+	
+	/**
 	 * Get a list of the campaigns in the database.
 	 * 
 	 * @param campaign_type	the type of campaigns to list
@@ -511,7 +533,7 @@ public class CampaignService extends SPECCHIOService {
 		
 		return campaigns;
 		
-	}
+	}	
 	
 	/**
 	 * Move a hierarchy to a new parent hierarchy within the same campaign. If a hierarchy of the same name exists in the target hierarchy then the hierarchies are merged.

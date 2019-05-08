@@ -640,14 +640,30 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	/**
 	 * Get all of the campaigns in the database.
+	 * 
+	 * @param load_metadata_details		defines if additional detailed metadata should be loaded
+	 *
+	 * @return an array of campaign objects describing each campaign in the database
+	 */
+	public Campaign[] getCampaigns(boolean load_metadata_details) throws SPECCHIOWebClientException {
+		
+		if(load_metadata_details)
+			return getArray(Campaign.class, "campaign", "detailed_list", "specchio");
+		else
+			return getArray(Campaign.class, "campaign", "list", "specchio");
+		
+	}
+	
+	/**
+	 * Get all of the campaigns in the database.
 	 *
 	 * @return an array of campaign objects describing each campaign in the database
 	 */
 	public Campaign[] getCampaigns() throws SPECCHIOWebClientException {
 		
-		return getArray(Campaign.class, "campaign", "list", "specchio");
+		return getCampaigns(false);
 		
-	}
+	}	
 
 	
 	/**
