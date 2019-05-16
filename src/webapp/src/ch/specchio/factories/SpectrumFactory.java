@@ -237,31 +237,39 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			stmt = getStatementBuilder().createStatement();
 			
 			
-			stmt.executeUpdate(query);
+			int no_of_inserted_rows = stmt.executeUpdate(query);
 			
-			ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
-			while (rs.next())
-				copy_spectrum_id = rs.getInt(1);
-			rs.close();
-			
-			stmt.close();		
-			
-			
-			// copy all eav references at spectrum level without inherited eav data 
-			ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectrum_id, false); // false = no inheritance
-			getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copy_spectrum_id, eav_ids);
-			
-			// exchange hierarchy id
-			query = "update " + (this.Is_admin()?"spectrum":"spectrum_view") + " set hierarchy_level_id = " + target_hierarchy_id + " where spectrum_id = " + copy_spectrum_id;
-			
-			stmt = getStatementBuilder().createStatement();
-			stmt.executeUpdate(query);
-			stmt.close();	
-			
-			// update the aggregated info in the upper hierarchies
-			SpectralFileFactory sf_factory = new SpectralFileFactory(this);			
-			sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0);
-			
+			if(no_of_inserted_rows > 0)
+			{
+				ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
+				while (rs.next())
+					copy_spectrum_id = rs.getInt(1);
+				rs.close();
+
+				stmt.close();		
+
+
+				// copy all eav references at spectrum level without inherited eav data 
+				ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectrum_id, false); // false = no inheritance
+				getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copy_spectrum_id, eav_ids);
+
+				// exchange hierarchy id
+				query = "update " + (this.Is_admin()?"spectrum":"spectrum_view") + " set hierarchy_level_id = " + target_hierarchy_id + " where spectrum_id = " + copy_spectrum_id;
+
+				stmt = getStatementBuilder().createStatement();
+				stmt.executeUpdate(query);
+				stmt.close();	
+
+				// update the aggregated info in the upper hierarchies
+				SpectralFileFactory sf_factory = new SpectralFileFactory(this);			
+				sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0);
+			}
+			else
+			{
+				String msg = "Missing user rights: copying spectra is not allowed. Ask the owner of the dataset to be added to the research group.";
+				SPECCHIOFactoryException e = new SPECCHIOFactoryException(msg);
+				throw(e);
+			}
 			
 			
 		} catch (SQLException e) {
@@ -490,6 +498,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					SpectrumQueryCondition condition = new SpectrumQueryCondition(this.current_spectrum_collection_source_table, "spectrum_id");
 					condition.setOperator("=");
 					condition.setValue(query.getTableName()+".spectrum_id");
+					//condition.setTableName(query.getTableName());
 					condition.setQuoteValue(false);
 					query.add_condition(condition);
 				}
@@ -521,7 +530,8 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					// count ids for that standard query
 					ResultSet rs = stmt.executeQuery("select count(*) from " + current_spectrum_collection_target_table);
 					while (rs.next()) {
-					count = rs.getInt(1);
+						count = rs.getInt(1);
+						iteration_result_exists = true;
 					}
 					rs.close();	
 					
@@ -558,44 +568,48 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			}
 			else
 			{
-				// build query of the final table
-				StringBuffer queryBuffer = new StringBuffer();
-				queryBuffer.append(
-					"select " +
-					SB.prefix(current_spectrum_collection_source_table, eav_info_0.primary_id_name) +
-					" from " +
-					current_spectrum_collection_source_table
-				);
-				
-				if (query.getOrderBy() != null && (query.getOrderBy().length() > 0)) {
-					// join to the attribute by which ordering will be done
-					int order_by_attribute_id = getAttributes().get_attribute_id(query.getOrderBy());
-					String order_by_storage_field = getAttributes().get_default_storage_field(order_by_attribute_id);
+				// only get final result if there were any iteration results at all
+				if(this.iteration_result_exists)
+				{
+					// build query of the final table
+					StringBuffer queryBuffer = new StringBuffer();
 					queryBuffer.append(
-						" left join (" +
-							"select spectrum_x_eav.spectrum_id, eav.eav_id, eav." + order_by_storage_field + " " +
-							"from spectrum_x_eav, eav " +
-							"where spectrum_x_eav.eav_id = eav.eav_id " +
-								"and eav.attribute_id = " + order_by_attribute_id +
-						") t " +
-						"on " +
-							SB.prefix("t", eav_info_0.primary_id_name) +
-							"=" +
-							SB.prefix(current_spectrum_collection_source_table, eav_info_0.primary_id_name)
-					);
-					
-					// add "order by" clause
-					queryBuffer.append(" order by " + SB.prefix("t", order_by_storage_field));
+							"select " +
+									SB.prefix(current_spectrum_collection_source_table, eav_info_0.primary_id_name) +
+									" from " +
+									current_spectrum_collection_source_table
+							);
+
+					if (query.getOrderBy() != null && (query.getOrderBy().length() > 0)) {
+						// join to the attribute by which ordering will be done
+						int order_by_attribute_id = getAttributes().get_attribute_id(query.getOrderBy());
+						String order_by_storage_field = getAttributes().get_default_storage_field(order_by_attribute_id);
+						queryBuffer.append(
+								" left join (" +
+										"select spectrum_x_eav.spectrum_id, eav.eav_id, eav." + order_by_storage_field + " " +
+										"from spectrum_x_eav, eav " +
+										"where spectrum_x_eav.eav_id = eav.eav_id " +
+										"and eav.attribute_id = " + order_by_attribute_id +
+										") t " +
+										"on " +
+										SB.prefix("t", eav_info_0.primary_id_name) +
+										"=" +
+										SB.prefix(current_spectrum_collection_source_table, eav_info_0.primary_id_name)
+								);
+
+						// add "order by" clause
+						queryBuffer.append(" order by " + SB.prefix("t", order_by_storage_field));
+					}
+
+
+					ResultSet rs = stmt.executeQuery(queryBuffer.toString());
+					while (rs.next()) {
+						ids.add(rs.getInt(1));
+					}
+					rs.close();		
 				}
-				
-				
-				ResultSet rs = stmt.executeQuery(queryBuffer.toString());
-				while (rs.next()) {
-					ids.add(rs.getInt(1));
-				}
-				rs.close();					
 			}			
-			
+
  			stmt.close();
 		}
 		catch (SQLException ex) {
@@ -689,10 +703,21 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					else
 					{
 						curr_cond = SB.prefix(eav_table_name, "attribute_id") + " = " + getAttributes().get_attribute_id(co.getAttributeName()) +
-								" and " + SB.prefix(eav_table_name, co.getFieldName()) + " " + co.getOperator() + " " + SB.quote_string(co.getStringValue()) +
+								" and " + SB.prefix(eav_table_name, co.getFieldName()) + " " + co.getOperator() + " " + 
+								((co.QuoteValue())?SB.quote_string(co.getStringValue()):co.getStringValue()) +
 								" and " + eav_table_name + ".eav_id = " + primary_x_eav_table_name + ".eav_id"
 								;					
 					}
+					
+					
+					
+//					String queryString = getStatementBuilder().assemble_sql_select_distinct_query(
+//							SB.prefix(primary_x_eav_table_name, primary_key_name),
+//							getStatementBuilder().conc_tables(tables),
+//							curr_cond);
+					
+					
+					
 
 					if(iteration_result_exists && metadata_level == MetaParameter.SPECTRUM_LEVEL)
 					{
@@ -711,6 +736,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 
 					// hierarchies can only positively restrict; if a condition is not met, then it is checked again on spectrum level
+					// if a hierarchy condition is met then it must be translated into the spectrum level
+					// the reason for that is:
+					// - AND selections cannot be done in a single query on hierarchy level in the case of nested hierarchies
+					// - consequentially, the selections must be done iteratively on spectrum level.
 					if(metadata_level == MetaParameter.HIERARCHY_LEVEL)
 					{
 						String countqueryString = getStatementBuilder().assemble_sql_select_query(
@@ -733,23 +762,113 @@ public class SpectrumFactory extends SPECCHIOFactory {
 							// inform condition that it has been met on hierarchy level
 							co.setCondition_handled_at_hierarchy_level(true);
 
-							iteration_result_exists = true; // true for all further queries
+							//iteration_result_exists = true; // true for all further queries
 							
-							
-						}
-						else
-						{
-							// not found; keep the current correction table by effecting a double switch
-							//current_collection_table_no = (current_collection_table_no + 1) % 2;
-							update_collection = false;
-						}
 
+							//						}
+							//						else
+							//						{
+							//							// not found; keep the current correction table by effecting a double switch
+							//							//current_collection_table_no = (current_collection_table_no + 1) % 2;
+							//							update_collection = false;
+							//						}
+
+							// insert into spectrum collection table if any matches were found on hierarchy level
+							try {
+								count = 0;
+
+								String selectqueryString = getStatementBuilder().assemble_sql_select_query(
+										SB.prefix(primary_x_eav_table_name, primary_key_name),
+										getStatementBuilder().conc_tables(tables),
+										curr_cond);
+
+
+								String querycountString = "select count(spectrum_id) from hierarchy_level_x_spectrum where hierarchy_level_id in (" + selectqueryString + ")";
+								queryString = "select spectrum_id from hierarchy_level_x_spectrum where hierarchy_level_id in (" + selectqueryString + ")";
+								//queryString = "select count(spectrum_id) from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";		
+
+								rs = stmt.executeQuery(querycountString.toString());
+								while (rs.next()) {
+									count =rs.getInt(1);
+								}
+								rs.close();		
+								
+								
+								String delete_string = "delete from " + current_collection_target_table;
+								stmt.executeUpdate(delete_string);		
+								
+								queryString = "insert into " + current_collection_target_table + "("+ primary_key_name + ") " + selectqueryString;
+								stmt.executeUpdate(queryString);								
+
+								if(count > 0)
+								{
+									
+									tables = new ArrayList<String>();	
+
+									tables.add("hierarchy_level_x_spectrum");	
+									//tables.add(eav_table_name);
+
+									//String cond_str = "hierarchy_level_id in (" + selectqueryString + ")";
+									String cond_str = "hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
+
+									if(iteration_result_exists)
+									{
+
+										cond_str = cond_str + " and " + SB.prefix("hierarchy_level_x_spectrum", "spectrum_id") + " = " + this.current_spectrum_collection_source_table + "." + "spectrum_id";
+
+										tables.add(this.current_spectrum_collection_source_table);
+
+									}			
+
+
+									String querySelectString = getStatementBuilder().assemble_sql_select_distinct_query(
+											SB.prefix("hierarchy_level_x_spectrum","spectrum_id"),
+											getStatementBuilder().conc_tables(tables),
+											cond_str);	
+									
+									
+									delete_string = "delete from " + this.current_spectrum_collection_target_table;
+									stmt.executeUpdate(delete_string);										
+
+									queryString = "insert into " + this.current_spectrum_collection_target_table + "(spectrum_id) " 
+											+ querySelectString;
+									//										+ "select distinct spectrum_id from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
+									stmt.executeUpdate(queryString);	
+									
+									// for debugging reasons ...							
+									queryString = "select count(*) from " + this.current_spectrum_collection_target_table;
+									
+									count_of_rows_in_target_table = 0;
+									rs = stmt.executeQuery(queryString);
+									while (rs.next()) {
+										count_of_rows_in_target_table =rs.getInt(1);
+									}		
+									rs.close();	
+
+									this.current_spectrum_collection_table_no = (this.current_spectrum_collection_table_no + 1) % 2;
+									this.current_spectrum_collection_source_table = this.current_spectrum_collection_target_table;
+									this.current_spectrum_collection_target_table = SB.prefix(getTempDatabaseName(), "spectrum_collection" + this.current_spectrum_collection_table_no.toString());
+
+
+									iteration_result_exists = true; // true for all further queries
+
+								}
+								// the iteration result status must not be changed here; in case the hierarchies did not turn up a result, the variable iteration_result_exists must remain unchanged
+								//							else
+								//								iteration_result_exists = false;
+
+							}
+							catch (SQLException ex) {
+								ex.printStackTrace();
+							}										
+
+						}
 
 					}
 
 
 					// clear target temp table
-					if(update_collection)
+					if(update_collection && metadata_level == MetaParameter.SPECTRUM_LEVEL)
 					{
 						if(metadata_level == MetaParameter.SPECTRUM_LEVEL)
 						{
@@ -773,10 +892,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 						}		
 						rs.close();	
 //						
-//						if(count > 0)
-//						{								
+						if(count_of_rows_in_target_table > 0)
+						{								
 							iteration_result_exists = true; // true for all further queries
-//						}
+						}
 							
 
 					}
@@ -827,43 +946,43 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			}
 			
 			
-			// convert hierarchy ids into spectrum ids
-			if(metadata_level == MetaParameter.HIERARCHY_LEVEL)
-			{
-
-				// insert into spectrum collection table if any matches were found on hierarchy level
-				try {
-					int count = 0;
-					String queryString = "select count(spectrum_id) from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
-					ResultSet rs = stmt.executeQuery(queryString.toString());
-					while (rs.next()) {
-						count =rs.getInt(1);
-					}
-					rs.close();								
-
-					if(count > 0)
-					{
-						iteration_result_exists = true; // true for all further queries
-
-						queryString = "insert into " + this.current_spectrum_collection_target_table + "(spectrum_id) " 
-								+ "select distinct spectrum_id from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
-						stmt.executeUpdate(queryString);			
-						
-						this.current_spectrum_collection_table_no = (this.current_spectrum_collection_table_no + 1) % 2;
-						this.current_spectrum_collection_source_table = this.current_spectrum_collection_target_table;
-						this.current_spectrum_collection_target_table = SB.prefix(getTempDatabaseName(), "spectrum_collection" + this.current_spectrum_collection_table_no.toString());
-						
-					}
-					// the iteration result status must not be changed here; in case the hierarchies did not turn up a result, the variable iteration_result_exists must remain unchanged
-//					else
-//						iteration_result_exists = false;
-
-				}
-				catch (SQLException ex) {
-					ex.printStackTrace();
-				}				
-
-			}
+//			// convert hierarchy ids into spectrum ids
+//			if(metadata_level == MetaParameter.HIERARCHY_LEVEL)
+//			{
+//
+//				// insert into spectrum collection table if any matches were found on hierarchy level
+//				try {
+//					int count = 0;
+//					String queryString = "select count(spectrum_id) from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
+//					ResultSet rs = stmt.executeQuery(queryString.toString());
+//					while (rs.next()) {
+//						count =rs.getInt(1);
+//					}
+//					rs.close();								
+//
+//					if(count > 0)
+//					{
+//						iteration_result_exists = true; // true for all further queries
+//
+//						queryString = "insert into " + this.current_spectrum_collection_target_table + "(spectrum_id) " 
+//								+ "select distinct spectrum_id from hierarchy_level_x_spectrum where hierarchy_level_id in (select " + primary_key_name + " from " + current_collection_target_table + ")";
+//						stmt.executeUpdate(queryString);			
+//						
+//						this.current_spectrum_collection_table_no = (this.current_spectrum_collection_table_no + 1) % 2;
+//						this.current_spectrum_collection_source_table = this.current_spectrum_collection_target_table;
+//						this.current_spectrum_collection_target_table = SB.prefix(getTempDatabaseName(), "spectrum_collection" + this.current_spectrum_collection_table_no.toString());
+//						
+//					}
+//					// the iteration result status must not be changed here; in case the hierarchies did not turn up a result, the variable iteration_result_exists must remain unchanged
+////					else
+////						iteration_result_exists = false;
+//
+//				}
+//				catch (SQLException ex) {
+//					ex.printStackTrace();
+//				}				
+//
+//			}
 			
 			stmt.close();
 
@@ -897,6 +1016,27 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		return getSpectraMatchingQuery(query);
 		
 	}
+	
+	
+
+	/**
+	 * Get the direct hierarchy id of a single spectrum
+	 * 
+	 * @param ids_d		container holding the identifier of the desired spectrum
+	 * 
+	 * @return hierarchy id
+	 * 
+	 */
+	public int getDirectHierarchyOfSpectrum(ArrayList<Integer> spectrum_id) {
+		
+		ArrayList<Integer> ids = this.getEavServices().getDirectHierarchyIds(spectrum_id);
+		
+		
+		
+		
+		// TODO Auto-generated method stub
+		return ids.get(0);
+	}	
 
 	/**
 	 * Get hierarchy ids, directly above these spectra
@@ -1852,6 +1992,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 		
 	}
+
 
 
 
