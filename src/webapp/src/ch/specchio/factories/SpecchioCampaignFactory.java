@@ -944,6 +944,53 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 		}
 	
 	}
+	
+	/**
+	 * Insert a node into a campaign's hierarchy.
+	 * 
+	 * @param name			the name of the new node
+	 * @param parent_id		the identifier of the new node's parent
+	 * @param campaign_id	the identifier of the campaign (in case the parent id is 0)
+	 * 
+	 * @returns the identifier of the new node
+	 * 
+	 * @throws SPECCHIOFactoryException	the node could not be inserted
+	 */
+	public int insertHierarchyNode(String name, int parent_id, int campaign_id) throws SPECCHIOFactoryException {
+		
+		try {
+			
+			// initialise id to a nonsense value
+			int id = 0;
+						
+			
+			// create an SQL statement
+			Statement stmt = getConnection().createStatement();
+			
+			
+			// insert the node
+			id_and_op_struct p_id_and_op = new id_and_op_struct(parent_id);
+			String query = "INSERT INTO hierarchy_level_view (parent_level_id, campaign_id, name) "
+					+ "VALUES (" + p_id_and_op.id + ", " + campaign_id + ", '" + name + "')";
+			
+			stmt.executeUpdate(query);
+			
+			// get id of inserted node
+			ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
+			while (rs.next())
+				id = rs.getInt(1);
+
+			rs.close();
+			
+			return id;
+			
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+	}	
 
 
 	/**
@@ -951,6 +998,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 * 
 	 * @param name			the name of the new node
 	 * @param parent_id		the identifier of the new node's parent
+	 * @param campaign_id	the identifier of the campaign (in case the parent id is 0)
 	 * 
 	 * @returns the identifier of the new node
 	 * 
@@ -962,6 +1010,8 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			
 			// initialise id to a nonsense value
 			int id = 0, campaign_id = 0;
+			
+			
 			
 			// create an SQL statement
 			Statement stmt = getConnection().createStatement();
@@ -975,20 +1025,8 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			rs.close();
 			
 			// insert the node
-			id_and_op_struct p_id_and_op = new id_and_op_struct(parent_id);
-			query = "INSERT INTO hierarchy_level_view (parent_level_id, campaign_id, name) "
-					+ "VALUES (" + p_id_and_op.id + ", " + campaign_id + ", '" + name + "')";
+			return insertHierarchyNode(name, parent_id, campaign_id);
 			
-			stmt.executeUpdate(query);
-			
-			// get id of inserted node
-			rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
-			while (rs.next())
-				id = rs.getInt(1);
-
-			rs.close();
-			
-			return id;
 			
 		}
 		catch (SQLException ex) {

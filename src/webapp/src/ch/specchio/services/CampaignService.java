@@ -383,7 +383,7 @@ public class CampaignService extends SPECCHIOService {
 		) throws SPECCHIOFactoryException {
 		
 		SpecchioCampaignFactory factory = new SpecchioCampaignFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		int id = factory.insertHierarchyNode(name, parent_id);
+		int id = factory.insertHierarchyNode(name, parent_id, campaign_id);
 		factory.dispose();
 		
 		return new XmlInteger(id);
