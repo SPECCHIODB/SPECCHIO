@@ -51,7 +51,11 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 	private int directly_select_number_of_spectra = 0;
 	
 	boolean restrict_to_view; // restrict shown nodes to views (i.e. user sees only own data)
+	boolean show_only_hierarchies = false;
 	
+
+
+
 	public JComboBox order_by_box;
 	
 	String order_by = "Acquisition Time";
@@ -115,6 +119,15 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 			build_tree();
 		}
 	}
+	
+	public boolean isShow_only_hierarchies() {
+		return show_only_hierarchies;
+	}
+
+	public void setShow_only_hierarchies(boolean show_only_hierarchies) {
+		this.show_only_hierarchies = show_only_hierarchies;
+	}
+	
 	
 	public void build_tree(int campaign_id) throws SPECCHIOClientException
 	{	
@@ -290,6 +303,12 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 	}	
 	
 	
+	public void order_by_box_enabled(boolean enabled)
+	{
+		this.order_by_box.setEnabled(enabled);
+	}
+	
+	
 	public void actionPerformed(ActionEvent e) {
 		
 		if("refresh".equals(e.getActionCommand()))
@@ -429,8 +448,11 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 					
 					// insert the children into the JTree
 					for (int i = 0; i < children.size(); i++) {
-						SpectralDataBrowserNode treeChild = new SpectralDataBrowserNode(this.browser, model, children.get(i));
-						this.add(treeChild);
+						if(!show_only_hierarchies || (show_only_hierarchies && children.get(i).getClass() == hierarchy_node.class))
+						{
+							SpectralDataBrowserNode treeChild = new SpectralDataBrowserNode(this.browser, model, children.get(i));
+							this.add(treeChild);
+						}
 					}
 					
 					if(model!=null)
