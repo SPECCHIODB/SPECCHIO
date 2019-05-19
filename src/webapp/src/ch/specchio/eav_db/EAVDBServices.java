@@ -693,7 +693,6 @@ public class EAVDBServices extends Thread {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
 	 */	
 	public ArrayList<Integer> getDirectHierarchyIds(ArrayList<Integer> spectrum_ids)
 	{
@@ -808,14 +807,14 @@ public class EAVDBServices extends Thread {
 		insert_primary_x_eav(metadata_level, primary_ids, eav_ids);
 	}
 	
-	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, ArrayList<Integer> eav_ids) {
+	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, ArrayList<Integer> eav_ids) throws SQLException {
 		
 		insert_primary_x_eav(metadata_level, primary_id, eav_ids.toArray(new Integer[1]));
 		
 	}
 	
 	
-	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, Integer[] eav_ids)
+	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, Integer[] eav_ids) throws SQLException
 	{	
 		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
 		ArrayList<String> value_strings = new ArrayList<String>();
@@ -837,6 +836,7 @@ public class EAVDBServices extends Thread {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw(e);
 		}
 		
 	}
@@ -1042,6 +1042,43 @@ public class EAVDBServices extends Thread {
 		return get_exclusive_eav_ids(metadata_level, primary_id, attr_id_list, true); // by default include inherited metadata
 	}	
 	
+	// returns all eav_ids of the supplied spectrum_ids or hierarchy_ids
+	synchronized public ArrayList<Integer> get_eav_ids_incl_inheritance(int metadata_level, ArrayList<Integer> primary_ids, ArrayList<Integer> attribute_ids)
+	{
+		
+		ArrayList<Integer> list = new ArrayList<Integer>();
+
+		if(metadata_level == MetaParameter.SPECTRUM_LEVEL)
+		{
+			// search all eav_ids that are stored at all parent hierarchies
+			ArrayList<Integer> hierarchy_ids = getHierarchyIds(primary_ids);
+
+			ArrayList<Integer> hierarchy_eav_ids = get_eav_ids(MetaParameter.HIERARCHY_LEVEL, hierarchy_ids, attribute_ids);
+
+			list.addAll(hierarchy_eav_ids);
+
+			ArrayList<Integer> spectrum_eav_ids = get_eav_ids(MetaParameter.SPECTRUM_LEVEL, primary_ids, attribute_ids);
+
+			list.addAll(spectrum_eav_ids);
+
+		}
+		else
+		{
+			//search all eav_ids that are stored at all parent hierarchies
+			ArrayList<Integer> hierarchy_ids = getParentHierarchyIds(primary_ids);
+			ArrayList<Integer> hierarchy_eav_ids = get_eav_ids(MetaParameter.HIERARCHY_LEVEL, hierarchy_ids);
+			list.addAll(hierarchy_eav_ids);			
+			
+			
+		}
+		
+
+
+		return list;
+
+		
+	}	
+	
 	
 	synchronized public ArrayList<Integer> get_eav_ids(int metadata_level, int primary_id, boolean distinct, String ... attribute_names)
 	{
@@ -1127,7 +1164,9 @@ public class EAVDBServices extends Thread {
 		if (distinct) distinct_str = " distinct ";		
 				
 		String query = "select" + distinct_str +"eav.eav_id from eav eav, " + get_primary_x_eav_tablename(metadata_level) + " " + get_primary_x_eav_tablename(metadata_level) + 
-		" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " + get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")";
+				" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " + 
+				get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")"
+				+ ((!distinct)? " order by FIELD (" + SQL.prefix(get_primary_x_eav_tablename(metadata_level), get_primary_id_name(metadata_level)) + ", "+ primary_ids +")" : "");
 
 		ResultSet rs;
 		try {
@@ -1670,10 +1709,14 @@ public class EAVDBServices extends Thread {
 		
 		int blob_lazy_loading_limit = 1000*1024; 
 		//boolean blob_lazy_loading = false;
+		boolean order_by_eav_id = false; // required in combination with getMetaParameters() in the MetadataFactory and logic_switch = true
+										// ; this is the initiative to use the metadata bulk loader for all metaparameter loading ... but is it faster or slower than the original getMetaParameters()?
+										// -> it actually is not! We'll leave this order code in here though, it might come in handy at some later stage.
 		
 		// step 1: figure which rows will have big blobs that need lazy loading
 		String query = "select eav.eav_id, OCTET_LENGTH(eav.binary_val) from eav eav where " +
 				"eav.eav_id in (" + SQL.conc_ids(metaparameter_ids) + ")";
+		if(order_by_eav_id) query = query + " order by FIELD (eav.eav_id, " + SQL.conc_ids(metaparameter_ids) + ")";
 		
 		Statement stmt = SQL.createStatement();
 		ResultSet rs = stmt.executeQuery(query);		
@@ -1702,194 +1745,202 @@ public class EAVDBServices extends Thread {
 		
 		
 		// non-lazy loading first ...
-		query = "select eav.eav_id, eav.int_val, eav.double_val, eav.string_val, OCTET_LENGTH(eav.binary_val), eav.binary_val, eav.datetime_val, eav.taxonomy_id, eav.spectrum_id, " + 
-		(this.spatially_enabled==true ? "ST_AsText(spatial_val)," : "") + " unit.short_name, unit.unit_id, attr.attribute_id, count(hierarchy_level_id) from (eav eav, attribute attr, unit unit, category cat) left join hierarchy_x_eav hxe on hxe.eav_id = eav.eav_id where " +
-		"eav.eav_id in (" + SQL.conc_ids(standard_metaparameter_ids) + ") and eav.attribute_id = attr.attribute_id and eav.unit_id = unit.unit_id and attr.category_id = cat.category_id group by eav.eav_id";
-		
+		if(standard_metaparameter_ids.size() > 0)
+		{
+			query = "select eav.eav_id, eav.int_val, eav.double_val, eav.string_val, OCTET_LENGTH(eav.binary_val), eav.binary_val, eav.datetime_val, eav.taxonomy_id, eav.spectrum_id, " + 
+					(this.spatially_enabled==true ? "ST_AsText(spatial_val)," : "") + " unit.short_name, unit.unit_id, attr.attribute_id, count(hierarchy_level_id) from (eav eav, attribute attr, unit unit, category cat) left join hierarchy_x_eav hxe on hxe.eav_id = eav.eav_id where " +
+					"eav.eav_id in (" + SQL.conc_ids(standard_metaparameter_ids) + ") and eav.attribute_id = attr.attribute_id and eav.unit_id = unit.unit_id and attr.category_id = cat.category_id group by eav.eav_id ";
+			if(order_by_eav_id) query = query + "order by FIELD (eav.eav_id, " + SQL.conc_ids(standard_metaparameter_ids) + ")";
 
-		stmt = SQL.createStatement();
-		rs = stmt.executeQuery(query);
-		
-		Object int_val, double_val, string_val, datetime_val, spatial_val = null;
-		int binary_val_size;
-		Long taxonomy_id, spectrum_id;
-		Blob binary_val;
-		
-		while (rs.next()) {	
-			
-			MetaParameter mp;
-			
-			int ind = 1;
-			int eav_id = rs.getInt(ind++);
-			int_val = rs.getObject(ind++);
-			double_val = rs.getObject(ind++);
-			string_val = rs.getObject(ind++);
-			binary_val_size = rs.getInt(ind++);
-			
-//			if (binary_val_size> blob_lazy_loading_limit)
-//			{
-//				blob_lazy_loading = true;
-//				binary_val= null;
-////				binary_val = SQL.createBlob();
-////				binary_val.setBytes(1, new byte[1]);
-//				ind++; // skip binary val
-//			}
-//			else
-//			{
-//				blob_lazy_loading = false;
-//				binary_val = rs.getBlob(ind++);			
-//			}
-			
-			binary_val = rs.getBlob(ind++);		
-			
-			datetime_val = rs.getString(ind++);
-			taxonomy_id = rs.getLong(ind++);
-			spectrum_id = rs.getLong(ind++);
-			if(spatially_enabled) spatial_val = rs.getString(ind++);
-			
-			if(taxonomy_id == 0) taxonomy_id = null;
-			if(spectrum_id == 0) spectrum_id = null;
-			
-			//String attribute_name = rs.getString(ind++);
-			String unit_name = rs.getString(ind++);
-			int unit_id = rs.getInt(ind++);
-			int attribute_id = rs.getInt(ind++);
-			int hierarchy_id_count = rs.getInt(ind++);
-			//String category_name = rs.getString(ind++);
-			//String category_value = rs.getString(ind++);
-			//String description = rs.getString(ind++);
-			
-			attribute attr = this.ATR.get_attribute_info(attribute_id);
-			
-			
-			try {
-				if (int_val != null)
-				{
-					mp = MetaParameter.newInstance(attr, int_val);
-				}
-				else if (double_val != null)
-				{
-					mp = MetaParameter.newInstance(attr, double_val);
-				}
-				else if (string_val != null && binary_val == null)
-				{
-//					for(int i=0;i<((String) string_val).length();i++)
-//					{
-////						if(((String) string_val).charAt(i) == 0)
-////						{
-////							StringBuilder myName = new StringBuilder((String) string_val);
-////							myName.setCharAt(i, '_');
-////							string_val = myName.toString();
-////							string_val = "!!!!!!!" + string_val;
-////						}
-//					}
-					
-					mp = MetaParameter.newInstance(attr, string_val);
-				}
-				else if (taxonomy_id != null)
-				{
-					mp = MetaParameter.newInstance(attr, taxonomy_id);
-				}	
-				else if (spectrum_id != null)
-				{
-					mp = MetaParameter.newInstance(attr, spectrum_id);
-				}						
-				else if (datetime_val != null)
-				{
-					DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
-					DateTime d = formatter.parseDateTime((String) datetime_val); 
-					mp = MetaParameter.newInstance(attr, d);
-				}
-				else if (binary_val != null)
-				{
-	
-					// read the object from the database
-					Object value;
-					try {
-						ByteArrayInputStream bis = new ByteArrayInputStream(binary_val.getBytes(1, (int) binary_val.length()));
-						ObjectInputStream in = new ObjectInputStream(bis);
-						value = in.readObject();
-						in.close();
-					}		
-					catch (IOException e) {
-						// don't know what might cause this; re-throw it as an SQL exception
-						throw new SQLException(e);
-					}
-					catch (ClassNotFoundException e) {
-						// unrecognised class stored in the database; shouldn't happen in the ideal world
-						throw new SQLException(e);
-					}
-					
-					// create a meta-parameter object of the appropriate type
-					mp = MetaParameter.newInstance(attr, value);
-					
-					if (string_val != null)
+
+			stmt = SQL.createStatement();
+			rs = stmt.executeQuery(query);
+
+			Object int_val, double_val, string_val, datetime_val, spatial_val = null;
+			int binary_val_size;
+			Long taxonomy_id, spectrum_id;
+			Blob binary_val;
+
+			while (rs.next()) {	
+
+				MetaParameter mp;
+
+				int ind = 1;
+				int eav_id = rs.getInt(ind++);
+				int_val = rs.getObject(ind++);
+				double_val = rs.getObject(ind++);
+				string_val = rs.getObject(ind++);
+				binary_val_size = rs.getInt(ind++);
+
+				//			if (binary_val_size> blob_lazy_loading_limit)
+				//			{
+				//				blob_lazy_loading = true;
+				//				binary_val= null;
+				////				binary_val = SQL.createBlob();
+				////				binary_val.setBytes(1, new byte[1]);
+				//				ind++; // skip binary val
+				//			}
+				//			else
+				//			{
+				//				blob_lazy_loading = false;
+				//				binary_val = rs.getBlob(ind++);			
+				//			}
+
+				binary_val = rs.getBlob(ind++);		
+
+				datetime_val = rs.getString(ind++);
+				taxonomy_id = rs.getLong(ind++);
+				spectrum_id = rs.getLong(ind++);
+				if(spatially_enabled) spatial_val = rs.getString(ind++);
+
+				if(taxonomy_id == 0) taxonomy_id = null;
+				if(spectrum_id == 0) spectrum_id = null;
+
+				//String attribute_name = rs.getString(ind++);
+				String unit_name = rs.getString(ind++);
+				int unit_id = rs.getInt(ind++);
+				int attribute_id = rs.getInt(ind++);
+				int hierarchy_id_count = rs.getInt(ind++);
+				//String category_name = rs.getString(ind++);
+				//String category_value = rs.getString(ind++);
+				//String description = rs.getString(ind++);
+
+				attribute attr = this.ATR.get_attribute_info(attribute_id);
+
+
+				try {
+					if (int_val != null)
 					{
-						// code to find strings that had null values inserted by SQL injections (e.g. \0 due to path names in Windows)
-//						char c = ((String) string_val).charAt(75);
-//						int ic = c;
-//						for(int i=0;i<((String) string_val).length();i++)
-//						{
-//							if(((String) string_val).charAt(i) == 0)
-//							{
-//								StringBuilder myName = new StringBuilder((String) string_val);
-//								myName.setCharAt(i, '_');
-//								string_val = myName.toString();
-//								string_val = "!!!!!!!" + string_val;
-//							}
-//						}
-						mp.setAnnotation((String) string_val);
+						mp = MetaParameter.newInstance(attr, int_val);
 					}
-					
-				}
-//				else if(blob_lazy_loading)
-//				{
-//					mp = MetaParameter.newInstance(attr, new PdfDocument()); // trick to ensure a PDF document metaparameter is created; the actual type of the document will defined upon actual loading
-//					mp.setBlob_lazy_loading(true);
-//				}
-				else if (spatial_val != null)
-				{
-					mp = MetaParameter.newInstance(attr, spatial_val);
-				}											
+					else if (double_val != null)
+					{
+						mp = MetaParameter.newInstance(attr, double_val);
+					}
+					else if (string_val != null && binary_val == null)
+					{
+						//					for(int i=0;i<((String) string_val).length();i++)
+						//					{
+						////						if(((String) string_val).charAt(i) == 0)
+						////						{
+						////							StringBuilder myName = new StringBuilder((String) string_val);
+						////							myName.setCharAt(i, '_');
+						////							string_val = myName.toString();
+						////							string_val = "!!!!!!!" + string_val;
+						////						}
+						//					}
 
-				else
-				{
-					mp = MetaParameter.newInstance(attr, null);					
+						mp = MetaParameter.newInstance(attr, string_val);
+					}
+					else if (taxonomy_id != null)
+					{
+						mp = MetaParameter.newInstance(attr, taxonomy_id);
+					}	
+					else if (spectrum_id != null)
+					{
+						mp = MetaParameter.newInstance(attr, spectrum_id);
+					}						
+					else if (datetime_val != null)
+					{
+						DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+						DateTime d = formatter.parseDateTime((String) datetime_val); 
+						mp = MetaParameter.newInstance(attr, d);
+					}
+					else if (binary_val != null)
+					{
+
+						// read the object from the database
+						Object value;
+						try {
+							ByteArrayInputStream bis = new ByteArrayInputStream(binary_val.getBytes(1, (int) binary_val.length()));
+							ObjectInputStream in = new ObjectInputStream(bis);
+							value = in.readObject();
+							in.close();
+						}		
+						catch (IOException e) {
+							// don't know what might cause this; re-throw it as an SQL exception
+							throw new SQLException(e);
+						}
+						catch (ClassNotFoundException e) {
+							// unrecognised class stored in the database; shouldn't happen in the ideal world
+							throw new SQLException(e);
+						}
+
+						// create a meta-parameter object of the appropriate type
+						mp = MetaParameter.newInstance(attr, value);
+
+						if (string_val != null)
+						{
+							// code to find strings that had null values inserted by SQL injections (e.g. \0 due to path names in Windows)
+							//						char c = ((String) string_val).charAt(75);
+							//						int ic = c;
+							//						for(int i=0;i<((String) string_val).length();i++)
+							//						{
+							//							if(((String) string_val).charAt(i) == 0)
+							//							{
+							//								StringBuilder myName = new StringBuilder((String) string_val);
+							//								myName.setCharAt(i, '_');
+							//								string_val = myName.toString();
+							//								string_val = "!!!!!!!" + string_val;
+							//							}
+							//						}
+							mp.setAnnotation((String) string_val);
+						}
+
+					}
+					//				else if(blob_lazy_loading)
+					//				{
+					//					mp = MetaParameter.newInstance(attr, new PdfDocument()); // trick to ensure a PDF document metaparameter is created; the actual type of the document will defined upon actual loading
+					//					mp.setBlob_lazy_loading(true);
+					//				}
+					else if (spatial_val != null)
+					{
+						mp = MetaParameter.newInstance(attr, spatial_val);
+					}											
+
+					else
+					{
+						mp = MetaParameter.newInstance(attr, null);					
+					}
+
+
+					mp.setEavId(eav_id);
+					mp.setAttributeName(attr.getName());
+					mp.setUnitName(unit_name);
+					mp.setAttributeId(attribute_id);
+					mp.setUnitId(unit_id);
+					mp.setDescription(attr.description);
+					mp.setLevel((hierarchy_id_count == 0) ? MetaParameter.SPECTRUM_LEVEL:MetaParameter.HIERARCHY_LEVEL);
+
+					md.addEntry(mp);
+					md.addEntryId(mp.getEavId());								
+
+
 				}
-				
-				
-				mp.setEavId(eav_id);
-				mp.setAttributeName(attr.getName());
-				mp.setUnitName(unit_name);
-				mp.setAttributeId(attribute_id);
-				mp.setUnitId(unit_id);
-				mp.setDescription(attr.description);
-				mp.setLevel((hierarchy_id_count == 0) ? MetaParameter.SPECTRUM_LEVEL:MetaParameter.HIERARCHY_LEVEL);
-				
-				md.addEntry(mp);
-				md.addEntryId(mp.getEavId());								
-				
-				
-			}
-			catch (java.lang.NullPointerException e) {
-				
-				System.out.println("EAV Null value read from DB for field " + attr.getName() + "!");
+				catch (java.lang.NullPointerException e) {
+
+					System.out.println("EAV Null value read from DB for field " + attr.getName() + "!");
+				}			
+				catch (MetaParameterFormatException e) {
+					// should never happen but let's re-throw it as an SQL exception just in case.
+					throw new SQLException(e);
+				}
+
+
 			}			
-			catch (MetaParameterFormatException e) {
-				// should never happen but let's re-throw it as an SQL exception just in case.
-				throw new SQLException(e);
-			}
-			
-
-		}			
-		rs.close();
-		stmt.close();
+			rs.close();
+			stmt.close();
 		
+		}
 		
 		
 		// lazy loading
+		if(lazy_metaparameter_ids.size() > 0)
+		{
 		query = "select eav.eav_id, OCTET_LENGTH(eav.binary_val), unit.short_name, unit.unit_id, attr.attribute_id from eav eav, attribute attr, unit unit, category cat where " +
 		"eav.eav_id in (" + SQL.conc_ids(lazy_metaparameter_ids) + ") and eav.attribute_id = attr.attribute_id and eav.unit_id = unit.unit_id and attr.category_id = cat.category_id";
+		
+		if(order_by_eav_id) query = query + "order by FIELD (eav.eav_id, " + SQL.conc_ids(lazy_metaparameter_ids) + ")";
 		
 
 		stmt = SQL.createStatement();
@@ -1901,7 +1952,7 @@ public class EAVDBServices extends Thread {
 
 				int ind = 1;
 				int eav_id = rs.getInt(ind++);
-				binary_val_size = rs.getInt(ind++);
+				int binary_val_size = rs.getInt(ind++);
 
 				String unit_name = rs.getString(ind++);
 				int unit_id = rs.getInt(ind++);
@@ -1938,6 +1989,7 @@ public class EAVDBServices extends Thread {
 				}
 
 			}
+		}
 
 
 		
