@@ -36,6 +36,7 @@ import ch.specchio.types.MatlabAdaptedArrayList;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetadataSelectionDescriptor;
 import ch.specchio.types.MetadataUpdateDescriptor;
+import ch.specchio.types.MetaparameterStatistics;
 import ch.specchio.types.Picture;
 import ch.specchio.types.PictureTable;
 import ch.specchio.types.Reference;
@@ -1095,6 +1096,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * Get metaparameter value statistics for spectrum ids and EAV attribute
+	 * 
+	 * @param ids		spectrum ids
+	 * @param attribute_name		attribute name
+	 * 
+	 * @return structure with Metaparameter holding statistic values	 
+	 */
+	public MetaparameterStatistics getMetaparameterStatistics(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOWebClientException{
+		return realClient.getMetaparameterStatistics(ids, attribute_name);
+	}
+	
+	
 	
 	
 	/**
@@ -1436,6 +1450,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getSpectrumIdsMatchingQuery(query);
 		
 	}
+	
+	
+	/**
+	 * Get the identifiers of all spectra directly belonging to a hierarchy
+	 * 
+	 * @param hierarchy_id	the hierarchy_id
+	 * 
+	 * @return a list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) throws SPECCHIOClientException{
+		
+		return realClient.getDirectSpectrumIdsOfHierarchy(hierarchy_id);
+	}
+
 	
 	
 	/**

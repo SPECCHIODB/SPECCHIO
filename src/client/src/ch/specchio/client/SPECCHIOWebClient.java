@@ -53,6 +53,7 @@ import ch.specchio.types.MatlabAdaptedArrayList;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetadataSelectionDescriptor;
 import ch.specchio.types.MetadataUpdateDescriptor;
+import ch.specchio.types.MetaparameterStatistics;
 import ch.specchio.types.Picture;
 import ch.specchio.types.PictureTable;
 import ch.specchio.types.Reference;
@@ -1344,6 +1345,34 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return out_list;		
 	}	
 	
+	/**
+	 * Get metaparameter value statistics for spectrum ids and EAV attribute
+	 * 
+	 * @param ids		spectrum ids
+	 * @param attribute_name		attribute name
+	 * 
+	 * @return structure with Metaparameter holding statistic values	 
+	 */
+	public MetaparameterStatistics getMetaparameterStatistics(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOWebClientException{
+		
+		MetaparameterStatistics mps;
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(ids, attribute_name);
+
+		try {
+			mps = postForObject(MetaparameterStatistics.class, "metadata", "get_metaparameter_statistics", mds);
+		} catch (SPECCHIOWebClientException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			System.out.println(e.getDetails());
+			throw e;
+		}
+		
+		
+		return mps;
+		
+	}
+	
+	
 	
 	/**
 	 * Get values for spectrum ids and EAV attribute (non-distinct values by default)
@@ -1809,6 +1838,26 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return ids;
 	}
+	
+	
+	/**
+	 * Get the identifiers of all spectra directly belonging to a hierarchy
+	 * 
+	 * @param hierarchy_id	the hierarchy_id
+	 * 
+	 * @return a list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) throws SPECCHIOClientException{
+		
+		
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		List<Integer> ids_ = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "getDirectSpectrumIdsOfHierarchy", Integer.toString(hierarchy_id)));		
+		
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		
+		ids.addAll(ids_);
+		return ids;
+	}	
 	
 	
 	/**
