@@ -24,6 +24,7 @@ import ch.specchio.types.ConflictTable;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetadataSelectionDescriptor;
 import ch.specchio.types.MetadataUpdateDescriptor;
+import ch.specchio.types.MetaparameterStatistics;
 import ch.specchio.types.Taxonomy;
 import ch.specchio.types.TaxonomyNodeObject;
 import ch.specchio.types.attribute;
@@ -266,6 +267,66 @@ public class MetadataService extends SPECCHIOService {
 		return mp_list.toArray(new MetaParameter[mp_list.size()]);
 		
 	}	
+	
+	
+	/**
+	 * Get the list of metaparameter values for given spectrum ids and attribute.
+	 * 
+	 * @param ms_d	metadata selection descriptor
+	 * 
+	 * @return an array of all the values
+	 * 
+	 * @throws SPECCHIOFactoryException	could not connect to the database, or invalid value for attribute name
+	 */
+	@POST
+	@Path("get_metaparameters")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public MetaParameter[] get_metaparameters(MetadataSelectionDescriptor ms_d) {
+		
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		
+		if(ms_d.getAttribute_id() == 0)
+		{
+			ms_d.setAttribute_id(factory.getAttributes().get_attribute_id(ms_d.getAttributeName()));			
+		}		
+		
+		List<MetaParameter> mp_list = factory.getMetaParameters(ms_d.getLevel(), ms_d.getIds(), ms_d.getAttribute_id(), ms_d.getDistinct());
+		factory.dispose();
+		
+		return mp_list.toArray(new MetaParameter[mp_list.size()]);
+		
+	}		
+	
+	
+	/**
+	 * Get statistics of metaparameter values for given spectrum ids and attribute.
+	 * 
+	 * @param ms_d	metadata selection descriptor
+	 * 
+	 * @return an object with min, mean and max values stored as Metaparameters
+	 * 
+	 * @throws SPECCHIOFactoryException	could not connect to the database, or invalid value for attribute name
+	 */
+	@POST
+	@Path("get_metaparameter_statistics")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public MetaparameterStatistics get_metaparameter_statistics(MetadataSelectionDescriptor ms_d) {
+		
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		
+		if(ms_d.getAttribute_id() == 0)
+		{
+			ms_d.setAttribute_id(factory.getAttributes().get_attribute_id(ms_d.getAttributeName()));			
+		}		
+		
+		MetaparameterStatistics mps = factory.getMetaParameterStatistics(ms_d.getLevel(), ms_d.getIds(), ms_d.getAttribute_id());
+		factory.dispose();
+		
+		return mps;
+		
+	}			
 	
 	/**
 	 * Get the list of list of metaparameter values for given spectrum ids and attributes.
