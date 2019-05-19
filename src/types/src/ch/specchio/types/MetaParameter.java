@@ -1,5 +1,7 @@
 package ch.specchio.types;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -10,7 +12,7 @@ import ch.specchio.jaxb.XmlMetaParameterValueAdapter;
  * This class represents a metadata parameter.
  */
 @XmlRootElement(name="meta_parameter")
-@XmlSeeAlso({MetaDate.class,MetaDocument.class,MetaFile.class,MetaImage.class,MetaMatrix.class,MetaSimple.class,MetaTaxonomy.class,MetaLink.class,MetaBoolean.class,MetaSpatialGeometry.class,MetaSpatialPoint.class,MetaSpatialPolygon.class,MetaSpatialPolyline.class})
+@XmlSeeAlso({MetaDate.class,MetaDocument.class,MetaFile.class,MetaImage.class,MetaMatrix.class,MetaSimple.class,MetaTaxonomy.class,MetaLink.class,MetaBoolean.class,MetaSpatialGeometry.class,MetaSpatialPoint.class,MetaSpatialPolygon.class,MetaSpatialPolyline.class, SerialisableBufferedImage.class})
 public abstract class MetaParameter {
 	
 	public static final int SPECTRUM_LEVEL = 0;
