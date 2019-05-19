@@ -676,7 +676,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			
 			
 			// try to find the filepath that fits the top directory
-			String query = "select path from campaign_path_view where path like '%" + parts.get(parts.size()-1) + "'";
+			String query = "select path from " + ((Is_admin())? "campaign_path" : "campaign_path_view") + " where path like '%" + parts.get(parts.size()-1) + "'";
 			ResultSet rs = stmt.executeQuery(query);
 			
 			while (rs.next()) {
@@ -693,7 +693,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			
 			path = folder_path;
 			
-			for(int i=0; i < parts.size()-1;i++)
+			for(int i=parts.size()-2; i >=0;i--)
 			{
 				
 				path = path + delimiter + parts.get(i);
