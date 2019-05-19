@@ -324,7 +324,9 @@ public class ErrorDialog extends JDialog implements ActionListener {
 							
 							org.jsoup.nodes.Element descr2 = body.select("pre").first();
 							
-							String details = descr2.text();
+							String details = "";
+							if(descr2 != null) details = descr2.text();
+							
 							org.jsoup.nodes.Node error_description = description.getAllElements().get(0).childNode(1);
 							String error = error_description.toString();
 							
