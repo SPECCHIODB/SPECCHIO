@@ -441,29 +441,36 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return spaces.toArray(new Space[spaces.size()]);
 	}
-	
-	
+		
 	/**
-	 * Get the spectrum factor table.
+	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
 	 * 
-	 * @param factor_d	the spectrum (position 1) and calibration (position 2) identifiers desired
+	 * @param spectrum_ids		the identifiers of the desired spectra
 	 * 
-	 * @return a table mapping spectra to factors
+	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException database error
-	 */
-	@POST
-	@Path("getSpectrumFactorTable")
-	@Consumes(MediaType.APPLICATION_XML)
-	@Produces(MediaType.APPLICATION_XML)
-	public SpectrumFactorTable getSpectrumFactorTable(SpectrumIdsDescriptor factor_d) throws SPECCHIOFactoryException {
+	 * @throws SPECCHIOFactoryException	
+	 */	
+	@GET
+	@Path("getDirectSpectrumIdsOfHierarchy/{hierarchy_id: [0-9]+}")
+	@Produces(MediaType.APPLICATION_XML)	
+	public XmlInteger[] getDirectSpectrumIdsOfHierarchy(@PathParam("hierarchy_id") int hierarchy_id) throws SPECCHIOFactoryException {
 		
 		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		SpectrumFactorTable table = factory.getSpectrumFactorTable(factor_d.getSpectrumIds(1), factor_d.getSpectrumIds(2));
+		List<Integer> ids = factory.getDirectSpectrumIdsOfHierarchy(hierarchy_id);
 		factory.dispose();
 		
-		return table;
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);		
 		
+		
+//		@GET
+//		@Path("get/{spectrum_id: [0-9]+}/{prepare_metadata}")
+//		@Produces(MediaType.APPLICATION_XML)
+//		public Spectrum get(
+//				@PathParam("spectrum_id") int spectrum_id,
+//				@PathParam("prepare_metadata") String prepare_metadata		
+
 	}
 	
 	/**
