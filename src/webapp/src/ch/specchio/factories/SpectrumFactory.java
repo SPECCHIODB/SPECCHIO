@@ -1994,6 +1994,40 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	}
 
 
+	public List<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) {
+		
+		
+		ArrayList<Integer> ids = new ArrayList<Integer>();	
+		
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+		
+			String query = "select spectrum.spectrum_id " +
+					"from spectrum spectrum " +
+					"where spectrum.hierarchy_level_id = " + hierarchy_id;
+			
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();							
+		
+			stmt.close();			
+			
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}			
+		
+		return ids;
+
+	}
+
+
+
+
 
 
 
