@@ -1,10 +1,16 @@
 package ch.specchio.file.reader.campaign;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.ListIterator;
+
+import org.joda.time.DateTime;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
@@ -14,20 +20,25 @@ import ch.specchio.spaces.Space;
 import ch.specchio.types.Calibration;
 import ch.specchio.types.Instrument;
 import ch.specchio.types.InstrumentDescriptor;
+import ch.specchio.types.MetaDate;
 import ch.specchio.types.MetaParameterFormatException;
+import ch.specchio.types.MetaparameterStatistics;
 import ch.specchio.types.SpecchioMessage;
 import ch.specchio.types.SpectralFile;
 import ch.specchio.types.SpectralFileInsertResult;
 import ch.specchio.types.SpectralFiles;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.attribute;
+import ch.specchio.types.hierarchy_node;
 
 public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	
 	private SPECCHIOClient specchio_client;
 	private SpectralFileLoader sfl;
 
-	private int root_hierarchy_id;
+	private int root_hierarchy_id = 0;
+	private boolean load_existing_hierarchy = false;
+	private boolean simple_delta_loading = true;
 	
 	ArrayList<String> file_errors = new ArrayList<String>();
 	private int successful_file_counter;
@@ -37,6 +48,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 	private ArrayList<SpectralFileLoader> loaders_of_new_instruments = new ArrayList<SpectralFileLoader>();
 	private File flox_rox_cal_file;
+	private FileTime lastModifiedTime;
 
 	public SpecchioCampaignDataLoader(CampaignDataLoaderListener listener, SPECCHIOClient specchio_client) {
 		super(listener);		
@@ -59,14 +71,15 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			if(listener != null)
 				listener.campaignDataLoading();
 			
-			// update the campaign data on the server
-			specchio_client.updateCampaign(campaign);
+			// update the campaign data on the server (only if a new root path is added; loading an existing hierarchy does not add a new path
+			if(!load_existing_hierarchy) specchio_client.updateCampaign(campaign);
 
 			// get the data path for this campaign
 			File f = new File(campaign.getPath());
 
-			// now we create the root hierarchy for this campaign
-			root_hierarchy_id = insert_hierarchy(f.getName(), 0);
+			// now we create the root hierarchy for this campaign (only needed if we are loading root nodes here)
+			if(!load_existing_hierarchy) root_hierarchy_id = insert_hierarchy(f.getName(), 0);
+			
 			load_directory(root_hierarchy_id, f, false);
 			
 			// force a refresh of the client cache for potentially new sensors, instruments and calibrations
@@ -77,7 +90,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			
 			// tell the listener that we're finished
 			if(listener != null)
-				listener.campaignDataLoaded(parsed_file_counter, successful_file_counter, spectrum_counter, this.file_errors);
+				listener.campaignDataLoaded(parsed_file_counter, successful_file_counter, spectrum_counter, this.file_errors, simple_delta_loading);
 
 		}
 		catch (SPECCHIOClientException ex) {
@@ -102,7 +115,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	// otherwise parent_id is the hierarchy_level_id of the parent directory
 	// The dir is a File object that points to the directory on the
 	// file system to be read
-	void load_directory(int parent_id, File dir, boolean parent_garbage_flag) throws SPECCHIOClientException, FileNotFoundException {
+	void load_directory(int parent_id, File dir, boolean parent_garbage_flag) throws SPECCHIOClientException, IOException {
 		int hierarchy_id = 0;
 		ArrayList<File> files, directories;
 		SpectralFile spec_file;
@@ -118,7 +131,11 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		// get the names of all files in dirs in the current dir. NOTE: the order of the files is not guaranteed
 		String[] whole_content = dir.list();
 		if (whole_content == null) {
-			throw new FileNotFoundException("The campaign directory " + dir.toString() + " does not exist.");
+			if(load_existing_hierarchy)
+				throw new FileNotFoundException("The directory " + dir.toString() + " does not exist.\n"+
+						"Note that automatically generated folders, e.g. Reflectance, can not be selected as loading point.");
+			else
+				throw new FileNotFoundException("The campaign directory " + dir.toString() + " does not exist.");
 		}
 
 		// File filter
@@ -185,81 +202,238 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 			load_directory(hierarchy_id, curr_dir, parent_garbage_flag);
 		}
+		
+		
 
 		// load each file using the spectral
 		// file loader
 		if (files.size() > 0) {	
 
 
+			// get modification date of this directory
+			try {
+				lastModifiedTime = Files.getLastModifiedTime(dir.toPath(), LinkOption.NOFOLLOW_LINKS);
+
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IOException("Could not read last-modified-time of campaign directory " + dir.toString());
+			}
+			
+			// get spectrum_ids of the current hierarchy	
+			//ArrayList<Integer> spectrum_ids = specchio_client.getDirectSpectrumIdsOfHierarchy(parent_id);
+			
+			hierarchy_node node = new hierarchy_node();
+			node.setId(parent_id);
+					
+			List<Integer> spectrum_ids_ = specchio_client.getSpectrumIdsForNode(node);        
+			
+			ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
+			spectrum_ids.addAll(spectrum_ids_);
+			
+			// get the latest insert time stamp of the spectral files contained in this directory
+			MetaparameterStatistics stats = null;
+			boolean new_data_available = true;
+			try {
+				if(spectrum_ids.size() > 0) // handling of yet empty hierarchies
+				{
+					stats = specchio_client.getMetaparameterStatistics(spectrum_ids, "Loading Time");
+
+					// check if this folder was modified after the last load
+					DateTime max_file_load_time = (DateTime) ((MetaDate) stats.getMp_max()).getValue();
+					new_data_available = lastModifiedTime.toMillis() > max_file_load_time.getMillis();	
+				}
+			}
+			catch (SPECCHIOClientException ex) {
+				// ignore if this is caused by an old server version
+				if(ex.getUserMessage().contains("get_metaparameter_statistics returned a response status of 404 Not Found"))
+				{
+					// ignore
+				}
+				else
+					throw ex; // rethrow as this is another error
+			}
 
 			// get the spectral file loader needed for this directory
 			// sfl = get_spectral_file_loader(files);
 
 
+			if(simple_delta_loading == false || new_data_available)
+			{
 
-			ArrayList<SpectralFile> spectral_file_list = new ArrayList<SpectralFile>();		
-			//ArrayList<SpectralFileLoader> spectral_file_loader_list = new ArrayList<SpectralFileLoader>();	
-			Hashtable<String, SpectralFileLoader> spectral_file_loader_hash = new Hashtable<String, SpectralFileLoader>();
+				ArrayList<SpectralFile> spectral_file_list = new ArrayList<SpectralFile>();		
+				//ArrayList<SpectralFileLoader> spectral_file_loader_list = new ArrayList<SpectralFileLoader>();	
+				Hashtable<String, SpectralFileLoader> spectral_file_loader_hash = new Hashtable<String, SpectralFileLoader>();
 
-			// iterate over the files
-			ListIterator<File> file_li = files.listIterator();
+				// iterate over the files
+				ListIterator<File> file_li = files.listIterator();
 
-			while(file_li.hasNext()) {
-				File file = file_li.next();
+				while(file_li.hasNext()) {
+					File file = file_li.next();
 
-				ArrayList<File> this_file = new ArrayList<File>(); // overkill ... change to single object later ...
+					ArrayList<File> this_file = new ArrayList<File>(); // overkill ... change to single object later ...
 
-				this_file.add(file);
-				
-				
+					this_file.add(file);
 
-				sfl = get_spectral_file_loader(this_file);
 
-				if (sfl != null) {
 
-					try {
+					sfl = get_spectral_file_loader(this_file);
 
-						// the loader can return null, e.g. if ENVI files are
-						// read
-						// and a body (*.slb) is passed.
-						// In such a case no spectrum is inserted.
-						spec_file = sfl.load(file);
-						if (spec_file != null && spec_file.getNumberOfSpectra() > 0)
-						{
-							if(spec_file.getFileErrorCode() != SpectralFile.UNRECOVERABLE_ERROR)
+					if (sfl != null) {
+
+						try {
+
+							// the loader can return null, e.g. if ENVI files are
+							// read
+							// and a body (*.slb) is passed.
+							// In such a case no spectrum is inserted.
+							spec_file = sfl.load(file);
+							if (spec_file != null && spec_file.getNumberOfSpectra() > 0)
 							{
-								spec_file.setGarbageIndicator(is_garbage);
+								if(spec_file.getFileErrorCode() != SpectralFile.UNRECOVERABLE_ERROR)
+								{
+									spec_file.setGarbageIndicator(is_garbage);
 
-								// add to file list
-								spectral_file_list.add(spec_file);
-								
-								// keep a copy of the file loader for new ASD files to insert calibration data later on
-								if(spec_file.getAsdV7())
-								{
-									Integer id = spec_file.get_asd_instr_and_cal_fov_identifier();
-									if(!spectral_file_loader_hash.containsKey(id.toString()))
-										spectral_file_loader_hash.put(id.toString(), sfl);
-								
+									// add to file list
+									spectral_file_list.add(spec_file);
+
+									// keep a copy of the file loader for new ASD files to insert calibration data later on
+									if(spec_file.getAsdV7())
+									{
+										Integer id = spec_file.get_asd_instr_and_cal_fov_identifier();
+										if(!spectral_file_loader_hash.containsKey(id.toString()))
+											spectral_file_loader_hash.put(id.toString(), sfl);
+
+									}
+
+									// keep a copy of the file loader for FLoX and RoX instruments
+									if(sfl instanceof JB_FileLoader)
+									{
+										String instrument_name = spec_file.getInstrumentName();
+
+										if(!spectral_file_loader_hash.containsKey(instrument_name))
+											spectral_file_loader_hash.put(instrument_name, sfl);
+									}
+
 								}
-								
-								// keep a copy of the file loader for FLoX and RoX instruments
-								if(sfl instanceof JB_FileLoader)
+								else
 								{
-									String instrument_name = spec_file.getInstrumentName();
-									
-									if(!spectral_file_loader_hash.containsKey(instrument_name))
-										spectral_file_loader_hash.put(instrument_name, sfl);
+									// serious error
+									// add the message to the list of all errors
+									// concatenate all errors into one message
+									StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
+
+									for (SpecchioMessage error : spec_file.getFileErrors()) {
+
+										buf.append("\n\t");
+
+										buf.append(error.toString());
+									}
+
+									buf.append("\n");
+
+									// add the message to the list of all errors
+									this.file_errors.add(buf.toString());								
+
 								}
+								file_counter++;
 
 							}
+
+
+							parsed_file_counter++;
+
+							if(listener != null)
+								listener.campaignDataLoadFileCount(file_counter, spectrum_counter);
+						}
+						catch (IOException ex) {
+							if(listener != null)
+								listener.campaignDataLoadError(file + ": " + ex.getMessage());
 							else
+								System.out.println(ex.getMessage());
+
+						}					
+						catch (MetaParameterFormatException ex) {
+							if(listener != null)
+								listener.campaignDataLoadError(file + ": " + ex.getMessage());
+							else
+								System.out.println(ex.getMessage());						
+						}				
+
+					}
+				}
+
+				if (spectral_file_list.size() > 0)
+				{
+
+					// check existence of all spectral files
+					SpectralFiles sfs = new SpectralFiles();
+
+					ArrayList<SpectralFile> spectral_light_file_list = new ArrayList<SpectralFile>();
+
+					// create lightweight objects
+					ListIterator<SpectralFile> sf_li = spectral_file_list.listIterator();
+
+					while(sf_li.hasNext()) {
+						spec_file = sf_li.next();		
+						SpectralFile light_clone = new SpectralFile(spec_file);
+						light_clone.setHierarchyId(parent_id);
+						light_clone.setCampaignId(campaign.getId());
+						light_clone.setCampaignType(campaign.getType());	
+
+						spectral_light_file_list.add(light_clone);
+					}
+
+					sfs.setSpectral_file_list(spectral_light_file_list);
+					sfs.setCampaignId(campaign.getId());
+					sfs.setCampaignType(campaign.getType());	
+
+					boolean[] exists_array = specchio_client.spectralFilesExist(sfs);
+
+
+					// insert spectral files
+
+					sf_li = spectral_file_list.listIterator();
+
+					int index = 0;
+
+					while(sf_li.hasNext()) {
+						spec_file = sf_li.next();		
+
+						if (exists_array[index] == false)
+						{
+
+							SpectralFileInsertResult insert_result = new SpectralFileInsertResult();
+
+							insert_result = insert_spectral_file(spec_file, parent_id);
+
+							spectrum_counter += insert_result.getSpectrumIds().size();
+
+							// check if there was a new instrument inserted and keep in new list for updates of calibration
+							// can only do so for radiances
+							if(spec_file.getAsdV7() && spec_file.getAsdV7RadianceFlag() && !insert_result.getAdded_new_instrument().isEmpty() && insert_result.getAdded_new_instrument().get(0)) // currently only for new ASD files, hence, always first entry
 							{
-								// serious error
-								// add the message to the list of all errors
+								Integer id = spec_file.get_asd_instr_and_cal_fov_identifier();
+
+								SpectralFileLoader loader = spectral_file_loader_hash.get(id.toString());
+								loader.insert_result = insert_result;
+
+								loaders_of_new_instruments.add(loader);
+							}
+
+							if(insert_result.getSpectrumIds().size() > 0) successful_file_counter++;
+
+							insert_result.addErrors(spec_file.getFileErrors()); // compile into one list of errors							
+							//				if(insert_result.getErrors().size() == 0) successful_file_counter++;
+
+							// check on file errors
+							if(insert_result.getErrors().size() > 0)
+							{
 								// concatenate all errors into one message
 								StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
 
-								for (SpecchioMessage error : spec_file.getFileErrors()) {
+								for (SpecchioMessage error : insert_result.get_nonredudant_errors()) {
 
 									buf.append("\n\t");
 
@@ -269,207 +443,99 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 								buf.append("\n");
 
 								// add the message to the list of all errors
-								this.file_errors.add(buf.toString());								
-								
-							}
-							file_counter++;
+								this.file_errors.add(buf.toString());
+
+							}	
+
+
+							if(listener != null)
+								listener.campaignDataLoadFileCount(file_counter, spectrum_counter);
+
+
 
 						}
 
+						index = index + 1;
 
-						parsed_file_counter++;
-
-						if(listener != null)
-							listener.campaignDataLoadFileCount(file_counter, spectrum_counter);
 					}
-					catch (IOException ex) {
-						if(listener != null)
-							listener.campaignDataLoadError(file + ": " + ex.getMessage());
-						else
-							System.out.println(ex.getMessage());
-						
-					}					
-					catch (MetaParameterFormatException ex) {
-						if(listener != null)
-							listener.campaignDataLoadError(file + ": " + ex.getMessage());
-						else
-							System.out.println(ex.getMessage());						
-					}				
-					
-				}
-			}
-			
-			if (spectral_file_list.size() > 0)
-			{
 
-				// check existence of all spectral files
-				SpectralFiles sfs = new SpectralFiles();
+					// insert new instrument calibration factors if available: only ASD new binary file version till now ...
+					//				if(loaders_of_new_instruments.size()>0)
+					//				{
+					//					for(SpectralFileLoader loader : loaders_of_new_instruments)
+					//					{
+					//						// get involved instrument id by getting the metadata of the inserted spectrum
+					//						Spectrum s = specchio_client.getSpectrum(loader.insert_result.getSpectrumIds().get(0), false);
+					//						
+					//						ASD_FileFormat_V7_FileLoader loader_ = (ASD_FileFormat_V7_FileLoader) loader;
+					//						
+					//						// lamp
+					//						Calibration c = new Calibration();																		
+					//						c.setInstrumentId(s.getInstrumentId());
+					//						c.setCalibrationNumber(loader_.getSpec_file().getCalibrationSeries());
+					//						c.setName("LMP");
+					//						c.setComments("Calibration Lamp Radiance");
+					//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.Radiance).getUnitId());
+					//						
+					//						double[] doubleArray = new double[loader_.getSpec_file().getNumberOfChannels(0)];
+					//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
+					//						    doubleArray[i] = loader_.lamp_calibration_data[0][i];  // no casting needed
+					//						}
+					//						
+					//						c.setFactors(doubleArray);						
+					//						
+					//						specchio_client.insertInstrumentCalibration(c);
+					//						
+					//						
+					//						// reference panel
+					//						c.setName("BSE");
+					//						c.setComments("Calibration Reference Panel Reflectance");
+					//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.Reflectance).getUnitId());
+					//						
+					//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
+					//						    doubleArray[i] = loader_.base_calibration_data[0][i];  // no casting needed
+					//						}
+					//						
+					//						c.setFactors(doubleArray);												
+					//						specchio_client.insertInstrumentCalibration(c);
+					//						
+					//						// Digital Numbers obtained during calibration
+					//						c.setName("DN");
+					//						c.setComments("Instrument Digital Numbers during Calibration for FOV =" + loader_.getSpec_file().getForeopticDegrees() + " degrees");
+					//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.DN).getUnitId());
+					//						
+					//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
+					//						    doubleArray[i] = loader_.fibre_optic_data[0][i];  // no casting needed
+					//						}
+					//						
+					//						c.setFactors(doubleArray);		
+					//						c.setField_of_view(loader_.getSpec_file().getForeopticDegrees());
+					//						specchio_client.insertInstrumentCalibration(c);
+					//							
+					//					}					
+					//					
+					//				}
 
-				ArrayList<SpectralFile> spectral_light_file_list = new ArrayList<SpectralFile>();
+					// check if new calibrations must be added for ASDs and other instruments that have gains included (like the FLoX)
+					Enumeration<SpectralFileLoader> file_loaders = spectral_file_loader_hash.elements();
+					while(file_loaders.hasMoreElements())
+					{					
+						SpectralFileLoader loader = file_loaders.nextElement();
+						if(loader.getSpec_file().getAsdV7RadianceFlag()) // only for radiance data
+							insert_instrument_calibration_if_required(loader);
 
-				// create lightweight objects
-				ListIterator<SpectralFile> sf_li = spectral_file_list.listIterator();
-
-				while(sf_li.hasNext()) {
-					spec_file = sf_li.next();		
-					SpectralFile light_clone = new SpectralFile(spec_file);
-					light_clone.setHierarchyId(parent_id);
-					light_clone.setCampaignId(campaign.getId());
-					light_clone.setCampaignType(campaign.getType());	
-
-					spectral_light_file_list.add(light_clone);
-				}
-
-				sfs.setSpectral_file_list(spectral_light_file_list);
-				sfs.setCampaignId(campaign.getId());
-				sfs.setCampaignType(campaign.getType());	
-
-				boolean[] exists_array = specchio_client.spectralFilesExist(sfs);
-
-
-				// insert spectral files
-
-				sf_li = spectral_file_list.listIterator();
-
-				int index = 0;
-
-				while(sf_li.hasNext()) {
-					spec_file = sf_li.next();		
-
-					if (exists_array[index] == false)
-					{
-
-						SpectralFileInsertResult insert_result = new SpectralFileInsertResult();
-
-						insert_result = insert_spectral_file(spec_file, parent_id);
-
-						spectrum_counter += insert_result.getSpectrumIds().size();
-						
-						// check if there was a new instrument inserted and keep in new list for updates of calibration
-						// can only do so for radiances
-						if(spec_file.getAsdV7() && spec_file.getAsdV7RadianceFlag() && !insert_result.getAdded_new_instrument().isEmpty() && insert_result.getAdded_new_instrument().get(0)) // currently only for new ASD files, hence, always first entry
+						if(loader instanceof JB_FileLoader)
 						{
-							Integer id = spec_file.get_asd_instr_and_cal_fov_identifier();
-							
-							SpectralFileLoader loader = spectral_file_loader_hash.get(id.toString());
-							loader.insert_result = insert_result;
-							
-							loaders_of_new_instruments.add(loader);
+							insert_instrument_calibration_if_required(loader);
 						}
-
-						if(insert_result.getSpectrumIds().size() > 0) successful_file_counter++;
-
-						insert_result.addErrors(spec_file.getFileErrors()); // compile into one list of errors							
-						//				if(insert_result.getErrors().size() == 0) successful_file_counter++;
-
-						// check on file errors
-						if(insert_result.getErrors().size() > 0)
-						{
-							// concatenate all errors into one message
-							StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
-
-							for (SpecchioMessage error : insert_result.get_nonredudant_errors()) {
-
-								buf.append("\n\t");
-
-								buf.append(error.toString());
-							}
-
-							buf.append("\n");
-
-							// add the message to the list of all errors
-							this.file_errors.add(buf.toString());
-
-						}	
-
-						
-						if(listener != null)
-							listener.campaignDataLoadFileCount(file_counter, spectrum_counter);
-
-
-
 					}
 
-					index = index + 1;
+
 
 				}
-				
-				// insert new instrument calibration factors if available: only ASD new binary file version till now ...
-//				if(loaders_of_new_instruments.size()>0)
-//				{
-//					for(SpectralFileLoader loader : loaders_of_new_instruments)
-//					{
-//						// get involved instrument id by getting the metadata of the inserted spectrum
-//						Spectrum s = specchio_client.getSpectrum(loader.insert_result.getSpectrumIds().get(0), false);
-//						
-//						ASD_FileFormat_V7_FileLoader loader_ = (ASD_FileFormat_V7_FileLoader) loader;
-//						
-//						// lamp
-//						Calibration c = new Calibration();																		
-//						c.setInstrumentId(s.getInstrumentId());
-//						c.setCalibrationNumber(loader_.getSpec_file().getCalibrationSeries());
-//						c.setName("LMP");
-//						c.setComments("Calibration Lamp Radiance");
-//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.Radiance).getUnitId());
-//						
-//						double[] doubleArray = new double[loader_.getSpec_file().getNumberOfChannels(0)];
-//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
-//						    doubleArray[i] = loader_.lamp_calibration_data[0][i];  // no casting needed
-//						}
-//						
-//						c.setFactors(doubleArray);						
-//						
-//						specchio_client.insertInstrumentCalibration(c);
-//						
-//						
-//						// reference panel
-//						c.setName("BSE");
-//						c.setComments("Calibration Reference Panel Reflectance");
-//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.Reflectance).getUnitId());
-//						
-//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
-//						    doubleArray[i] = loader_.base_calibration_data[0][i];  // no casting needed
-//						}
-//						
-//						c.setFactors(doubleArray);												
-//						specchio_client.insertInstrumentCalibration(c);
-//						
-//						// Digital Numbers obtained during calibration
-//						c.setName("DN");
-//						c.setComments("Instrument Digital Numbers during Calibration for FOV =" + loader_.getSpec_file().getForeopticDegrees() + " degrees");
-//						c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.DN).getUnitId());
-//						
-//						for (int i = 0; i < loader_.getSpec_file().getNumberOfChannels(0); i++) {
-//						    doubleArray[i] = loader_.fibre_optic_data[0][i];  // no casting needed
-//						}
-//						
-//						c.setFactors(doubleArray);		
-//						c.setField_of_view(loader_.getSpec_file().getForeopticDegrees());
-//						specchio_client.insertInstrumentCalibration(c);
-//							
-//					}					
-//					
-//				}
-				
-				// check if new calibrations must be added for ASDs and other instruments that have gains included (like the FLoX)
-				Enumeration<SpectralFileLoader> file_loaders = spectral_file_loader_hash.elements();
-				while(file_loaders.hasMoreElements())
-				{					
-					SpectralFileLoader loader = file_loaders.nextElement();
-					if(loader.getSpec_file().getAsdV7RadianceFlag()) // only for radiance data
-						insert_instrument_calibration_if_required(loader);
-					
-					if(loader instanceof JB_FileLoader)
-					{
-						insert_instrument_calibration_if_required(loader);
-					}
-				}
-				
-				
-				
+
 			}
-
-		} 
+		}
 //		else {
 //			listener.campaignDataLoadError(
 //					"Unknown file types in directory " + dir.toString() + ". \n" +
@@ -482,6 +548,29 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	}
 	
 	
+	public int getRoot_hierarchy_id() {
+		return root_hierarchy_id;
+	}
+
+	public void setRoot_hierarchy_id(int root_hierarchy_id) {
+		this.root_hierarchy_id = root_hierarchy_id;
+	}
+	
+	
+	public void set_hierarchy_to_load(int hierarchy_id)
+	{
+		this.load_existing_hierarchy = true;
+		setRoot_hierarchy_id(hierarchy_id);
+	}
+
+	public boolean isSimple_delta_loading() {
+		return simple_delta_loading;
+	}
+
+	public void setSimple_delta_loading(boolean simple_delta_loading) {
+		this.simple_delta_loading = simple_delta_loading;
+	}
+
 	SpectralFileInsertResult insert_spectral_file(SpectralFile spec_file, int hierarchy_id) throws SPECCHIOClientException {
 		
 		SpectralFileInsertResult results = new SpectralFileInsertResult();

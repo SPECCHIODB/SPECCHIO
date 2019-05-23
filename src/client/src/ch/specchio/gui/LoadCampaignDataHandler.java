@@ -83,7 +83,7 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 	 * @param num_spectra	the number of spectra 
 	 * @param file_errors	a list of files that contained errors
 	 */
-	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, List<String> file_errors) {
+	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, List<String> file_errors, boolean simple_delta_loading) {
 
 		OperationsPane op = OperationsPane.getInstance();
 		p_rep.set_operation("Done!");
@@ -93,7 +93,17 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 		op.remove_report(p_spectra_insert_rep);
 
 		SPECCHIOApplication app = SPECCHIOApplication.getInstance();
-		JOptionPane.showMessageDialog(app.get_frame(), parsedFileCount + " files parsed, " + num_files + " files processed, " + num_spectra + " spectra inserted.", "File Loading Stats", JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
+		
+		String msg_line_1 = "";
+		
+		if(simple_delta_loading && parsedFileCount == 0)
+		{
+			msg_line_1 = "No new files found using 'modified-last' technique:\n";
+			
+		}
+		
+		
+		JOptionPane.showMessageDialog(app.get_frame(), msg_line_1 + parsedFileCount + " files parsed, " + num_files + " files processed, " + num_spectra + " spectra inserted.", "File Loading Stats", JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
 		
 		if (file_errors.size()>0)
 		{
