@@ -1,9 +1,14 @@
 package ch.specchio.factories;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +38,7 @@ import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.MetaSpatialGeometry;
 import ch.specchio.types.Metadata;
+import ch.specchio.types.MetaparameterStatistics;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.Taxonomy;
 import ch.specchio.types.TaxonomyNodeObject;
@@ -1362,6 +1368,8 @@ public class MetadataFactory extends SPECCHIOFactory {
 		
 		ArrayList<MetaParameter> mp_list = new ArrayList<MetaParameter>(ids.size());
 		
+//		Instant start = Instant.now();
+		
 		// add empty metaparameters where no values were found
 		if(!distinct)
 		{
@@ -1370,8 +1378,58 @@ public class MetadataFactory extends SPECCHIOFactory {
 				mp_list.add(MetaParameter.newInstance());
 			}
 		}
-				
 		
+		boolean logic_switch = false;
+		
+			
+		if (logic_switch)
+		{
+			// NOTE: this variation is actually a fair deal slower than the original code!
+			
+			// get metaparameter ids, then use metadata bulk loader
+			
+			ArrayList<Integer> attribute_ids = new ArrayList<Integer>();
+			attribute_ids.add(attrId);
+			
+			ArrayList<Integer> eav_ids =  this.getEavServices().get_eav_ids_incl_inheritance(metadata_level, ids, attribute_ids);
+			
+			Metadata md = new Metadata();
+			try {
+				this.getEavServices().metadata_bulk_loader(md, eav_ids);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new SPECCHIOFactoryException(e);
+			}
+			
+			
+			if(!distinct)
+			{
+				// check if we got a problem: if the number metaparameters differs from the primary_ids, then some of them are supposedly empty
+				
+				if(ids.size() != md.getEntries().size())
+				{
+					
+					System.out.println("Empty metaparameters are required!");
+					int x = 1;
+				}
+				
+//				md.g
+//				
+//				mp_list.set(ind, mp);
+			}
+			else
+			{
+				
+			}		
+			
+			mp_list = md.getEntries();
+			
+			int x = 1;
+			
+		}
+		else
+		{
 		try {
 			// create SQL-building objects
 			SQL_StatementBuilder SQL = getStatementBuilder();
@@ -1436,79 +1494,11 @@ public class MetadataFactory extends SPECCHIOFactory {
 				
 				ResultSet rs = stmt.executeQuery(query);
 				
-				Object o;
-				Integer spectrum_id = 0;
-				int ind;
+				
+				getMetaParametersFromResultSet(rs, mp_list, ids, attr, distinct);
+				
 
-				while (rs.next()) 
-				{
-					int i = 1;
-					if(attr.getDefaultStorageField().equals("datetime_val"))
-					{
-							o = rs.getString(i++);
-							DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
-							DateTime d = formatter.parseDateTime((String) o); 
-							o = d;
-					}
-//					if(attr.getDefaultStorageField().equals("spatial_val"))
-//					{
-//						o = rs.getString(1);
-//						try {
-//							MetaSpatialGeometry mp = (MetaSpatialGeometry) MetaParameter.newInstance(attr, o);
-//							
-//							o = mp.getValue();
-//									
-//						} catch (MetaParameterFormatException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						
-//						
-//						
-//					}
-					else
-						o = rs.getObject(i++);
-						
-
-					Integer id = rs.getInt(i++);
-					if(!distinct)
-					{
-						spectrum_id = rs.getInt(i++);
-						// get position of this spectrum in the list
-						ind = ids.indexOf(spectrum_id);
-					}
-					Integer unit_id = rs.getInt(i++);
-					
-					// get position of this spectrum in the list
-					ind = ids.indexOf(spectrum_id);
-					
-					
-					if (o != null) {
-						try {
-							MetaParameter mp = MetaParameter.newInstance(attr, o);
-							mp.setEavId(id);
-							mp.setUnitId(unit_id);
-
-							if(!distinct)
-							{
-								mp_list.set(ind, mp);
-							}
-							else
-							{
-								mp_list.add(mp);
-							}
-						}
-						catch (MetaParameterFormatException ex) {
-							// should never happen but we'll log an error just in case
-							System.err.println("Metaparameter format exception when converting " + attr.getDefaultStorageField() + " attribute.");
-						}
-					}
-
-				}
 				rs.close();		
-				
-				
-
 				
 				
 //				stopTime = System.currentTimeMillis();
@@ -1542,61 +1532,62 @@ public class MetadataFactory extends SPECCHIOFactory {
 
 					rs = stmt.executeQuery(query);
 					
-					spectrum_id = 0;
-					ind = 0;
+					getMetaParametersFromResultSet(rs, mp_list, ids, attr, distinct);
 					
-					while (rs.next()) 
-					{
-						int i = 1;
-						if(attr.getDefaultStorageField().equals("datetime_val"))
-						{
-								o = rs.getString(1);
-								DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
-								DateTime d = formatter.parseDateTime((String) o); 
-								o = d;
-						}
-						else
-							o = rs.getObject(i++);
-							
-
-						Integer id = rs.getInt(i++);
-						if(!distinct)
-						{
-							spectrum_id = rs.getInt(i++);
-							// get position of this spectrum in the list
-							ind = ids.indexOf(spectrum_id);
-						}
-						Integer unit_id = rs.getInt(i++);
-						
-						
-						if (o != null) {
-							try {
-								MetaParameter mp = MetaParameter.newInstance(attr, o);
-								mp.setEavId(id);
-								mp.setUnitId(unit_id);
-								
-								if(!distinct)
-								{
-									mp_list.set(ind, mp);
-								}
-								else
-								{
-									mp_list.add(mp);
-								}
-							}
-							catch (MetaParameterFormatException ex) {
-								// should never happen but we'll log an error just in case
-								System.err.println("Metaparameter format exception when converting " + attr.getDefaultStorageField() + " attribute.");
-							}
-						}
-
-					}
+//					spectrum_id = 0;
+//					ind = 0;
+//					
+//					while (rs.next()) 
+//					{
+//						int i = 1;
+//						if(attr.getDefaultStorageField().equals("datetime_val"))
+//						{
+//								o = rs.getString(1);
+//								DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+//								DateTime d = formatter.parseDateTime((String) o); 
+//								o = d;
+//						}
+//						else
+//							o = rs.getObject(i++);
+//							
+//
+//						Integer id = rs.getInt(i++);
+//						if(!distinct)
+//						{
+//							spectrum_id = rs.getInt(i++);
+//							// get position of this spectrum in the list
+//							ind = ids.indexOf(spectrum_id);
+//						}
+//						Integer unit_id = rs.getInt(i++);
+//						
+//						
+//						if (o != null) {
+//							try {
+//								MetaParameter mp = MetaParameter.newInstance(attr, o);
+//								mp.setEavId(id);
+//								mp.setUnitId(unit_id);
+//								
+//								if(!distinct)
+//								{
+//									mp_list.set(ind, mp);
+//								}
+//								else
+//								{
+//									mp_list.add(mp);
+//								}
+//							}
+//							catch (MetaParameterFormatException ex) {
+//								// should never happen but we'll log an error just in case
+//								System.err.println("Metaparameter format exception when converting " + attr.getDefaultStorageField() + " attribute.");
+//							}
+//						}
+//
+//					}
 					rs.close();		
 					
 					// clean up
 					stmt.close();
-					
-					
+										
 					
 				}
 				
@@ -1608,11 +1599,222 @@ public class MetadataFactory extends SPECCHIOFactory {
 			throw new SPECCHIOFactoryException(ex);
 		}
 		
+		}
+		
+//		Instant finish = Instant.now();
+//		long timeElapsed = Duration.between(start, finish).toMillis();		
+		
+		//System.out.println("Elapsed time for metadata loading: " + timeElapsed + "[ms]");
+		
 		return mp_list;
 		
 	}
 	
 	
+	private void getMetaParametersFromResultSet(ResultSet rs, ArrayList<MetaParameter> mp_list, ArrayList<Integer> ids, attribute attr, boolean distinct) throws SPECCHIOFactoryException
+	{
+		
+		Object o;
+		Integer spectrum_id = 0;
+		int ind;
+
+		try {			
+			
+			while (rs.next()) 
+			{
+				int i = 1;
+				
+				if(attr.getDefaultStorageField().equals("datetime_val"))
+				{
+					o = rs.getString(i++);
+					DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+					DateTime d = formatter.parseDateTime((String) o); 
+					o = d;
+				}
+				//			if(attr.getDefaultStorageField().equals("spatial_val"))
+				//			{
+				//				o = rs.getString(1);
+				//				try {
+				//					MetaSpatialGeometry mp = (MetaSpatialGeometry) MetaParameter.newInstance(attr, o);
+				//					
+				//					o = mp.getValue();
+				//							
+				//				} catch (MetaParameterFormatException e) {
+				//					// TODO Auto-generated catch block
+				//					e.printStackTrace();
+				//				}
+				//				
+				//				
+				//				
+				//			}
+				else if (attr.getDefaultStorageField().equals("binary_val"))
+				{
+
+					// read the object from the database
+					Blob binary_val = rs.getBlob(i++);		
+					try {
+						ByteArrayInputStream bis = new ByteArrayInputStream(binary_val.getBytes(1, (int) binary_val.length()));
+						ObjectInputStream in = new ObjectInputStream(bis);
+						o = in.readObject();
+						in.close();
+					}		
+					catch (IOException e) {
+						// don't know what might cause this; re-throw it as an SQL exception
+						throw new SQLException(e);
+					}
+					catch (ClassNotFoundException e) {
+						// unrecognised class stored in the database; shouldn't happen in the ideal world
+						throw new SQLException(e);
+					}
+
+
+				}				
+				else
+					o = rs.getObject(i++);
+
+
+				Integer id = rs.getInt(i++);
+				if(!distinct)
+				{
+					spectrum_id = rs.getInt(i++);
+					// get position of this spectrum in the list
+					ind = ids.indexOf(spectrum_id);
+				}
+				Integer unit_id = rs.getInt(i++);
+
+				// get position of this spectrum in the list
+				ind = ids.indexOf(spectrum_id);
+
+
+				if (o != null) {
+					try {
+						MetaParameter mp = MetaParameter.newInstance(attr, o);
+						mp.setEavId(id);
+						mp.setUnitId(unit_id);
+
+						if(!distinct)
+						{
+							mp_list.set(ind, mp);
+						}
+						else
+						{
+							mp_list.add(mp);
+						}
+					}
+					catch (MetaParameterFormatException ex) {
+						// should never happen but we'll log an error just in case
+						System.err.println("Metaparameter format exception when converting " + attr.getDefaultStorageField() + " attribute.");
+					}
+				}
+
+			}		
+
+
+		}
+		catch (SQLException ex) {
+			// database error
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+		
+	}
+	
+	/**
+	 * Get statistics of metaparameter values for given spectrum ids and attribute.
+	 * 
+	 * @param metadata_level		storage level to be checked
+	 * @param ids		the spectrum identifiers for which to retrieve metadata
+	 * @param attrId	the attribute id
+	 * 
+	 * @return an object with min, mean and max values stored as Metaparameters
+	 * 
+	 * @throws SPECCHIOFactoryException	could not connect to the database, or invalid value for attribute name
+	 */	
+	public MetaparameterStatistics getMetaParameterStatistics(int metadata_level, ArrayList<Integer> ids, Integer attrId) throws SPECCHIOFactoryException {
+		
+		MetaparameterStatistics mps = new MetaparameterStatistics();
+		MetaParameter min_mp = null, mean_mp = null, max_mp = null;
+		
+		ArrayList<Integer> attrIds = new ArrayList<Integer>();
+		attrIds.add(attrId);
+		
+		ArrayList<Integer> eav_ids = this.getEavServices().get_eav_ids_incl_inheritance(metadata_level, ids, attrIds);
+		
+		
+		attribute attr = getAttributes().get_attribute_info(attrId);
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		try {
+			Statement stmt = SQL.createStatement();
+			
+			String avg_str = "avg(" + attr.getDefaultStorageField() + ")";
+			if(attr.getDefaultStorageField().equals("datetime_val"))
+			{
+				avg_str = "FROM_UNIXTIME(round(avg(UNIX_TIMESTAMP(" + attr.getDefaultStorageField() + "))))";
+			}
+			
+			
+			String query = "select min(" + attr.getDefaultStorageField() + "), " + avg_str + ", max(" + attr.getDefaultStorageField() + ") from eav where eav_id in ("
+					+ SQL.conc_ids(eav_ids) + ")";
+			
+			
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				
+				Object o = getObjectFromResultSet(rs, attr, 1);	
+				min_mp = MetaParameter.newInstance(attr, o);
+				min_mp.setEavId(0);
+				
+				o = getObjectFromResultSet(rs, attr, 2);					
+				mean_mp = MetaParameter.newInstance(attr, o);
+				mean_mp.setEavId(0);				
+
+				o = getObjectFromResultSet(rs, attr, 3);				
+				max_mp = MetaParameter.newInstance(attr, o);
+				max_mp.setEavId(0);					
+				
+				
+			}
+			rs.close();
+			stmt.close();
+			
+			
+			mps.setMp_min(min_mp);
+			mps.setMp_mean(mean_mp);
+			mps.setMp_max(max_mp);
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MetaParameterFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return mps;
+			
+		
+	}
+	
+	
+	private Object getObjectFromResultSet(ResultSet rs, attribute attr, int i) throws SQLException
+	{
+		Object o = null;
+		
+		if(attr.getDefaultStorageField().equals("datetime_val"))
+		{
+			o = rs.getString(i);
+			DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+			DateTime d = formatter.parseDateTime((String) o); 
+			o = d;
+		}
+		else
+			o = rs.getObject(i);		
+		
+		return o;
+		
+	}
 	
 	
 	/**
