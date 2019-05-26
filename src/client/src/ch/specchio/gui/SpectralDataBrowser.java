@@ -211,7 +211,10 @@ public class SpectralDataBrowser extends JScrollPane implements ActionListener, 
 				bn = (path != null)? (SpectralDataBrowserNode)path.getLastPathComponent() : null;
 			}
 			
-			return (campaign_node) bn.getNode();
+			if(bn == null)
+				return null;
+			else
+				return (campaign_node) bn.getNode();
 		}
 		
 		return null;
