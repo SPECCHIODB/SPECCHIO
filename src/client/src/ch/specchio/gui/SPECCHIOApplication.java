@@ -26,7 +26,10 @@ public class SPECCHIOApplication {
 	private SPECCHIOClient client = null;
 	public static Float min_db_version = 3.2F;
 	public static ImageIcon specchio_icon;
+	private static boolean java_version_is_supported = true;
 	
+
+
 	/* progress report in the operations pane */
 	static ProgressReportTextPanel p_rep = null;
 	static ProgressReportTextPanel db_rep = null;
@@ -37,6 +40,10 @@ public class SPECCHIOApplication {
 //        gatewayServer.start();
 //        System.out.println("Specchio - Python Gateway Server Started");		
 	}
+	
+	public boolean isJava_version_is_supported() {
+		return java_version_is_supported;
+	}	
 	
 	public SPECCHIOClient getClient()
 	{
@@ -150,9 +157,25 @@ public class SPECCHIOApplication {
 	      frame.setSize(new Dimension(700, 350));
 
 	      frame.setVisible(true);
+
+	      System.out.println("Java version (major): " + getJavaVersion());
+	      
+
+	      if(getJavaVersion() != 8) {
+	    	  java_version_is_supported = false;
+	    	  JOptionPane.showMessageDialog(
+	    			  SPECCHIOApplication.getInstance().get_frame(),
+	    			  "This version of SPECCHIO is compiled for Java version 8.\n" +
+	    					  "This computer runs Java version " + getJavaVersion() + ".\n" +
+	    					  "Please install Java version 8 to avoid errors.",
+	    					  "Warning",
+	    					  JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
+	    			  );    			  
+
+	      }
 	   }
 
-	   
+
 	   public static void main(String[] args) {
 		   //Schedule a job for the event-dispatching thread:
 		   //creating and showing this application's GUI.
@@ -222,7 +245,18 @@ public class SPECCHIOApplication {
 					   );    			  
 
 		   }
-	   }   	   
+	   }   	
+	   
+	   // from: https://stackoverflow.com/questions/2591083/getting-java-version-at-runtime
+	   private static int getJavaVersion() {
+		    String version = System.getProperty("java.version");
+		    if(version.startsWith("1.")) {
+		        version = version.substring(2, 3);
+		    } else {
+		        int dot = version.indexOf(".");
+		        if(dot != -1) { version = version.substring(0, dot); }
+		    } return Integer.parseInt(version);
+		}	   
 
 	   public void setClient(SPECCHIOClient client) {
 		   
