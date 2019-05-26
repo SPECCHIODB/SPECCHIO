@@ -112,6 +112,11 @@ public class SPECCHIOClientException extends WebApplicationException {
 	 */
 	public String getUserMessage() {
 		
+		String msg = getMessage();
+		
+		if(msg == null)
+			return this.message; // fallback solution when no proper exception was used to create this one 
+		
 		return getMessage();
 		
 	}
