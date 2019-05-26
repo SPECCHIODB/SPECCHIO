@@ -65,7 +65,8 @@ jar {
                 'Implementation-Packagename': 'ch.specchio.gui',
                 'Implementation-Web': 'http://specchio.ch',
                 'Implementation-Project': 'SPECCHIO Spectral Information System',
-                'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong'
+                'Implementation-Organization': 'RSL, University of Zurich and University of Wollongong',
+                'Class-Path': '.'
     }
     baseName = 'specchio'
 }
@@ -89,6 +90,12 @@ dependencies {
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
     compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.12'
+    compile group: 'javax.activation', name: 'activation', version: '1.1'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.11'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.2.11'
+    
+
+    
 
     // Types
     compile project(':src:types')
@@ -116,11 +123,11 @@ shadowJar {
     // classes that are referenced dynamically need to be excluded here
     // otherwise they will be removed when compiling the jar file
     // and you will get a ClassNotFound Exception
-    minimize {
-        exclude(dependency('com.sun.jersey:.*:.*'))
-        exclude(dependency('com.sun.xml.*:.*:.*'))
-        exclude(dependency('javax.ws.rs:.*:.*'))
-    }
+ //   minimize {
+ //       exclude(dependency('com.sun.jersey:.*:.*'))
+ //       exclude(dependency('com.sun.xml.*:.*:.*'))
+ //       exclude(dependency('javax.ws.rs:.*:.*'))
+ //   }
 }
 
 // Configuration for the buildConfig plugin
