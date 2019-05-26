@@ -258,6 +258,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		category_panels = new ArrayList<JPanel>();
 		constraints.gridy = 0;
 		
+		try {
+		
 		// set up campaign panel
 		Campaign campaign = mdec_s.getCampaign();
 		if (campaign != null) {
@@ -270,6 +272,19 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		
 		spectrum_panel.updateForm();
 		hierarchy_panel.updateForm();
+				
+		}
+		catch(java.lang.NoClassDefFoundError ex)
+		{
+			String version_error = "";
+			if(!SPECCHIOApplication.getInstance().isJava_version_is_supported())
+			{
+				version_error = "\nLikely reason is a wrong Java version.";
+			}
+			
+			SPECCHIOClientException s_ex = new SPECCHIOClientException(" Java class not found. " + version_error + " (" + ex.getMessage() + ")");
+			throw s_ex;
+		}
 		
 		
 //		if(!manual_interaction && form != null)
