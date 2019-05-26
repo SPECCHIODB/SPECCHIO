@@ -239,6 +239,8 @@ public class CampaignExportDialog   extends JFrame implements ActionListener
 			pr.set_indeterminate(true);
 			pr.setVisible(true);
 			
+			int cnt = 0;
+			
 			try {
 				
 				// ask the server for the campaign data
@@ -252,7 +254,9 @@ public class CampaignExportDialog   extends JFrame implements ActionListener
 					n = is.read(b);
 					if (n > 0) {
 						out.write(b, 0, n);
+						cnt += n;
 					}
+					pr.set_operation("Data written: " + cnt/1000/1000 + " MB");
 				} while (n >= 0);
 				out.close();
 				
@@ -281,7 +285,9 @@ public class CampaignExportDialog   extends JFrame implements ActionListener
 			// close the progress report
 			pr.setVisible(false);
 			
-			String filesize = String.format("%.2f", f.length()/1024.0/1024);
+			String filesize = String.format("%.2f", f.length()/1000.0/1000); // MB in SI units
+			
+			long len = (new File(f.getAbsolutePath()).length());
 			
 			// Display message that export has finished
 			JOptionPane.showMessageDialog(
