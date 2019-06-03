@@ -9,7 +9,7 @@ INSERT INTO `specchio`.`taxonomy` (`attribute_id`, `name`, `code`, `description`
 INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Sampling Area', (select category_id from `specchio`.category where name = 'Sampling Design'), 'double_val', 'Area covered by sampling scheme, e.g. area covered during a sweep.', (select unit_id from unit where short_name like 'm2'));
 
 -- Metadata on hierarchy level and campaign level
-CREATE TABLE `hierarchy_x_eav` (
+CREATE TABLE `specchio`.`hierarchy_x_eav` (
   `hierarchy_level_id` int(11) NOT NULL,
   `eav_id` int(11) NOT NULL,
   `campaign_id` int(11) DEFAULT NULL,
@@ -45,7 +45,7 @@ CREATE TRIGGER `specchio`.`hierarchy_x_eav_tr`
 );
 
 
-CREATE TABLE `campaign_x_eav` (
+CREATE TABLE `specchio`.`campaign_x_eav` (
   `eav_id` int(11) NOT NULL,
   `campaign_id` int(11) NOT NULL,
   PRIMARY KEY (`campaign_id`,`eav_id`),
@@ -72,13 +72,13 @@ CREATE VIEW `specchio`.`campaign_x_eav_view` AS
 
 
 -- vegetation pigment updates
-update attribute set name = 'Chlorophyll A+B', description = 'Combined Chlorophyll A and B Content' where name like 'Chlorophyll Content';
+update `specchio`.attribute set name = 'Chlorophyll A+B', description = 'Combined Chlorophyll A and B Content' where name like 'Chlorophyll Content';
 
 INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Chlorophyll A', (select category_id from `specchio`.category where name = 'Vegetation Biophysical Variables'), 'double_val', 'Chlorophyll A pigment', (select unit_id from unit where short_name like 'ugrams/cm2'));
 INSERT INTO `specchio`.`attribute`(`name`, `category_id`, `default_storage_field`, `description`, `default_unit_id`) VALUES ('Chlorophyll B', (select category_id from `specchio`.category where name = 'Vegetation Biophysical Variables'), 'double_val', 'Chlorophyll B pigment', (select unit_id from unit where short_name like 'ugrams/cm2'));
 
 -- correct missing delete from previous spatial upgrade
-delete from attribute where name = 'Latitude' OR name = 'Longitude';
+delete from `specchio`.attribute where name = 'Latitude' OR name = 'Longitude';
 
 -- remove empty file comments
 CREATE TEMPORARY TABLE IF NOT EXISTS `specchio_temp`.`temp_spectrum_x_eav_table` AS (select distinct eav_id from spectrum_x_eav where eav_id in (select sxe.eav_id from eav eav, spectrum_x_eav sxe where eav.eav_id = sxe.eav_id and attribute_id = (select attribute_id from attribute where name = 'File Comments') and (string_val is null or CHAR_LENGTH(string_val) = 0)));
