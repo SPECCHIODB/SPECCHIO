@@ -56,6 +56,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	private Integer current_hierarchy_collection_table_no;
 	private String current_hierarchy_collection_source_table;
 	private String current_hierarchy_collection_target_table;
+	private boolean condition_fails_for_eav_on_spectrum_level = false;
 	
 	
 	/**
@@ -481,8 +482,8 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			getSpectraMatchingQuery(query, MetaParameter.SPECTRUM_LEVEL);
 			
 			
-			// step 1.2: use standard field query, if there are any standard conditions at all
-			if(query.getStandardConditionFields().size() > 0)
+			// step 1.2: use standard field query, if there are any standard conditions at all AND a eav condition on spectrum level did not yet fail
+			if(!condition_fails_for_eav_on_spectrum_level && query.getStandardConditionFields().size() > 0)
 			{
 				String org_query_type = query.getQueryType();
 				query.setQueryType(Query.SELECT_QUERY); // we want to get ids!
@@ -895,6 +896,14 @@ public class SpectrumFactory extends SPECCHIOFactory {
 						if(count_of_rows_in_target_table > 0)
 						{								
 							iteration_result_exists = true; // true for all further queries
+						}
+						else
+						{
+							// a zero result at spectrum level means to the whole query will lead to no valid result as it is all AND combined anyway
+							condition_fails_for_eav_on_spectrum_level = true;
+							
+							// there is no need to continue searching with further conditions
+							return;
 						}
 							
 
