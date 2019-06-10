@@ -86,6 +86,7 @@ public class SPECCHIOClientFactory {
 					apps.add(iter.next());
 					System.out.print(".");
 				}
+				System.out.print("\n");
 			}
 			catch (IOException ex) {
 				// read error; re-throw as a SPECCHIO client exception
@@ -95,11 +96,14 @@ public class SPECCHIOClientFactory {
 		else // load server descriptors from the preferences store
 		{
 			try {
+				System.out.println("Loading server descriptors from Java Preference Store:");
 				SPECCHIOServerDescriptorStore s = new SPECCHIOServerDescriptorPreferencesStore();
 				Iterator<SPECCHIOServerDescriptor> iter = s.getIterator();
 				while (iter.hasNext()) {
 					apps.add(iter.next());
+					System.out.print(".");
 				}
+				System.out.print("\n");
 			}
 			catch (BackingStoreException ex) {
 				// the backing store failed; re-throw as a SPECCHIO client exception
@@ -180,7 +184,7 @@ public class SPECCHIOClientFactory {
 		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 		if (file.exists() && file.isFile() && file.canRead())
 		{
-			System.out.println(name + " found in current dir. Trying to locate here: " + file.getParent());
+			System.out.println("Info:" + name + " found in current dir.");
 			return file.getPath();
 		}
 
@@ -193,9 +197,16 @@ public class SPECCHIOClientFactory {
 
 		try {
 			File app_dir = new File(SPECCHIOApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			
+			System.out.println("Info:" + name + " not found in current dir. Trying to locate here: " + app_dir.getParent());
+			
 			file = new File(app_dir.getParent() + File.separator + name);
 			
-			System.out.println(name + " not found in current dir. Trying to locate here: " + app_dir.getParent());
+			if (file.exists() && file.isFile() && file.canRead())
+			{
+				System.out.println("Info:" + name + " found in SPECCHIO application directory.");
+			}
+			
 			
 			return file.getPath();
 		} catch (URISyntaxException e) {
@@ -267,11 +278,12 @@ public class SPECCHIOClientFactory {
 
 
 	public void reloadDBConfigFile() {
-		// initialise the server descriptor list
-		apps = new LinkedList<SPECCHIOServerDescriptor>();
 		
 		// load server descriptors from the legacy db_config.txt file
 		if (legacyConfigFile.exists()) {
+			// initialise the server descriptor list
+			apps = new LinkedList<SPECCHIOServerDescriptor>();
+			
 			try {
 				System.out.println("Reolading server descriptors from the legacy db_config.txt file");
 				SPECCHIOServerDescriptorStore s = new SPECCHIOServerDescriptorLegacyStore(legacyConfigFile);
@@ -280,12 +292,19 @@ public class SPECCHIOClientFactory {
 					apps.add(iter.next());
 					System.out.print(".");
 				}
+				System.out.print("\n");
 			}
 			catch (IOException ex) {
 				// read error; re-throw as a SPECCHIO client exception
 				throw new SPECCHIOClientException(ex);
 			}
 		}		
+		else
+		{
+			System.out.println("Legacy db_config.txt file not found!");
+			System.out.println("The list of known database connections available from Java Preference Store is = " + apps.size()
+			+ "\nConsider using the legacy db_config.txt if the Java Preference Store does not work on your machine.");
+		}
 	}
 
 }
