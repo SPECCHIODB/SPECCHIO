@@ -680,7 +680,8 @@ public class MetadataFactory extends SPECCHIOFactory {
 
 						conflict = attr_id_conflict_hash.get(attribute_id);
 						
-						conflict.setNumberOfSharingRecords(parallel_sharing_cnt + conflict.getNumberOfSelectedRecords());
+						if(conflict != null)						
+							conflict.setNumberOfSharingRecords(parallel_sharing_cnt + conflict.getNumberOfSelectedRecords());
 						
 						int x = 1;
 						
