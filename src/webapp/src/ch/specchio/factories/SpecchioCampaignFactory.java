@@ -562,7 +562,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 
 	}
 	
-
+	
 	/**
 	 * Get the identifier of a node in a campaign's hierarchy.
 	 * 
@@ -574,6 +574,23 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 * @throws SPECCHIOFactoryException	the database could not accessed
 	 */
 	public int getHierarchyNodeId(String name, int parent_id) throws SPECCHIOFactoryException {
+
+		return getHierarchyNodeId(name, parent_id, 0);
+	}
+	
+
+	/**
+	 * Get the identifier of a node in a campaign's hierarchy.
+	 * 
+	 * @param name			the name of the node to test
+	 * @param parent_id		the identifier of the node's parent
+	 * @param campaign_id	the identifier of the campaign id to avoid ambiguities with other top hierarchies in other campaigns
+	 * 
+	 * @returns the node's identifier, or -1 if the node does not exist
+	 * 
+	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 */
+	public int getHierarchyNodeId(String name, int parent_id, int campaign_id) throws SPECCHIOFactoryException {
 		
 		try {
 			
@@ -590,7 +607,8 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			
 			String query = "SELECT hierarchy_level_id from hierarchy_level where "
 					+ "parent_level_id " + p_id_and_op.op + " " + p_id_and_op.id
-					+ " and name = " + SQL.quote_string(name);			
+					+ " and name = " + SQL.quote_string(name) + 
+					((campaign_id != 0) ? " and campaign_id = " + campaign_id : "");			
 			
 			// execute the statement
 			int id = -1;
