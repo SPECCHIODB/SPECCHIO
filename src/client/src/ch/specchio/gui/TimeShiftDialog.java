@@ -325,72 +325,44 @@ public class TimeShiftDialog extends JFrame implements ActionListener, TreeSelec
 				ArrayList<Integer> not_updatedIds = new ArrayList<Integer>();
 
 					
-				ArrayList<MetaParameter> mpAcquisitionTimes = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time");
-//				ArrayList<MetaParameter> mpExisting_utc = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time (UTC)");
-				
+				ArrayList<MetaParameter> mpAcquisitionTimes = specchioClient.getMetaparameters(spectrumIdsIn, "Acquisition Time", false); // explicit loading of metaparameter per entry, even if redundant like for SVC reference measurements
+
 				ListIterator<MetaParameter> mp_li = mpAcquisitionTimes.listIterator();
-//				ListIterator<MetaParameter> utcmp_li = mpExisting_utc.listIterator();
 				ListIterator<Integer> spectrum_li = spectrumIdsIn.listIterator();
-				
+
 				attribute utc_attribute = specchioClient.getAttributesNameHash().get("Acquisition Time (UTC)");
-				
+
 				while(mp_li.hasNext())
 				{
 					MetaParameter mp = mp_li.next();
-					
+
 					DateTime t = (DateTime) mp.getValue();
-					
-//					if(mp.getEavId() == 0)
-//					{
-//						not_updatedIds.add(spectrum_li.next());
-//					}
-//					else
-//					{
-						DateTime modified_t = t.minusHours(shift);
-					
-						//mp.setValue(modified_t);
-						
-						ArrayList<Integer> tmpId = new ArrayList<Integer>();
-						tmpId.add(spectrum_li.next());
-						
-//						MetaParameter existing_utc = null;
-//						if(utcmp_li.hasNext())
-//						{
-//							existing_utc = utcmp_li.next();
-//						}
-//						
-//
-//						if (existing_utc == null || existing_utc.getEavId() == 0)
-//						{
-//							attribute utc_attribute = specchioClient.getAttributesNameHash().get("Acquisition Time (UTC)");
-//							existing_utc = MetaParameter.newInstance(utc_attribute);						
-//						}
-//						
-//						existing_utc.setValue(modified_t);
-//						
-//						specchioClient.updateEavMetadata(existing_utc, tmpId);
-//						
-		
-						
-						MetaParameter utc = MetaParameter.newInstance(utc_attribute);		
-						utc.setValue(modified_t);
-						specchioClient.updateOrInsertEavMetadata(utc, tmpId);
-						
-						// add the identifier to the list of updated identifiers
-						updatedIds.add(tmpId.get(0));						
-	
-//					}
-					
+
+
+					DateTime modified_t = t.minusHours(shift);
+
+
+					ArrayList<Integer> tmpId = new ArrayList<Integer>();
+					tmpId.add(spectrum_li.next());
+
+
+
+					MetaParameter utc = MetaParameter.newInstance(utc_attribute);		
+					utc.setValue(modified_t);
+					specchioClient.updateOrInsertEavMetadata(utc, tmpId);
+
+					// add the identifier to the list of updated identifiers
+					updatedIds.add(tmpId.get(0));						
+
+
 					pr.set_progress(++progress * 100.0 / tot);
 				}
-				
-	
+
+
 				if (updatedIds.size() > 0) {
-					
+
 					attribute attr = specchioClient.getAttributesNameHash().get("UTC Time Computation");
-					
-//					specchioClient.removeEavMetadata(attr, updatedIds, MetaParameter.SPECTRUM_LEVEL); // remove any existing UTC time computation entries
-					
+										
 					// create a metaparameter noting that the time was shifted
 					MetaParameter mpShift = MetaParameter.newInstance(
 							attr,
