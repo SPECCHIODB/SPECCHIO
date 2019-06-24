@@ -287,6 +287,22 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	
 	/**
+	 * Create a user account on this specchio server. Only for admin users.
+	 * 
+	 * @param user	a user object describing the new user account
+	 * 
+	 * @return a new user object containing the complete account details
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	public User createUserAccountOnCurrentServer(User user) throws SPECCHIOClientException {
+		
+		return postForObject(User.class, "user", "createUserAccount", user);
+		
+	}	
+	
+	
+	/**
 	 * Create a new instrument.
 	 * 
 	 * @param name	the name of the new instrument
@@ -1422,7 +1438,23 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		MatlabAdaptedArrayList<Object> out_list = new MatlabAdaptedArrayList<Object>();
 		
 		for (int i = 0; i < mps.length; i++) {
-			out_list.add(mps[i].getValue());
+			
+			if(distinct)
+			{
+				Object value = mps[i].getValue();
+				
+				boolean contains =  out_list.contains(value);
+				
+				if(!contains)
+				{
+					out_list.add(value);
+				}
+				
+			}
+			else
+			{
+				out_list.add(mps[i].getValue());
+			}
 		}		
 		
 		
