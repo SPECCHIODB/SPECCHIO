@@ -115,6 +115,12 @@ public class SPECCHIOService {
 		}	
 		
 		
+		// enable or disable user account creation restrictions (enabled = only admin users can create new users)
+		String user_account_creation_restriction = config.getInitParameter("SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION");
+		if (user_account_creation_restriction != null) {
+			capabilities.setCapability("SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION", user_account_creation_restriction);
+		}	
+		
 		
 		// set database capabilities
 		SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName());
