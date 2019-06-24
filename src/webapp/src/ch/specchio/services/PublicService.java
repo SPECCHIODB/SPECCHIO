@@ -61,6 +61,13 @@ public class PublicService extends SPECCHIOService {
 			throw new SecurityException("Administrator accounts cannot be created using this service.");
 		}
 		
+		// check if the specified data source (schema) is restricted
+		String restricted_schema = getServerCapability("SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION");
+		if(restricted_schema != null && restricted_schema.equals(getDataSourceName()))
+		{
+			// if this is a restricted schema
+			throw new SecurityException("User creation is only enabled for administrators.");					
+		}
 		// create a user factory to do the work
 		UserFactory factory = new UserFactory(getDataSourceName());
 		try {
