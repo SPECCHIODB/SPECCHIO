@@ -802,7 +802,7 @@ public class MetadataService extends SPECCHIOService {
 	@Path("update_or_insert")
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
-	public XmlInteger update_or_insert(MetadataUpdateDescriptor update_d) {
+	public XmlInteger update_or_insert(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException {
 		
 		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());		
 		
