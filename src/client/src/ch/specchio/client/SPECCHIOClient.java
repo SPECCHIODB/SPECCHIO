@@ -109,6 +109,18 @@ public interface SPECCHIOClient {
 	 */
 	public User createUserAccount(User user) throws SPECCHIOClientException;
 	
+	/**
+	 * Create a user account on this specchio server. Only for admin users.
+	 * 
+	 * @param user	a user object describing the new user account
+	 * 
+	 * @return a new user object containing the complete account details
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	public User createUserAccountOnCurrentServer(User user) throws SPECCHIOClientException;
+		
+	
 	
 	/**
 	 * Create a new instrument.

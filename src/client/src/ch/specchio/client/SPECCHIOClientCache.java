@@ -226,6 +226,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	
 	
 	/**
+	 * Create a user account on this specchio server. Only for admin users.
+	 * 
+	 * @param user	a user object describing the new user account
+	 * 
+	 * @return a new user object containing the complete account details
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	public User createUserAccountOnCurrentServer(User user) throws SPECCHIOClientException {
+		return realClient.createUserAccountOnCurrentServer(user);
+	}	
+	
+	/**
 	 * Create a new instrument.
 	 * 
 	 * @param name	the name of the new instrument
