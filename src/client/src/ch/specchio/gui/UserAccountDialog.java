@@ -140,6 +140,18 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 			serverConnectionPanel.add(connectButton);
 		} else {
 			serverPanel = null;
+			
+			if(specchio_client.getLoggedInUser().isInRole("admin") && user == null)
+			{
+				JPanel serverConnectionPanel = new JPanel();
+				JTextArea info_text = new JTextArea("You are logged in as admin.\n"
+						+ "This scenario will allow you to create a new user on the current system: "
+						+ specchio_client.getServerDescriptor().getDisplayName(false, true)+"\n"
+								+ "To create a new account for yourself on a different server do:\n"
+								+ "1: restart the SPECCHIO client\n2: create an account without first logging into an existing server");
+				serverConnectionPanel.add(info_text);
+				rootPanel.add(serverConnectionPanel);
+			}
 		}
 		
 		// add user account panel
@@ -216,6 +228,20 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 				SPECCHIOClientFactory cf = SPECCHIOClientFactory.getInstance();
 				specchio_client = cf.createClient(d);
 				specchio_client.connect();
+				
+				String restricted_schema = specchio_client.getCapability("SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION");
+				if(restricted_schema != null && restricted_schema.equals(d.getDataSourceName()))
+				{
+					ErrorDialog error = new ErrorDialog(
+							(Frame)getOwner(),
+							"Account creation is disabled.",
+							"User account creation on this server is restricted to administors only.",
+							null
+						);
+					error.setVisible(true);					
+					return;
+				}
+				
 				
 				// fill the institute selection box
 				userAccountPanel.setInstitutes(specchio_client.getInstitutes());
@@ -350,7 +376,10 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 				user = userAccountPanel.getUser();
 				
 				// ask the server to create the user
-				user = specchio_client.createUserAccount(user);
+				if(specchio_client.getLoggedInUser().isInRole("admin"))
+					user = specchio_client.createUserAccountOnCurrentServer(user);
+				else
+					user = specchio_client.createUserAccount(user);
 				
 				// add a line to the configuration file
 				SPECCHIOClientFactory cf = SPECCHIOClientFactory.getInstance();
