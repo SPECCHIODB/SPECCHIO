@@ -157,12 +157,22 @@ public class NewCampaignDialog extends JFrame implements ActionListener
 		    			JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
 			}
 			catch (SPECCHIOClientException ex) {
-				JOptionPane.showMessageDialog(
-		    			SPECCHIOApplication.getInstance().get_frame(),
-		    			ex.getMessage(),
-		    			"Error",
-		    			JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
-		    		);
+//				JOptionPane.showMessageDialog(
+//		    			SPECCHIOApplication.getInstance().get_frame(),
+//		    			ex.getMessage(),
+//		    			"Error",
+//		    			JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
+//		    		);
+				
+		  		ErrorDialog error = new ErrorDialog(
+		  				SPECCHIOApplication.getInstance().get_frame(),
+			    		"Server error",
+			    		ex.getUserMessage(),
+			    		ex
+				    );
+		  		
+		  		error.setVisible(true);
+				
 		    }
 			
 		}
