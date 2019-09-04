@@ -376,7 +376,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 				user = userAccountPanel.getUser();
 				
 				// ask the server to create the user
-				if(specchio_client.getLoggedInUser().isInRole("admin"))
+				if(specchio_client.getLoggedInUser() != null && specchio_client.getLoggedInUser().isInRole("admin"))
 					user = specchio_client.createUserAccountOnCurrentServer(user);
 				else
 					user = specchio_client.createUserAccount(user);
