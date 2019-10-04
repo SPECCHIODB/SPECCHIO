@@ -870,6 +870,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	
 	
 	/**
+	 * Get an instrument that matches the passed object or creates a new instrument and returns it
+	 * 
+	 * @param instrument instance
+	 * 
+	 * @return a new Instrument object
+	 */
+	public Instrument getInstrument(Instrument instrument) throws SPECCHIOWebClientException {	
+	
+		return realClient.getInstrument(instrument);
+		
+	}
+	
+	
+	/**
 	 * Get the calibration metadata for an instrument.
 	 * 
 	 * @param instrument_id	the instrument identifier

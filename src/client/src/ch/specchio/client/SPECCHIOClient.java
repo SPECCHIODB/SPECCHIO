@@ -575,6 +575,16 @@ public interface SPECCHIOClient {
 	 * @return a new Instrument object, or null if the instrument does not exist
 	 */
 	public Instrument getInstrument(int instrument_id) throws SPECCHIOClientException;
+	
+	
+	/**
+	 * Get an instrument that matches the passed object or creates a new instrument and returns it
+	 * 
+	 * @param instrument instance
+	 * 
+	 * @return a new Instrument object
+	 */
+	public Instrument getInstrument(Instrument instrument) throws SPECCHIOWebClientException;
 
 	
 	/**

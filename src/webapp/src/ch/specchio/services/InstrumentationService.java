@@ -144,6 +144,29 @@ public class InstrumentationService extends SPECCHIOService {
 	
 	
 	/**
+	 * Get an instrument that matches the passed object or creates a new instrument and returns it
+	 * 
+	 * @param instrument instance
+	 * 
+	 * @return an Instrument object matching the passed object, or a new instrument
+	 * 
+	 * @throws SPECCHIOFactoryException	on error
+	 */
+	@POST
+	@Path("getOrCreateInstrument")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)	
+	public Instrument getOrCreateInstrument(Instrument instrument) throws SPECCHIOFactoryException {
+		
+		InstrumentationFactory factory = new InstrumentationFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		Instrument known_instrument = factory.getOrCreateInstrument(instrument);
+		factory.dispose();
+		
+		return known_instrument;
+	}		
+
+	
+	/**
 	 * Get a calibrated instrument object.
 	 * 
 	 * @param calibration_id	the calibration identifier

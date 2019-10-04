@@ -472,6 +472,45 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 		
 	}
 	
+
+	/**
+	 * Get an instrument that matches the passed object or creates a new instrument and returns it
+	 * 
+	 * @param instrument instance
+	 * 
+	 * @return an Instrument object matching the passed object, or a new instrument
+	 * 
+	 * @throws SPECCHIOFactoryException	on error
+	 */	
+	public Instrument getOrCreateInstrument(Instrument instrument) {
+		
+		
+		// create dummy spectral file with instrument info and re-use existing method
+		SpectralFile spec_file = new SpectralFile();
+		
+		spec_file.setInstrumentNumber(instrument.getInstrumentNumber().get_value());
+		
+		Float[] wvls =  new Float[instrument.getCentreWavelengths().length];
+		
+		for (int i = 0 ; i < instrument.getCentreWavelengths().length; i++)
+		{
+			wvls[i] = (float) instrument.getCentreWavelengths()[i];
+		}		
+		
+		spec_file.addWvls(wvls);
+		
+		spec_file.setCompany(instrument.getSensor().getManufacturerShortName().get_value());
+		
+		
+		Instrument new_instrument = getInstrumentForSpectralFile(spec_file);
+		
+		
+		
+		return new_instrument;
+	}
+
+
+	
 	
 	/**
 	 * Get the calibration metadata for an instrument.
