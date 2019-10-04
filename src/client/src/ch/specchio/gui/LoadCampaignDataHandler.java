@@ -81,9 +81,11 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 	 * @param parsedFileCount		the total number of files parsed so far
 	 * @param num_files		the number of files
 	 * @param num_spectra	the number of spectra 
+	 * @param files_without_file_loader		lists how many files were encountered where no spectral file loader could be found
 	 * @param file_errors	a list of files that contained errors
+	 * @param simple_delta_loading	loading based on file time stamps
 	 */
-	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, List<String> file_errors, boolean simple_delta_loading) {
+	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, int files_without_file_loader, List<String> file_errors, boolean simple_delta_loading) {
 
 		OperationsPane op = OperationsPane.getInstance();
 		p_rep.set_operation("Done!");
@@ -95,6 +97,7 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 		SPECCHIOApplication app = SPECCHIOApplication.getInstance();
 		
 		String msg_line_1 = "";
+		String msg_line_3 = "";
 		
 		if(simple_delta_loading && parsedFileCount == 0)
 		{
@@ -102,8 +105,10 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 			
 		}
 		
+		if(files_without_file_loader > 0)
+			msg_line_3 = "Number of files where no parser was found: " + files_without_file_loader;
 		
-		JOptionPane.showMessageDialog(app.get_frame(), msg_line_1 + parsedFileCount + " files parsed, " + num_files + " files processed, " + num_spectra + " spectra inserted.", "File Loading Stats", JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
+		JOptionPane.showMessageDialog(app.get_frame(), msg_line_1 + parsedFileCount + " files parsed, " + num_files + " files processed, " + num_spectra + " spectra inserted.\n" + msg_line_3, "File Loading Stats", JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
 		
 		if (file_errors.size()>0)
 		{

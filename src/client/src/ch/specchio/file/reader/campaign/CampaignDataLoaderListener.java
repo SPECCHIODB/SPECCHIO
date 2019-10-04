@@ -32,10 +32,11 @@ public interface CampaignDataLoaderListener {
 	 * @param parsedFileCount		the total number of files parsed so far
 	 * @param num_files		the number of files successfully processed
 	 * @param num_spectra		the number of spectra successfully inserted
+	 * @param files_without_file_loader		lists how many files were encountered where no spectral file loader could be found
 	 * @param file_errors	a list of files that contained errors
 	 * @param simple_delta_loading 
 	 */
-	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, List<String> file_errors, boolean simple_delta_loading);
+	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, int files_without_file_loader, List<String> file_errors, boolean simple_delta_loading);
 	
 	
 	/**
