@@ -49,6 +49,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	private ArrayList<SpectralFileLoader> loaders_of_new_instruments = new ArrayList<SpectralFileLoader>();
 	private File flox_rox_cal_file;
 	private FileTime lastModifiedTime;
+	private int files_with_null_sfl_cnt = 0;
 
 	public SpecchioCampaignDataLoader(CampaignDataLoaderListener listener, SPECCHIOClient specchio_client) {
 		super(listener);		
@@ -90,7 +91,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			
 			// tell the listener that we're finished
 			if(listener != null)
-				listener.campaignDataLoaded(parsed_file_counter, successful_file_counter, spectrum_counter, this.file_errors, simple_delta_loading);
+				listener.campaignDataLoaded(parsed_file_counter, successful_file_counter, spectrum_counter, files_with_null_sfl_cnt, this.file_errors, simple_delta_loading);
 
 		}
 		catch (SPECCHIOClientException ex) {
@@ -362,6 +363,12 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 						}				
 
 					}
+					else
+					{
+						if(file != this.getFlox_rox_cal_file()) // only count files without parser if they are not one of the CAL files ...
+							files_with_null_sfl_cnt ++;
+					}
+						
 				}
 
 				if (spectral_file_list.size() > 0)
@@ -922,13 +929,13 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				}
 				
 				// cx if we got FloX files
-				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("D-FloX") && filename.charAt(0) != 'F') {
+				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("FloX") && filename.charAt(0) != 'F') {
 					loader = new FloX_FileLoader(specchio_client, this);	
 				}	
 				
 				// cx if we got RoX files: Full range instruments like the RoX start with an 'F' in the filename.
 				// also, if the instrument number would be higher than 100 it would be a RoX
-				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("D-FloX") && filename.charAt(0) == 'F') {
+				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("FloX") && filename.charAt(0) == 'F') {
 					loader = new RoX_FileLoader(specchio_client, this);	
 				}					
 				
