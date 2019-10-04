@@ -50,7 +50,7 @@ public class CampaignService extends SPECCHIOService {
 	@GET
 	@Path("copyHierarchy/{hierarchy_id: [0-9]+}/{target_hierarchy_id: [0-9]+}/{new_name}")
 	@Produces(MediaType.APPLICATION_XML)
-	public XmlInteger copySpectrum(
+	public XmlInteger copyHierarchy(
 			@PathParam("hierarchy_id") int hierarchy_id,
 			@PathParam("target_hierarchy_id") int target_hierarchy_id,
 			@PathParam("new_name") String new_name
