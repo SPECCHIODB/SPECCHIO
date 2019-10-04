@@ -789,6 +789,7 @@ public class DataCache {
 		} catch (SPECCHIOFactoryException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new SPECCHIOFactoryException(e);
 		}
 
 		return instr;
@@ -1243,7 +1244,8 @@ public class DataCache {
 					s = get_sensor(spec_file.getWvls(spec_no)); // fallback option: wrong selection can happen if the blueprints of two different companies 
 					
 					// check if company names are matching ...
-					if(!s.getManufacturerShortName().equals(spec_file.getCompany()))
+					String spec_file_company = spec_file.getCompany();
+					if(!s.getManufacturerShortName().get_value().equals(spec_file_company))
 					{
 						s = null;
 					}
