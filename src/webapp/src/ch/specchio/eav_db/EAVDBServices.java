@@ -809,34 +809,37 @@ public class EAVDBServices extends Thread {
 	
 	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, ArrayList<Integer> eav_ids) throws SQLException {
 		
-		insert_primary_x_eav(metadata_level, primary_id, eav_ids.toArray(new Integer[1]));
+		if(eav_ids.size() > 0) insert_primary_x_eav(metadata_level, primary_id, eav_ids.toArray(new Integer[1]));
 		
 	}
 	
 	
 	synchronized public void insert_primary_x_eav(int metadata_level, int primary_id, Integer[] eav_ids) throws SQLException
 	{	
-		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
-		ArrayList<String> value_strings = new ArrayList<String>();
-		
-		// build multi insert string
-		for (int eav_id : eav_ids) {
-			value_strings.add("(" + String.valueOf(primary_id) + ", " + String.valueOf(eav_id) +")");
-		}	
-		
-		// carry out the multi insert statement
-		query = query + SQL.conc_cols(value_strings);		
-		
-		try {
-			//stmt.execute("LOCK TABLES frame_x_eav WRITE");
-			Statement stmt = SQL.createStatement();
-			stmt.executeUpdate(query);
-			stmt.close();
-			//stmt.execute("UNLOCK TABLES");	
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw(e);
+		if(eav_ids.length > 0)
+		{
+			String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
+			ArrayList<String> value_strings = new ArrayList<String>();
+
+			// build multi insert string
+			for (int eav_id : eav_ids) {
+				value_strings.add("(" + String.valueOf(primary_id) + ", " + String.valueOf(eav_id) +")");
+			}	
+
+			// carry out the multi insert statement
+			query = query + SQL.conc_cols(value_strings);		
+
+			try {
+				//stmt.execute("LOCK TABLES frame_x_eav WRITE");
+				Statement stmt = SQL.createStatement();
+				stmt.executeUpdate(query);
+				stmt.close();
+				//stmt.execute("UNLOCK TABLES");	
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw(e);
+			}
 		}
 		
 	}
