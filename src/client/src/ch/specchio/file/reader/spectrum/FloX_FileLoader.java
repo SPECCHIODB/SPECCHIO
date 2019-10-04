@@ -95,8 +95,9 @@ public class FloX_FileLoader extends JB_FileLoader {
 					mainboard_humidity= r.get(19);
 					chamber_humidity= r.get(21);
 					instrument_name = r.get(22);
-					String[] tmp = instrument_name.split("-");
-					instrument_number = tmp[2];
+					String[] name_parts = instrument_name.split(" ");
+					String[] tmp = name_parts[2].split("-");
+					instrument_number = tmp[1];				
 					
 //					outside_temp = r.get(13);
 //					box_rel_hum = r.get(15);

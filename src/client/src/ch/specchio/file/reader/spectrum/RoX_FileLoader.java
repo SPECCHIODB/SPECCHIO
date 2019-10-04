@@ -82,8 +82,9 @@ public class RoX_FileLoader extends JB_FileLoader {
 //					box_rel_hum = r.get(15);
 //					rel_hum = r.get(17);
 					instrument_name = r.get(14);
-					String[] tmp = instrument_name.split("-");
-					instrument_number = tmp[2];					
+					String[] name_parts = instrument_name.split(" ");
+					String[] tmp = name_parts[2].split("-");
+					instrument_number = tmp[1];					
 					gps_time  = r.get(16);
 					
 					// remove decimal point from time string if existing

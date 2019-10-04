@@ -122,9 +122,11 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 			CSVParser csvParser = new CSVParser(bufferedReader, CSVFormat.newFormat(';'));
 			//csvRecords = csvParser.getRecords();
 			
-			String first_token = csvParser.iterator().next().get(0);
+			CSVRecord Line1 = csvParser.iterator().next();
+			String first_token = Line1.get(0);
+			//String scnd_token = Line1.get(1);
 			
-			
+			first_token = first_token.replaceAll("\\p{Punct}","");  // strip high commata from newer cal file strings ... (2019-10-04)
 			
 			if(first_token.equals("wl_F")) // RoX cal file format: F stands for full range
 			{
@@ -173,8 +175,8 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 					
 					if(r.getRecordNumber()==4)
 					{
-						setCalibration_date(r.get(6));
-						Integer cal_number = Integer.parseInt(r.get(6));
+						setCalibration_date(r.get(6).replaceAll("\\p{Punct}",""));
+						Integer cal_number = Integer.parseInt(r.get(6).replaceAll("\\p{Punct}",""));
 						spec_file.setCalibrationSeries(cal_number);
 					}
 					
