@@ -25,7 +25,9 @@ public class SPECCHIODatabaseDescriptor implements SPECCHIOServerDescriptor {
 	
 	/** datasource name (JNDI) */
 	private String dataSourceName;
-	   
+
+	/** index at which this descriptor is found in the list of known connections */
+	private int list_index = -1; 	
 	
 	/**
 	 * Constructor.
@@ -254,5 +256,15 @@ public class SPECCHIODatabaseDescriptor implements SPECCHIOServerDescriptor {
 		
 		return null;
 	}
+	
+	public int getList_index() {
+		return list_index;
+	}
+
+
+	public void setList_index(int list_index) {
+		this.list_index = list_index;
+	}
+	
 
 }

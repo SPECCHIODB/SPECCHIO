@@ -840,5 +840,40 @@ public class SpectralFile {
 	public void setCalibration_date(DateTime calibration_date) {
 		this.calibration_date = calibration_date;
 	}
+	
+	
+    public String measurementsToHex(int spec_no) {
+
+        StringBuilder sb = new StringBuilder();
+        
+		for (int i = 0; i < measurements[spec_no].length; i++) {
+			try {
+				String tmp = SpectralFile.hex(measurements[spec_no][i]);
+				
+				sb.append(tmp);
+				
+			}
+			catch (NullPointerException e){
+				
+				// log the error
+				file_errors.add(new SpecchioMessage("Spectrum contains null values.", SpecchioMessage.ERROR));
+				
+				break;
+			}
+		}
+        return sb.toString();
+
+    }
+    
+    public static String hex(int n) {
+        // call toUpperCase() if that's required
+        return String.format("%8s", Integer.toHexString(n)).replace(' ', '0');
+    }
+
+    public static String hex(float f) {
+        // change the float to raw integer bits(according to the OP's requirement)
+        return hex(Float.floatToRawIntBits(f));
+    }    
+
 
 }

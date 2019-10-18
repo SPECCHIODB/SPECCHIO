@@ -37,6 +37,7 @@ public class SQL_StatementBuilder {
 	   // save connection and statement for later
 	   try {
 		   this.conn = conn;
+		   //conn.setAutoCommit(false);
 		   this.stmt = this.conn.createStatement();
 		   this.dbm = conn.getMetaData();
 	   }

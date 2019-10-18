@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -65,6 +67,8 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	public void run() {
 		try {
 			
+			Instant start = Instant.now();
+			
 			// clear EAV known metadata entries because some delete operation might have happened in the meantime
 			specchio_client.clearMetaparameterRedundancyList();
 
@@ -93,6 +97,9 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			if(listener != null)
 				listener.campaignDataLoaded(parsed_file_counter, successful_file_counter, spectrum_counter, files_with_null_sfl_cnt, this.file_errors, simple_delta_loading);
 
+			Instant end = Instant.now();
+			System.out.println("Loading time: " + Duration.between(start, end).getSeconds());
+			
 		}
 		catch (SPECCHIOClientException ex) {
 			if(listener != null)

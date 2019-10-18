@@ -6,6 +6,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -97,12 +99,17 @@ public class DataRemoverDialog extends JFrame implements ActionListener, TreeSel
 			pr.setVisible(true);
 			
 			try {
+				Instant start = Instant.now();
 				// ask the server to remove the node from the database
 				pr.set_operation("Deleting data. Please wait.");
 								
 				specchio_client.removeSpectralNodes(nodes);
 				pr.set_operation("Cleaning up...");
 				specchio_client.clearMetaparameterRedundancyList();
+				
+				Instant end = Instant.now();
+				System.out.println("Deletion time: " + Duration.between(start, end).getSeconds());
+				
 				
 				// remove the node from the local tree control
 				removeTreeNodes(sdb_nodes);

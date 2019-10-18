@@ -39,6 +39,8 @@ public class SPECCHIOWebAppDescriptor implements SPECCHIOServerDescriptor {
 	/** trust store configuration */
 	private boolean uses_default_trust_store;
 	
+	/** index at which this descriptor is found in the list of known connections */
+	private int list_index = -1; 
 	
 	/**
 	 * Constructor.
@@ -196,7 +198,7 @@ public class SPECCHIOWebAppDescriptor implements SPECCHIOServerDescriptor {
 	 */
 	public String getDisplayName(boolean showUser, boolean show_datasource_name) {
 		
-		return protocol + "://" + (showUser ? user + "@" : "") + server + ":" + port + path + (show_datasource_name ? "@"+dataSourceName : "")  ;
+		return ((getList_index() == -1) ? "" : getList_index() + ": ") + protocol + "://" + (showUser ? user + "@" : "") + server + ":" + port + path + (show_datasource_name ? "@"+dataSourceName : "")  ;
 		
 	}
 	
@@ -336,6 +338,16 @@ public class SPECCHIOWebAppDescriptor implements SPECCHIOServerDescriptor {
 			return true;
 		else
 			return false;
+	}
+
+
+	public int getList_index() {
+		return list_index;
+	}
+
+
+	public void setList_index(int list_index) {
+		this.list_index = list_index;
 	}
 
 }

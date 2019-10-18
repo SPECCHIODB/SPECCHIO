@@ -76,5 +76,19 @@ public interface SPECCHIOServerDescriptor {
 	 */
 	
 	public Boolean isEncrypted();		
+	
+	/**
+	 * index at which this descriptor is found in the list of known connections
+	 * 
+	 * @return index if known, otherwise -1
+	 */	
+	public int getList_index();
+
+	/**
+	 * set index at which this descriptor is found in the list of known connections
+	 *
+	 */		
+	public void setList_index(int list_index);
+	
 
 }

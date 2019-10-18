@@ -1412,6 +1412,8 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 		try {
 			
 			Statement stmt = getStatementBuilder().createStatement();
+			stmt = getStatementBuilder().createStatement();
+			stmt.getConnection().setAutoCommit(false);
 			
 			ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 			
@@ -1441,6 +1443,10 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			{
 				removeHierarchyNode(h_id, is_admin);
 			}
+			
+			stmt.getConnection().commit();
+			//stmt.getConnection().rollback();
+			stmt.getConnection().setAutoCommit(true);		
 			
 			stmt.close();
 			
