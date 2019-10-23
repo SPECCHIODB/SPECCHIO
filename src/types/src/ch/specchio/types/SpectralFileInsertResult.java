@@ -88,6 +88,11 @@ public class SpectralFileInsertResult {
 		this.added_new_instruments.add(added_new_instrument);
 	}	
 	
+	public void addAdded_new_instruments(ArrayList<Boolean> new_instruments) {
+		this.added_new_instruments.addAll(new_instruments);
+	}	
+	
+	
 	
 	
 //	@XmlElement(name="spectral_file_list")

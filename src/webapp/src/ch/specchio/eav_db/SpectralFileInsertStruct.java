@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import ch.specchio.types.Metadata;
 import ch.specchio.types.SpecchioMessage;
 
 
@@ -21,6 +22,7 @@ public class SpectralFileInsertStruct {
 	public int calibration_id;
 	public String measurement_unit_id;
 	public String measurement_as_hex;
+	public Metadata metadata;
 	
 	
 	/** default constructor */

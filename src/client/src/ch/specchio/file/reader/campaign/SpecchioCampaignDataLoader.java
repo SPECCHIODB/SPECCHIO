@@ -128,6 +128,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		ArrayList<File> files, directories;
 		SpectralFile spec_file;
 		boolean is_garbage = parent_garbage_flag;
+		SpecchioMessage file_loading_from_FS = null;
 
 		// Garbage detection: all data that are under a folder called 'Garbage' will get an EAV garbage flag
 		// this allows users to load also suboptimal (i.e. garbage) data into the database, but easily exclude them from any selection
@@ -269,6 +270,9 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 			if(simple_delta_loading == false || new_data_available)
 			{
+				
+				Instant start = Instant.now();
+
 
 				ArrayList<SpectralFile> spectral_file_list = new ArrayList<SpectralFile>();		
 				//ArrayList<SpectralFileLoader> spectral_file_loader_list = new ArrayList<SpectralFileLoader>();	
@@ -375,8 +379,17 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 						if(file != this.getFlox_rox_cal_file()) // only count files without parser if they are not one of the CAL files ...
 							files_with_null_sfl_cnt ++;
 					}
+					
+					
+					 Instant end = Instant.now();
+					 
+					 file_loading_from_FS = new SpecchioMessage("file_loading_from_FS: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO);
+					
+
 						
 				}
+				
+				
 
 				if (spectral_file_list.size() > 0)
 				{
@@ -419,8 +432,17 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 						{
 
 							SpectralFileInsertResult insert_result = new SpectralFileInsertResult();
+							
+							insert_result.addError(file_loading_from_FS); // time logging
+							
+							start = Instant.now();
 
 							insert_result = insert_spectral_file(spec_file, parent_id);
+							
+							Instant end = Instant.now();
+							 
+							insert_result.addError(new SpecchioMessage("time for client side during insert_spectral_file: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO)); 
+							
 
 							spectrum_counter += insert_result.getSpectrumIds().size();
 

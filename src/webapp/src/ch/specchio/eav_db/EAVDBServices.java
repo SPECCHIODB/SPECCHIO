@@ -77,6 +77,47 @@ public class EAVDBServices extends Thread {
 	}
 	
 	
+	
+	
+	
+	public void getMetadataInsertData(int campaign_id, Metadata md) throws SQLException
+	{
+		
+		ArrayList<String> value_strings = new ArrayList<String>();
+		double reduction_count = 0;
+		
+		ArrayList<Integer> eav_ids = new ArrayList<Integer>();
+		
+		// loop through all entries
+		ListIterator<MetaParameter> li = md.getEntries().listIterator();
+
+		while(li.hasNext())
+		{
+			MetaParameter e =  li.next();
+
+			e = this.reduce_redundancy(e);
+
+			if(e.getEavId() == 0)
+			{					
+
+				value_strings.add(get_metaparameter_value_string(campaign_id, e));			
+
+			}
+			else
+			{
+				eav_ids.add(e.getEavId());
+				reduction_count++;
+			}
+		}		
+
+
+		md.insert_value_strings = value_strings;
+		md.redundancy_reduced_eav_ids = eav_ids;
+		
+	}
+	
+	
+	
 	/**
 	 * Insert metadata into the database Only inserts metaparameters that are new
 	 * 
@@ -93,7 +134,7 @@ public class EAVDBServices extends Thread {
 		double reduction_count = 0;
 		
 		ArrayList<Integer> eav_ids = new ArrayList<Integer>();
-		ArrayList<MetaParameter> multi_insert_eavs = new ArrayList<MetaParameter>();
+//		ArrayList<MetaParameter> multi_insert_eavs = new ArrayList<MetaParameter>();
 			// loop through all entries
 			ListIterator<MetaParameter> li = md.getEntries().listIterator();
 		
@@ -104,19 +145,22 @@ public class EAVDBServices extends Thread {
 				e = this.reduce_redundancy(e);
 				
 				if(e.getEavId() == 0)
-				{
+				{					
+					
+					value_strings.add(get_metaparameter_value_string(campaign_id, e));			
+//					multi_insert_eavs.add(e);	
 					
 					// check if multi insert is possible
-					if(e.allows_multi_insert())
-					{
-						value_strings.add(get_metaparameter_value_string(campaign_id, e));			
-						multi_insert_eavs.add(e);
-					}
-					else
-					{
-						int id = insert_metaparameter_into_db(campaign_id, e, false, is_admin); // redundancy is already reduced
-						eav_ids.add(id);
-					}
+//					if(e.allows_multi_insert())
+//					{
+//						value_strings.add(get_metaparameter_value_string(campaign_id, e));			
+//						multi_insert_eavs.add(e);
+//					}
+//					else
+//					{
+//						int id = insert_metaparameter_into_db(campaign_id, e, false, is_admin); // redundancy is already reduced
+//						eav_ids.add(id);
+//					}
 				}
 				else
 				{
@@ -142,7 +186,7 @@ public class EAVDBServices extends Thread {
 			    int cnt = 0;
 			    while (rs.next()) {
 			    	_eav_id = rs.getInt(1);
-			    	multi_insert_eavs.get(cnt++).setEavId(_eav_id);
+//			    	multi_insert_eavs.get(cnt++).setEavId(_eav_id);
 			    	eav_ids.add(_eav_id);
 			    }		
 				
@@ -264,8 +308,44 @@ public class EAVDBServices extends Thread {
 		
 		int eav_id = 0;
 		
-		String query = "insert into " + this.eav_view_name + " (campaign_id, attribute_id, unit_id) " + 
-				"values(" + campaign_id + "," + attribute_id + "," + unit_id + ")";
+		StringBuilder sb = new StringBuilder();
+				
+		ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
+		ObjectOutputStream out_;
+		try {
+			out_ = new ObjectOutputStream(baos_);
+			out_.writeObject(value);
+
+			out_.close();	
+			
+			String test = baos_.toString();
+			
+			byte[] bytearr = baos_.toByteArray();
+			
+			
+			
+			for (int i = 0; i < bytearr.length; i++) {
+								
+				int b = bytearr[i] & 0xFF;
+				
+				String tmp = Integer.toHexString(b);
+				
+				sb.append(tmp);
+				
+			}
+			
+			int x = 0;
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		value = "x'" + sb + "'";		
+		
+		String query = "insert into " + this.eav_view_name + " (campaign_id, attribute_id, unit_id, " + field + ") " + 
+				"values(" + campaign_id + "," + attribute_id + "," + unit_id + ","  + value + ")";
 		
 		Statement stmt = SQL.createStatement();
 		stmt.executeUpdate(query);
@@ -278,21 +358,21 @@ public class EAVDBServices extends Thread {
 		rs.close();
 		stmt.close();
 			
-		String update_stm = "UPDATE " + this.eav_view_name + " set " + field + " = ? where eav_id = " + eav_id;
-		//update_stm = "UPDATE eav set " + field + " = ? where eav_id = " + eav_id;
-		PreparedStatement statement = SQL.prepareStatement(update_stm);
+//		String update_stm = "UPDATE " + this.eav_view_name + " set " + field + " = ? where eav_id = " + eav_id;
+//		//update_stm = "UPDATE eav set " + field + " = ? where eav_id = " + eav_id;
+//		PreparedStatement statement = SQL.prepareStatement(update_stm);
+//			
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		ObjectOutputStream out = new ObjectOutputStream(baos);
+//		out.writeObject(value);
+//		out.close();
+//			
+//		//statement.setBinaryStream(1, new ByteArrayInputStream(baos.toByteArray()), baos.size());
+//		statement.setBlob(1, new ByteArrayInputStream(baos.toByteArray()));
+//		statement.executeUpdate();			
 			
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream out = new ObjectOutputStream(baos);
-		out.writeObject(value);
-		out.close();
-			
-		//statement.setBinaryStream(1, new ByteArrayInputStream(baos.toByteArray()), baos.size());
-		statement.setBlob(1, new ByteArrayInputStream(baos.toByteArray()));
-		statement.executeUpdate();			
-			
-		rs.close();
-		statement.close();
+//		rs.close();
+//		statement.close();
 			
 		
 		return eav_id;
@@ -376,12 +456,12 @@ public class EAVDBServices extends Thread {
 			ex.printStackTrace();
 		}
 		
-		if (e.allows_multi_insert() == false)
-		{
-			return null; // Matrix values must be inserted by update statements externally
-		}
-		else
-		{
+//		if (e.allows_multi_insert() == false)
+//		{
+//			return null; // Matrix values must be inserted by update statements externally
+//		}
+//		else
+//		{
 			// fields: campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, unit_id
 			
 			String fieldname = e.getDefaultStorageField();
@@ -390,6 +470,36 @@ public class EAVDBServices extends Thread {
 			if(fieldname.equals("spatial_val"))
 			{
 				value = (String) e.getEAVValue();
+			}
+			else if(fieldname.equals("binary_val"))
+			{
+				
+				
+				Serializable value_ = (Serializable) e.getValue();
+				
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ObjectOutputStream out;
+				try {
+					out = new ObjectOutputStream(baos);
+					out.writeObject(value_);
+
+					out.close();	
+					
+					String test = baos.toString();
+					
+					byte[] bytearr = baos.toByteArray();
+					
+					
+					
+					int x = 0;
+					
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
+				value = "x'" + "'";
 			}
 			else
 			{
@@ -422,7 +532,7 @@ public class EAVDBServices extends Thread {
 			
 			return query.toString();
 
-		}
+//		}
 		
 	}
 	
@@ -865,6 +975,55 @@ public class EAVDBServices extends Thread {
 		stmt.close();
 		
 	}
+	
+	// inserts links between spectra and eavs by using the redundancy index
+	public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> spectrum_ids,
+			ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum,
+			ArrayList<Integer> eav_ids) throws SQLException {
+		
+		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
+		StringBuffer value_strings = new StringBuffer();
+		
+		// iterate all spectrum_ids, look up their index and create value strings
+		
+		StringBuffer values = new StringBuffer();
+		
+		ListIterator<Integer> sli = spectrum_ids.listIterator();
+		
+		while(sli.hasNext())
+		{
+			ArrayList<Integer> redundancy_index = redundancy_reduced_metaparameter_index_per_spectrum.get(sli.nextIndex());
+			
+			int spectrum_id = sli.next();
+			
+			ListIterator<Integer> rili = redundancy_index.listIterator();
+			
+			while(rili.hasNext())
+			{
+				int index = rili.next();
+				int eav_id = eav_ids.get(index);
+				
+				value_strings.append("(" + spectrum_id + "," + eav_id + ")");
+				
+				if(sli.hasNext() || rili.hasNext()) value_strings.append(",");
+
+			}
+						
+			
+		}
+		
+	//	value_strings.deleteCharAt(value_strings.length());
+		
+		
+		
+		// carry out the multi insert statement
+		query = query + value_strings.toString();
+		Statement stmt = SQL.createStatement();
+		stmt.executeUpdate(query);
+		stmt.close();				
+		
+	}
+
 	
 	
 	synchronized public ArrayList<Integer> get_list_of_processing_levels()
@@ -2238,6 +2397,11 @@ public class EAVDBServices extends Thread {
 		// TODO Auto-generated method stub
 		this.specchioFactory  = specchioFactory;
 	}
+
+
+
+
+
 	
 
 }

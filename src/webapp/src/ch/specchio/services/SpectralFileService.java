@@ -1,6 +1,8 @@
 package ch.specchio.services;
 
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import javax.ws.rs.*;
@@ -13,6 +15,7 @@ import ch.specchio.factories.SpectralFileFactory;
 import ch.specchio.jaxb.XmlBoolean;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.jaxb.XmlIntegerAdapter;
+import ch.specchio.types.SpecchioMessage;
 import ch.specchio.types.SpectralFile;
 import ch.specchio.types.SpectralFileInsertResult;
 import ch.specchio.types.SpectralFiles;
@@ -149,7 +152,12 @@ public class SpectralFileService extends SPECCHIOService {
 				getDataSourceName(),
 				spec_file.getCampaignId()
 			);
+		
+		Instant start = Instant.now();
 		SpectralFileInsertResult insert_result = factory.insertSpectralFile(spec_file, spec_file.getHierarchyId());
+		Instant end = Instant.now();
+		insert_result.addError(new SpecchioMessage("Total insert time on server: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO) );
+		
 		factory.dispose();
 		
 //		XmlIntegerAdapter adapter = new XmlIntegerAdapter();

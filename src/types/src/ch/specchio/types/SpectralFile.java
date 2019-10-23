@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import ch.specchio.jaxb.XmlDateTimeAdapter;
 
@@ -168,6 +169,13 @@ public class SpectralFile {
 	
 	private  ArrayList<SpecchioMessage> file_errors = new ArrayList<SpecchioMessage>();
 	private int file_error_code;
+	
+	
+	// data insert speedup fields
+	private ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum;
+	private boolean use_shared_loading_time = true; // uses same loading time for all spectra in file
+	private DateTime loading_time = null;
+	private ArrayList<MetaParameter> unique_metaparameters;
 	
 	public SpectralFile() {
 		
@@ -848,9 +856,8 @@ public class SpectralFile {
         
 		for (int i = 0; i < measurements[spec_no].length; i++) {
 			try {
-				String tmp = SpectralFile.hex(measurements[spec_no][i]);
 				
-				sb.append(tmp);
+				sb.append(SpectralFile.hex(measurements[spec_no][i]));
 				
 			}
 			catch (NullPointerException e){
@@ -873,7 +880,49 @@ public class SpectralFile {
     public static String hex(float f) {
         // change the float to raw integer bits(according to the OP's requirement)
         return hex(Float.floatToRawIntBits(f));
-    }    
+    }
 
+	public ArrayList<ArrayList<Integer>> getRedundancy_reduced_metaparameter_index_per_spectrum() {
+		return redundancy_reduced_metaparameter_index_per_spectrum;
+	}
+
+	public void setRedundancy_reduced_metaparameter_index_per_spectrum(
+			ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum) {
+		this.redundancy_reduced_metaparameter_index_per_spectrum = redundancy_reduced_metaparameter_index_per_spectrum;
+	}
+
+	public boolean isUse_shared_loading_time() {
+		return use_shared_loading_time;
+	}
+
+	public void setUse_shared_loading_time(boolean use_shared_loading_time) {
+		this.use_shared_loading_time = use_shared_loading_time;
+	}
+
+	public DateTime getLoading_time() {
+		if(use_shared_loading_time && loading_time == null)
+		{
+			loading_time = new DateTime(DateTimeZone.UTC); // init loading time to be shared on inital call
+		}
+		else if(use_shared_loading_time == false)
+		{
+			loading_time = new DateTime(DateTimeZone.UTC);
+		}
+		
+		return loading_time;
+	}
+
+	public void setLoading_time(DateTime loading_time) {
+		this.loading_time = loading_time;
+	}
+
+	public void setUniqueMetaParameters(ArrayList<MetaParameter> unique_mps) {
+		unique_metaparameters = unique_mps;		
+	}    
+
+	public ArrayList<MetaParameter> getUniqueMetaParameters() {
+		return unique_metaparameters;		
+	}    
+	
 
 }
