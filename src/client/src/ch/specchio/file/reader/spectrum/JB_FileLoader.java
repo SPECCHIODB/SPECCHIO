@@ -161,16 +161,15 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 				int i=0;
 
 				for (CSVRecord r : csvParser) {
-				
-					//if(i>0)
-					{					
-						wvls_fluorescence.add(Float.valueOf(r.get(0)));
-						up_coef_fluorescence.add(Float.valueOf(r.get(1)));
-						dw_coef_fluorescence.add(Float.valueOf(r.get(2)));						
-						wvls_broadrange.add(Float.valueOf(r.get(3)));
-						up_coef_broadrange.add(Float.valueOf(r.get(4)));
-						dw_coef_broadrange.add(Float.valueOf(r.get(5)));						
-					}
+
+					// FLUO
+					wvls_fluorescence.add(Float.valueOf(r.get(0)));
+					up_coef_fluorescence.add(Float.valueOf(r.get(1)));
+					dw_coef_fluorescence.add(Float.valueOf(r.get(2)));
+					// FULL
+					wvls_broadrange.add(Float.valueOf(r.get(3)));
+					up_coef_broadrange.add(Float.valueOf(r.get(4)));
+					dw_coef_broadrange.add(Float.valueOf(r.get(5)));
 					i++;
 					
 					if(r.getRecordNumber()==4)
