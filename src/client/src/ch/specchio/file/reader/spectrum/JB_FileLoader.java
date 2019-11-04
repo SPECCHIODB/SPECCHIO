@@ -162,7 +162,7 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 
 				for (CSVRecord r : csvParser) {
 				
-					if(i>0)
+					//if(i>0)
 					{					
 						wvls_fluorescence.add(Float.valueOf(r.get(0)));
 						up_coef_fluorescence.add(Float.valueOf(r.get(1)));
