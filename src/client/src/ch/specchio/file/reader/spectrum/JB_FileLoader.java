@@ -293,15 +293,15 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 		
 		if(gps_date.length() == 5)
 		{
-			year = Integer.valueOf(gps_date.substring(3, 5));
+			year  = Integer.valueOf(gps_date.substring(3, 5));
 			month = Integer.valueOf(gps_date.substring(1, 3));
-			mday = Integer.valueOf(gps_date.substring(0, 1));
+			mday  = Integer.valueOf(gps_date.substring(0, 1));
 		}
 		else
 		{
-			year = Integer.valueOf(gps_date.substring(4, 6));
+			year  = Integer.valueOf(gps_date.substring(4, 6));
 			month = Integer.valueOf(gps_date.substring(2, 4));
-			mday = Integer.valueOf(gps_date.substring(0, 2));
+			mday  = Integer.valueOf(gps_date.substring(0, 2));
 		}
 		
 		year = year + 2000;
