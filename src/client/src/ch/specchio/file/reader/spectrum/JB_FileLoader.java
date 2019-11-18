@@ -38,12 +38,12 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 	spatial_pos pos;
 	DateTime utc;
 
-	private ArrayList<Float> wvls_fluorescence = new ArrayList<Float>();
+	private ArrayList<Float> wvls_fluorescence    = new ArrayList<Float>();
 	private ArrayList<Float> up_coef_fluorescence = new ArrayList<Float>();
 	private ArrayList<Float> dw_coef_fluorescence = new ArrayList<Float>();
-	private ArrayList<Float> wvls_broadrange = new ArrayList<Float>();
-	private ArrayList<Float> up_coef_broadrange = new ArrayList<Float>();
-	private ArrayList<Float> dw_coef_broadrange = new ArrayList<Float>();
+	private ArrayList<Float> wvls_broadrange      = new ArrayList<Float>();
+	private ArrayList<Float> up_coef_broadrange   = new ArrayList<Float>();
+	private ArrayList<Float> dw_coef_broadrange   = new ArrayList<Float>();
 	
 
 	public JB_FileLoader(String file_format_name, SPECCHIOClient specchio_client,
@@ -161,16 +161,15 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 				int i=0;
 
 				for (CSVRecord r : csvParser) {
-				
-					if(i>0)
-					{					
-						wvls_fluorescence.add(Float.valueOf(r.get(0)));
-						up_coef_fluorescence.add(Float.valueOf(r.get(1)));
-						dw_coef_fluorescence.add(Float.valueOf(r.get(2)));						
-						wvls_broadrange.add(Float.valueOf(r.get(3)));
-						up_coef_broadrange.add(Float.valueOf(r.get(4)));
-						dw_coef_broadrange.add(Float.valueOf(r.get(5)));						
-					}
+
+					// FLUO
+					wvls_fluorescence.add(Float.valueOf(r.get(0)));
+					up_coef_fluorescence.add(Float.valueOf(r.get(1)));
+					dw_coef_fluorescence.add(Float.valueOf(r.get(2)));
+					// FULL
+					wvls_broadrange.add(Float.valueOf(r.get(3)));
+					up_coef_broadrange.add(Float.valueOf(r.get(4)));
+					dw_coef_broadrange.add(Float.valueOf(r.get(5)));
 					i++;
 					
 					if(r.getRecordNumber()==4)
@@ -294,15 +293,15 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 		
 		if(gps_date.length() == 5)
 		{
-			year = Integer.valueOf(gps_date.substring(3, 5));
+			year  = Integer.valueOf(gps_date.substring(3, 5));
 			month = Integer.valueOf(gps_date.substring(1, 3));
-			mday = Integer.valueOf(gps_date.substring(0, 1));
+			mday  = Integer.valueOf(gps_date.substring(0, 1));
 		}
 		else
 		{
-			year = Integer.valueOf(gps_date.substring(4, 6));
+			year  = Integer.valueOf(gps_date.substring(4, 6));
 			month = Integer.valueOf(gps_date.substring(2, 4));
-			mday = Integer.valueOf(gps_date.substring(0, 2));
+			mday  = Integer.valueOf(gps_date.substring(0, 2));
 		}
 		
 		year = year + 2000;
