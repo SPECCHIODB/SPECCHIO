@@ -38,12 +38,12 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 	spatial_pos pos;
 	DateTime utc;
 
-	private ArrayList<Float> wvls_fluorescence = new ArrayList<Float>();
+	private ArrayList<Float> wvls_fluorescence    = new ArrayList<Float>();
 	private ArrayList<Float> up_coef_fluorescence = new ArrayList<Float>();
 	private ArrayList<Float> dw_coef_fluorescence = new ArrayList<Float>();
-	private ArrayList<Float> wvls_broadrange = new ArrayList<Float>();
-	private ArrayList<Float> up_coef_broadrange = new ArrayList<Float>();
-	private ArrayList<Float> dw_coef_broadrange = new ArrayList<Float>();
+	private ArrayList<Float> wvls_broadrange      = new ArrayList<Float>();
+	private ArrayList<Float> up_coef_broadrange   = new ArrayList<Float>();
+	private ArrayList<Float> dw_coef_broadrange   = new ArrayList<Float>();
 	
 
 	public JB_FileLoader(String file_format_name, SPECCHIOClient specchio_client,
