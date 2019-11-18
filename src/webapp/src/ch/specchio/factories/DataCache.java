@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.ListIterator;
 
 import org.joda.time.DateTime;
@@ -24,6 +25,7 @@ import ch.specchio.constants.SensorType;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.types.Calibration;
+import ch.specchio.types.ConflictStruct;
 import ch.specchio.types.Country;
 import ch.specchio.types.Institute;
 import ch.specchio.types.Instrument;
@@ -48,7 +50,7 @@ public class DataCache {
 //	ArrayList<SamplingEnvironmentStruct> sampling_environments;	
 //	ArrayList<BeamGeometryStruct> beam_geometries;
 	ArrayList<ReferenceBrand> reference_brands;
-	
+	Hashtable<String, Integer> file_format_name_2_id_hash = new Hashtable<String, Integer>();
 	
 	
 	public DataCache(SQL_StatementBuilder SQL, String datasource_name) throws SQLException
@@ -66,10 +68,46 @@ public class DataCache {
 		load_calibrations();
 		load_instruments();		
 		load_reference_brands();
+		load_file_format_name_2_id_hash();
 	}
 	
 	
 	
+	private void load_file_format_name_2_id_hash() {
+		
+		int file_format_id = -1;
+		String name;
+		
+		try {
+			Statement stmt = SQL.createStatement();
+			String query = "SELECT name, file_format_id from file_format";
+			ResultSet rs = stmt.executeQuery(query);	
+			while (rs.next())
+			{
+				name = rs.getString(1);
+				file_format_id = rs.getInt(2);
+				file_format_name_2_id_hash.put(name, file_format_id);
+				
+			}
+			rs.close();
+			stmt.close();
+			
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		
+	}
+	
+	
+	public int get_file_format_id(String name)
+	{
+		return file_format_name_2_id_hash.get(name);
+	}
+	
+
 	/**
 	 * Load calibrations
 	 * 

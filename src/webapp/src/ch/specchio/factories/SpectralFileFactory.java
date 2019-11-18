@@ -121,27 +121,29 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	public int getIdForFileFormat(String file_format_name) throws SPECCHIOFactoryException {
 		
 		// initialise to "not found"
-		int file_format_id = -1;
+//		int file_format_id = -1;
+//		
+//		try {
+//		
+//			String query = "SELECT file_format_id from file_format where name = '" + file_format_name + "'";
+//			Statement stmt = getStatementBuilder().createStatement();
+//			ResultSet rs = stmt.executeQuery(query);	
+//			while (rs.next())
+//			{
+//				file_format_id = rs.getInt(1);
+//			}
+//			rs.close();
+//			stmt.close();
+//			
+//		}
+//		catch (SQLException ex) {
+//			// bad SQL
+//			throw new SPECCHIOFactoryException(ex);
+//		}
+//		
+//		return file_format_id;
 		
-		try {
-		
-			String query = "SELECT file_format_id from file_format where name = '" + file_format_name + "'";
-			Statement stmt = getStatementBuilder().createStatement();
-			ResultSet rs = stmt.executeQuery(query);	
-			while (rs.next())
-			{
-				file_format_id = rs.getInt(1);
-			}
-			rs.close();
-			stmt.close();
-			
-		}
-		catch (SQLException ex) {
-			// bad SQL
-			throw new SPECCHIOFactoryException(ex);
-		}
-		
-		return file_format_id;
+		return this.getDataCache().get_file_format_id(file_format_name);
 	
 	}
 	
@@ -602,7 +604,9 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		Statement stmt = null;
 		try {
 			stmt = getStatementBuilder().createStatement();
-			stmt.getConnection().setAutoCommit(false);
+//			stmt.getConnection().setAutoCommit(false);
+			
+			stmt.execute("START TRANSACTION");
 
 		if (spec_file.getCompany().equals("SVC")
 				&& spec_file.getInstrumentTypeNumber() == 1024
@@ -1013,9 +1017,11 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 //			insertHierarchySpectrumReferences(spec_file.getHierarchyId(), insert_result.getSpectrumIds());
 		}
 		
-		stmt.getConnection().commit();
+//		stmt.getConnection().commit();
 		//
-		stmt.getConnection().setAutoCommit(true);		
+		
+		stmt.execute("COMMIT");
+//		stmt.getConnection().setAutoCommit(true);		
 		
 		stmt.close();
 		
