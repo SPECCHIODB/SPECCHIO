@@ -76,7 +76,7 @@ public class RoX_FileLoader extends JB_FileLoader {
 					date = r.get(1);
 					time = r.get(2);	
 					IT_WR = r.get(5);	
-					IT_VEG = r.get(7);	
+					IT_VEG = r.get(7);
 					mainboard_temp = r.get(11);
 					mainboard_humidity = r.get(13);
 //					box_rel_hum = r.get(15);
@@ -146,7 +146,7 @@ public class RoX_FileLoader extends JB_FileLoader {
 					smd.addEntry(mp);				
 				
 					mp = MetaParameter.newInstance(attributes_name_hash.get("Integration Time"));
-					if(measurement_designator.equals("WR") || measurement_designator.equals("DC_WR"))
+					if(measurement_designator.equals("WR") || measurement_designator.equals("DC_WR") || measurement_designator.equals("WR2"))
 					{
 						mp.setValue(IT_WR);
 					}

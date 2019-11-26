@@ -180,7 +180,7 @@ public class FloX_FileLoader extends JB_FileLoader {
 
 				
 					mp = MetaParameter.newInstance(attributes_name_hash.get("Integration Time"));
-					if(measurement_designator.equals("WR") || measurement_designator.equals("DC_WR"))
+					if(measurement_designator.equals("WR") || measurement_designator.equals("DC_WR") || measurement_designator.equals("WR2"))
 					{
 						mp.setValue(IT_WR);
 					}
