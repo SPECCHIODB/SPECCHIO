@@ -1122,7 +1122,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 						stmt.executeUpdate(update_str);
 						
 						// register in new hierarchy
-						sf_factory.insertHierarchySpectrumReferences(target_sub_hierarchy_id, node.getId());
+						sf_factory.insertHierarchySpectrumReferences(target_sub_hierarchy_id, node.getId(), stmt);
 						
 					
 						table_name = (is_admin)? "spectrum" : "spectrum_view";

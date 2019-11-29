@@ -123,10 +123,11 @@ public class EAVDBServices extends Thread {
 	 * 
 	 * @param campaign_id	the identifier of the campaign to which this metadata belongs
 	 * @param md			the metadata to be inserted
+	 * @param stmt 
 	 * 
 	 * @return the list of all eav_ids, even when not inserted this time
 	 */
-	public ArrayList<Integer> insert_metadata_into_db(int campaign_id, Metadata md, boolean is_admin) throws SQLException, IOException {
+	public ArrayList<Integer> insert_metadata_into_db(int campaign_id, Metadata md, boolean is_admin, Statement stmt) throws SQLException, IOException {
 		
 		// prepare insert statement
 		String query = "insert into eav_view (campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) values";
@@ -192,6 +193,7 @@ public class EAVDBServices extends Thread {
 				
 			    
 			    rs.close();
+			    ps.close();
 			
 			}
 			
@@ -979,7 +981,7 @@ public class EAVDBServices extends Thread {
 	// inserts links between spectra and eavs by using the redundancy index
 	public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> spectrum_ids,
 			ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum,
-			ArrayList<Integer> eav_ids) throws SQLException {
+			ArrayList<Integer> eav_ids, Statement stmt) throws SQLException {
 		
 		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
 		StringBuffer value_strings = new StringBuffer();
@@ -1018,9 +1020,9 @@ public class EAVDBServices extends Thread {
 		
 		// carry out the multi insert statement
 		query = query + value_strings.toString();
-		Statement stmt = SQL.createStatement();
+//		Statement stmt = SQL.createStatement();
 		stmt.executeUpdate(query);
-		stmt.close();				
+//		stmt.close();				
 		
 	}
 

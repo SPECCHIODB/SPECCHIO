@@ -243,7 +243,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					copy_spectrum_id = rs.getInt(1);
 				rs.close();
 
-				stmt.close();		
+//				stmt.close();		
 
 
 				// copy all eav references at spectrum level without inherited eav data 
@@ -253,13 +253,15 @@ public class SpectrumFactory extends SPECCHIOFactory {
 				// exchange hierarchy id
 				query = "update " + (this.Is_admin()?"spectrum":"spectrum_view") + " set hierarchy_level_id = " + target_hierarchy_id + " where spectrum_id = " + copy_spectrum_id;
 
-				stmt = getStatementBuilder().createStatement();
+//				stmt = getStatementBuilder().createStatement();
 				stmt.executeUpdate(query);
-				stmt.close();	
+				
 
 				// update the aggregated info in the upper hierarchies
 				SpectralFileFactory sf_factory = new SpectralFileFactory(this);			
-				sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0);
+				sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0, stmt);
+				
+				stmt.close();	
 			}
 			else
 			{

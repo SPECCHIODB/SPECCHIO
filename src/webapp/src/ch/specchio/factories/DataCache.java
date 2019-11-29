@@ -102,9 +102,24 @@ public class DataCache {
 	}
 	
 	
+	public void add_file_format_id(String name, int file_format_id)
+	{
+		file_format_name_2_id_hash.put(name, file_format_id);
+	}
+	
+	
 	public int get_file_format_id(String name)
 	{
-		return file_format_name_2_id_hash.get(name);
+		
+		Integer file_format_id = file_format_name_2_id_hash.get(name);
+		
+		if (file_format_id == null)
+		{			
+			file_format_id = -1; // the caller should insert a new file format (typically the spectral file factory)	
+		}
+				
+		
+		return file_format_id;
 	}
 	
 

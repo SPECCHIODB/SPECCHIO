@@ -120,6 +120,9 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 */
 	public int getIdForFileFormat(String file_format_name) throws SPECCHIOFactoryException {
 		
+		Integer file_format_id = -1;
+		
+		try {
 		// initialise to "not found"
 //		int file_format_id = -1;
 //		
@@ -143,7 +146,15 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 //		
 //		return file_format_id;
 		
-		return this.getDataCache().get_file_format_id(file_format_name);
+			file_format_id = this.getDataCache().get_file_format_id(file_format_name);
+		
+		}
+		catch (NullPointerException ex) {
+			
+			throw new SPECCHIOFactoryException("New file format could not be inserted; check that the file_format_name is set in the spectral file.");
+		}
+		
+		return file_format_id;
 	
 	}
 	
@@ -423,27 +434,27 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	}
 	
 
-	void insertHierarchySpectrumReferences(int hierarchy_id, int spectrum_id, int recursion_break_at_parent_id) throws SPECCHIOFactoryException {
+	void insertHierarchySpectrumReferences(int hierarchy_id, int spectrum_id, int recursion_break_at_parent_id, Statement stmt) throws SPECCHIOFactoryException {
 		ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 	
 		spectrum_ids.add(spectrum_id);
 		insertHierarchySpectrumReferences(hierarchy_id, spectrum_ids,
-				recursion_break_at_parent_id);
+				recursion_break_at_parent_id, stmt);
 	
 	}
 
-	void insertHierarchySpectrumReferences(int hierarchy_id, int spectrum_id) throws SPECCHIOFactoryException {
+	void insertHierarchySpectrumReferences(int hierarchy_id, int spectrum_id, Statement stmt) throws SPECCHIOFactoryException {
 
-		insertHierarchySpectrumReferences(hierarchy_id, spectrum_id, 0);	
+		insertHierarchySpectrumReferences(hierarchy_id, spectrum_id, 0, stmt);	
 	}
 	
 
-	public void insertHierarchySpectrumReferences(int hierarchy_id, ArrayList<Integer> spectrum_ids) throws SPECCHIOFactoryException {
-		insertHierarchySpectrumReferences(hierarchy_id, spectrum_ids, 0);
+	public void insertHierarchySpectrumReferences(int hierarchy_id, ArrayList<Integer> spectrum_ids, Statement stmt) throws SPECCHIOFactoryException {
+		insertHierarchySpectrumReferences(hierarchy_id, spectrum_ids, 0, stmt);
 	}
 	
 
-	void insertHierarchySpectrumReferences(int hierarchy_id, ArrayList<Integer> spectrum_ids, int recursion_break_at_hierarchy_id) throws SPECCHIOFactoryException {
+	void insertHierarchySpectrumReferences(int hierarchy_id, ArrayList<Integer> spectrum_ids, int recursion_break_at_hierarchy_id, Statement stmt) throws SPECCHIOFactoryException {
 		if (spectrum_ids.size() == 0)
 			return; // catch empty list
 
@@ -453,7 +464,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		
 			ArrayList<String> value_strings = new ArrayList<String>();
 			String query = "insert into hierarchy_level_x_spectrum_view (hierarchy_level_id, spectrum_id) values ";
-			Statement stmt = getStatementBuilder().createStatement();
+//			Statement stmt = getStatementBuilder().createStatement();
 
 			// build value list
 			ListIterator<Integer> li = spectrum_ids.listIterator();
@@ -472,13 +483,13 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 					int parent_id = rs.getInt(1);
 	
 					if (parent_id != 0) {
-						insertHierarchySpectrumReferences(parent_id, spectrum_ids, recursion_break_at_hierarchy_id);
+						insertHierarchySpectrumReferences(parent_id, spectrum_ids, recursion_break_at_hierarchy_id, stmt);
 					}
 				}
 				rs.close();
 			}
 
-			stmt.close();
+//			stmt.close();
 
 		} catch (SQLException ex) {
 			throw new SPECCHIOFactoryException(ex);
@@ -1094,14 +1105,14 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 
 			 Metadata md = new Metadata();
 			 md.setEntries(spec_file.getUniqueMetaParameters());
-			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), md, this.Is_admin());
+			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), md, this.Is_admin(), stmt);
 			 
 			 
 			 //------------
 			 // step 3: insert links between spectra and eav entries
 			 //------------
 			 
-			 getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrum_ids, spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids);
+			 getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrum_ids, spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
 
 			 
 			 //------------
@@ -1109,7 +1120,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			 //------------
 			 
 			 
-			 insertHierarchySpectrumReferences(exists_info.hierarchy_id, spectrum_ids, 0);		
+			 insertHierarchySpectrumReferences(exists_info.hierarchy_id, spectrum_ids, 0, stmt);		
 			 
 			 
 			 
@@ -1176,12 +1187,12 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 
 		 }
 
-			PreparedStatement ps = getStatementBuilder().prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-
+//			PreparedStatement ps = getStatementBuilder().prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
 			//now update
-			ps.executeUpdate();		
+		 
+		 	stmt.executeUpdate(query.toString(), Statement.RETURN_GENERATED_KEYS);		
 
-			ResultSet rs = ps.getGeneratedKeys();
+			ResultSet rs = stmt.getGeneratedKeys();
 							
 		    while (rs.next()) {
 		    	spectrum_ids.add(rs.getInt(1));
@@ -1323,7 +1334,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		
 				// automatic processing of EAV data
 				if (spec_file.getEavMetadata(spec_no) != null) {
-					ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), spec_file.getEavMetadata(spec_no), this.Is_admin());
+					ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), spec_file.getEavMetadata(spec_no), this.Is_admin(), stmt);
 					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, id, eav_ids);
 				}
 		
@@ -1517,7 +1528,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				
 				SpecchioMessage msg = new SpecchioMessage();
 			
-				// file format
+				// file format: unknown file formats are automatically added.
 				int file_format_id = getIdForFileFormat(spec_file.getFileFormatName());
 				
 				// check if this is an unknown file format in this database
@@ -1711,6 +1722,8 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			e.printStackTrace();
 		}
 		
+		getDataCache().add_file_format_id(spec_file.getFileFormatName(), file_format_id);
+		
 		return file_format_id;
 		
 	}
@@ -1736,7 +1749,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			if (insert_result.getSpectrumIds().get(0) > 0) // always only one spectrum id is returned in the list
 			{
 				insertHierarchySpectrumReferences(exists_struct.hierarchy_id, insert_result.getSpectrumIds().get(0),
-						0);			
+						0, stmt);			
 			}
 			return insert_result;
 
@@ -1766,7 +1779,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		if (insert_result.getSpectrumIds().get(0) > 0) // always only one spectrum id is returned in the list
 		{
 			insertHierarchySpectrumReferences(exists_struct.hierarchy_id, insert_result.getSpectrumIds().get(0),
-					recursion_break_at_hierarchy_id);			
+					recursion_break_at_hierarchy_id, stmt);			
 		}
 
 		return insert_result;
