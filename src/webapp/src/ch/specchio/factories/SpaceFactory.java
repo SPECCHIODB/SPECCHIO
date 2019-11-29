@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -22,6 +24,7 @@ import ch.specchio.spaces.SensorAndInstrumentSpace;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.Instrument;
+import ch.specchio.types.Sensor;
 
 /**
  * Class for creating and manipulating Space objects.
@@ -847,13 +850,20 @@ public class SpaceFactory extends SPECCHIOFactory {
 	 * @throws SPECCHIOFactoryException	database error
 	 */
 	public void loadSpace(Space space) throws SPECCHIOFactoryException {
-			
+		Instant start = Instant.now();
 			// clear existing data vectors
+		Instant startclearDataVectors = Instant.now();
 			space.clearDataVectors();
 			int curr_id = 0;
+			Instant endclearDataVectors = Instant.now();
+			long msecondsclearDataVectors = Duration.between(startclearDataVectors, endclearDataVectors).toMillis();
+			
+			
 	
 			try {
 				// create SQL-building objects
+				Instant startexecuteQuery = Instant.now();
+				
 				SQL_StatementBuilder SQL = getStatementBuilder();
 				Statement stmt = SQL.createStatement();
 				
@@ -875,17 +885,36 @@ public class SpaceFactory extends SPECCHIOFactory {
 					//order_by = space.getOrderBy();
 					String conc_ids = SQL.conc_ids(space.getSpectrumIds());
 					order_by = null;
-					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
+//					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
 				}
 				String columns[] = new String[] { "measurement", id_column };
 				String query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by; 
 				
+				
 				ResultSet rs = stmt.executeQuery(query);
+				Instant endexecuteQuery = Instant.now();
+				long msecondsexecuteQuery = Duration.between(startexecuteQuery, endexecuteQuery).toMillis();
+				
+				
+//				float[][] vectors =  new float[space.getSpectrumIds().size()][space.getDimensionality()];
+				
+				long msecondsTocreateMatrix = Duration.between(endexecuteQuery, Instant.now()).toMillis();
+
+				
+				int cnt = 0;
+				Instant startReadBlobs = Instant.now();
+				
 				while (rs.next()) 
 				{
 					
 					Blob measurement = rs.getBlob(1);
 					curr_id = rs.getInt(2);
+					
+					if(curr_id != space.getSpectrumIds().get(cnt))
+					{
+						int buggerit = 1;
+					}
+					
 					InputStream binstream = measurement.getBinaryStream();
 					DataInput dis = new DataInputStream(binstream);
 					
@@ -905,12 +934,16 @@ public class SpaceFactory extends SPECCHIOFactory {
 					{
 						try {
 							Float f = dis.readFloat();
+							
+//							vectors[cnt][i]=f;
 							vector[i] = f.doubleValue();
 						} catch (IOException e) {
 							// don't know what would cause this
 							e.printStackTrace();
 						}				
 					}
+					
+					cnt++;
 					
 					try {
 						binstream.close();
@@ -923,8 +956,18 @@ public class SpaceFactory extends SPECCHIOFactory {
 		
 				}
 				
+				Instant endReadBlobs = Instant.now();
+				long msecondsReadBlobs = Duration.between(startReadBlobs, endReadBlobs).toMillis();
+				
+				Instant end = Instant.now();
+				long mseconds = Duration.between(start, end).toMillis();
+				
 				rs.close();	
 				stmt.close();
+				
+				
+				
+				
 			} catch (SQLException ex) {
 				// database error
 				throw new SPECCHIOFactoryException(ex);
