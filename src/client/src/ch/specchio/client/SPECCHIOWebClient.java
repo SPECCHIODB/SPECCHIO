@@ -2288,6 +2288,19 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return postForObject(Space.class, "spectrum", "loadSpace", space);
 		
 	}
+
+	/**
+	 * Load a Space object.
+	 *
+	 * @param space	a partially-filled space object
+	 *
+	 * @return a complete Space object
+	 */
+	public Space loadSpace(Space space, Integer band) throws SPECCHIOWebClientException {
+
+		return postForObject(Space.class, "spectrum", "loadSpace", band.toString(), space);
+
+	}
 	
 	/**
 	 * Move a hierarchy to a new parent hierarchy within the same campaign. If a hierarchy of the same name exists in the target hierarchy then the hierarchies are merged.
@@ -3228,6 +3241,34 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 			throw new SPECCHIOWebClientException(ex);
 		}
 		
+	}
+
+	/**
+	 * Post an object to a web service that will return another object.
+	 *
+	 * @param objectClass	the class of the object that will be returned
+	 * @param service		the service name
+	 * @param method		the service method
+	 * @param band			the selected band
+	 * @param arg			the object to be posted
+	 *
+	 * @return the return value of the service call
+	 * @throws SPECCHIOWebClientException
+	 */
+	private <T> T postForObject(Class<? extends T> objectClass, String service, String method, String band, Object arg) throws SPECCHIOWebClientException {
+
+		try {
+			return getWRBuilder(service, method, band).accept(MediaType.APPLICATION_XML).post(objectClass, arg);
+		}
+		catch (UniformInterfaceException ex) {
+			// could represent any kind of HTTP error
+			throw new SPECCHIOWebClientException(ex);
+		}
+		catch (ClientHandlerException ex) {
+			// could represent any kind of network error
+			throw new SPECCHIOWebClientException(ex);
+		}
+
 	}
 	
 	

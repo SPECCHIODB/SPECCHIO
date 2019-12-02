@@ -1902,6 +1902,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.loadSpace(space);
 		
 	}
+
+	/**
+	 * Load a Space object.
+	 *
+	 * @param space	a partially-filled space object
+	 *
+	 * @return a complete Space object
+	 */
+	public Space loadSpace(Space space, Integer band) throws SPECCHIOClientException {
+
+		return realClient.loadSpace(space, band);
+
+	}
 	
 	/**
 	 * Move a hierarchy to a new parent hierarchy within the same campaign. If a hierarchy of the same name exists in the target hierarchy then the hierarchies are merged.

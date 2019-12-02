@@ -1262,8 +1262,17 @@ public interface SPECCHIOClient {
 	 * @return a complete Space object
 	 */
 	public Space loadSpace(Space space) throws SPECCHIOClientException;
-	
-	
+
+	/**
+	 * Load a Space object.
+	 *
+	 * @param space	a partially-filled space object
+	 *
+	 * @return a complete Space object
+	 */
+	public Space loadSpace(Space space, Integer band) throws SPECCHIOClientException;
+
+
 	/**
 	 * Move a hierarchy to a new parent hierarchy within the same campaign. If a hierarchy of the same name exists in the target hierarchy then the hierarchies are merged.
 	 * 
