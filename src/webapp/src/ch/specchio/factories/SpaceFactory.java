@@ -850,11 +850,11 @@ public class SpaceFactory extends SPECCHIOFactory {
      * @throws SPECCHIOFactoryException	database error
      */
     public void loadSpace(Space space) throws SPECCHIOFactoryException {
+    	SensorAndInstrumentSpace newSpace = (SensorAndInstrumentSpace) space;
         Instant start = Instant.now();
         // clear existing data vectors
         Instant startclearDataVectors = Instant.now();
         space.clearDataVectors();
-		int selectedBand = space.getSelectedBand();
 
         int curr_id = 0;
         Instant endclearDataVectors = Instant.now();
@@ -888,22 +888,25 @@ public class SpaceFactory extends SPECCHIOFactory {
 //					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
             }
 			String query = " ";
-			if(selectedBand > 0){
+			if(space.getSelectedBand() != null){
 				// SELECT THE SUBSET OF THE BLOB THAT CORRESPONDS TO THE GIVEN BAND (LIMIT 1 if more than 1)
-				String getBand = "SELECT sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
-						" WHERE sensor_id = "+ 21 + " LIMIT 1) " +
+				String getBand = "SELECT wvl, sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
+						" WHERE sensor_id = "+ newSpace.getSensor().getSensorId() + " LIMIT 1) " +
 						" AS x FROM ( SELECT se.avg_wavelength AS wvl, se.sensor_element_id AS sid" +
 						" , sen.* FROM specchio.sensor_element AS " +
 						" se JOIN specchio.sensor AS sen ON se.sensor_id = sen.sensor_id " +
-						" WHERE sen.sensor_id = " + 21 + " HAVING se.avg_wavelength " +
+						" WHERE sen.sensor_id = " + newSpace.getSensor().getSensorId() + " HAVING se.avg_wavelength " +
 						" >= " + space.getSelectedBand() + " AND se.avg_wavelength <= " + (space.getSelectedBand() + 1) + ") AS r LIMIT 1";
 
 				// Execute query to get the substring index for the blob
 				ResultSet bandNr = stmt.executeQuery(getBand);
 				bandNr.next();
-				int bandIndex = Integer.parseInt(bandNr.getString(1));
+				float bandWvl = Float.parseFloat(bandNr.getString(1));
+				space.setSelectedWavelength(bandWvl);
+				int bandIndex = Integer.parseInt(bandNr.getString(2));
 				// The formula for the index is 4n-3
 				String substringIndex = Integer.toString((bandIndex * 4)-3);
+
 
 				// Define and run the query that will return the subset of the blob (1 element, 4 bytes)
 				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM specchio.spectrum AS sp " +
@@ -926,7 +929,6 @@ public class SpaceFactory extends SPECCHIOFactory {
 
             int cnt = 0;
             Instant startReadBlobs = Instant.now();
-
             while (rs.next())
             {
 
@@ -941,16 +943,19 @@ public class SpaceFactory extends SPECCHIOFactory {
                 InputStream binstream = measurement.getBinaryStream();
                 DataInput dis = new DataInputStream(binstream);
 
-                if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
-                {
-                    try {
-                        space.setDimensionality(binstream.available() / 4);
-                    } catch (IOException e) {
-                        // dont't know what would cause this
-                        e.printStackTrace();
-                    }
-                }
-
+				if(space.getSelectedBand()> 0 ){
+					space.setDimensionality(1);
+				} else{
+					if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
+					{
+						try {
+							space.setDimensionality(binstream.available() / 4);
+						} catch (IOException e) {
+							// dont't know what would cause this
+							e.printStackTrace();
+						}
+					}
+				}
                 double[] vector = new double[space.getDimensionality()];
 
                 for(int i = 0; i < space.getDimensionality(); i++)
