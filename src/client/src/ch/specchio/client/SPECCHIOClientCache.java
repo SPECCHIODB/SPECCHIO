@@ -1898,7 +1898,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * @return a complete Space object
 	 */
 	public Space loadSpace(Space space) throws SPECCHIOClientException {
-		
+		// space.setSelectedBand(680);
 		return realClient.loadSpace(space);
 		
 	}
@@ -1911,8 +1911,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * @return a complete Space object
 	 */
 	public Space loadSpace(Space space, int band) throws SPECCHIOClientException {
-
-		return realClient.loadSpace(space, band);
+		space.setSelectedBand(band);
+		return realClient.loadSpace(space);
 
 	}
 	

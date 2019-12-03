@@ -841,161 +841,24 @@ public class SpaceFactory extends SPECCHIOFactory {
 		
 	}
 	
-	
-	/**
-	 * Load a Space object from the database.
-	 * 
-	 * @param space	a partially-filled Space object
-	 * 
-	 * @throws SPECCHIOFactoryException	database error
-	 */
-	public void loadSpace(Space space) throws SPECCHIOFactoryException {
-		Instant start = Instant.now();
-			// clear existing data vectors
-		Instant startclearDataVectors = Instant.now();
-			space.clearDataVectors();
-			int curr_id = 0;
-			Instant endclearDataVectors = Instant.now();
-			long msecondsclearDataVectors = Duration.between(startclearDataVectors, endclearDataVectors).toMillis();
-			
-			
-	
-			try {
-				// create SQL-building objects
-				Instant startexecuteQuery = Instant.now();
-				
-				SQL_StatementBuilder SQL = getStatementBuilder();
-				Statement stmt = SQL.createStatement();
-				
-				String quicker_order_by = "";
-				
-				// build query
-				String table;
-				String id_column;
-				String order_by;
-				if (space instanceof RefPanelCalSpace) {
-					// load instrumentation calibration factors
-					table = "instrumentation_factors";
-					id_column = "instrumentation_factors_id";
-					order_by = null;
-				} else {
-					// load spectral data
-					table = "spectrum";
-					id_column = "spectrum_id";
-					//order_by = space.getOrderBy();
-					String conc_ids = SQL.conc_ids(space.getSpectrumIds());
-					order_by = null;
-//					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
-				}
-				String columns[] = new String[] { "measurement", id_column };
-				String query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by;
-
-
-                ResultSet rs = stmt.executeQuery(query);
-				Instant endexecuteQuery = Instant.now();
-				long msecondsexecuteQuery = Duration.between(startexecuteQuery, endexecuteQuery).toMillis();
-				
-				
-//				float[][] vectors =  new float[space.getSpectrumIds().size()][space.getDimensionality()];
-				
-				long msecondsTocreateMatrix = Duration.between(endexecuteQuery, Instant.now()).toMillis();
-
-				
-				int cnt = 0;
-				Instant startReadBlobs = Instant.now();
-				
-				while (rs.next()) 
-				{
-					
-					Blob measurement = rs.getBlob(1);
-					curr_id = rs.getInt(2);
-					
-					if(curr_id != space.getSpectrumIds().get(cnt))
-					{
-						int buggerit = 1;
-					}
-					
-					InputStream binstream = measurement.getBinaryStream();
-					DataInput dis = new DataInputStream(binstream);
-					
-					if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
-					{
-						try {
-							space.setDimensionality(binstream.available() / 4);
-						} catch (IOException e) {
-							// dont't know what would cause this
-							e.printStackTrace();
-						}
-					}
-					
-					double[] vector = new double[space.getDimensionality()];
-					
-					for(int i = 0; i < space.getDimensionality(); i++)
-					{
-						try {
-							Float f = dis.readFloat();
-							
-//							vectors[cnt][i]=f;
-							vector[i] = f.doubleValue();
-						} catch (IOException e) {
-							// don't know what would cause this
-							e.printStackTrace();
-						}				
-					}
-					
-					cnt++;
-					
-					try {
-						binstream.close();
-					} catch (IOException e) {
-						// don't know what would cause this
-						e.printStackTrace();
-					}
-					
-					space.addVector(vector);
-		
-				}
-				
-				Instant endReadBlobs = Instant.now();
-				long msecondsReadBlobs = Duration.between(startReadBlobs, endReadBlobs).toMillis();
-				
-				Instant end = Instant.now();
-				long mseconds = Duration.between(start, end).toMillis();
-				
-				rs.close();	
-				stmt.close();
-				
-				
-				
-				
-			} catch (SQLException ex) {
-				// database error
-				throw new SPECCHIOFactoryException(ex);
-			}
-			catch (java.lang.NullPointerException ex)
-			{
-				throw new SPECCHIOFactoryException("Found spectrum with a zero binary entry: please delete or reload spectrum with id = " + curr_id);
-			}
-	}
 
     /**
      * Load a Space object from the database.
      *
      * @param space	a partially-filled Space object
-     * @param band the desired band
      *
      * @throws SPECCHIOFactoryException	database error
      */
-    public void loadSpace(Space space, Integer band) throws SPECCHIOFactoryException {
+    public void loadSpace(Space space) throws SPECCHIOFactoryException {
         Instant start = Instant.now();
         // clear existing data vectors
         Instant startclearDataVectors = Instant.now();
         space.clearDataVectors();
+		int selectedBand = space.getSelectedBand();
+
         int curr_id = 0;
         Instant endclearDataVectors = Instant.now();
         long msecondsclearDataVectors = Duration.between(startclearDataVectors, endclearDataVectors).toMillis();
-
-
 
         try {
             // create SQL-building objects
@@ -1024,37 +887,34 @@ public class SpaceFactory extends SPECCHIOFactory {
                 order_by = null;
 //					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
             }
+			String query = " ";
+			if(selectedBand > 0){
+				// SELECT THE SUBSET OF THE BLOB THAT CORRESPONDS TO THE GIVEN BAND (LIMIT 1 if more than 1)
+				String getBand = "SELECT sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
+						" WHERE sensor_id = "+ 21 + " LIMIT 1) " +
+						" AS x FROM ( SELECT se.avg_wavelength AS wvl, se.sensor_element_id AS sid" +
+						" , sen.* FROM specchio.sensor_element AS " +
+						" se JOIN specchio.sensor AS sen ON se.sensor_id = sen.sensor_id " +
+						" WHERE sen.sensor_id = " + 21 + " HAVING se.avg_wavelength " +
+						" >= " + space.getSelectedBand() + " AND se.avg_wavelength <= " + (space.getSelectedBand() + 1) + ") AS r LIMIT 1";
 
-            // SELECT THE SUBSET OF THE BLOB THAT CORRESPONDS TO THE GIVEN BAND (LIMIT 1 if more than 1)
-            String getBand = "SELECT sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
-                    " WHERE sensor_id = "+ 21 + " LIMIT 1) " +
-                    " AS x FROM ( SELECT se.avg_wavelength AS wvl, se.sensor_element_id AS sid" +
-                    " , sen.* FROM specchio.sensor_element AS " +
-                    " se JOIN specchio.sensor AS sen ON se.sensor_id = sen.sensor_id " +
-                    " WHERE sen.sensor_id = " + 21 + " HAVING se.avg_wavelength " +
-                    " >= " + band + " AND se.avg_wavelength <= " + (band + 1) + ") AS r LIMIT 1";
+				// Execute query to get the substring index for the blob
+				ResultSet bandNr = stmt.executeQuery(getBand);
+				bandNr.next();
+				int bandIndex = Integer.parseInt(bandNr.getString(1));
+				// The formula for the index is 4n-3
+				String substringIndex = Integer.toString((bandIndex * 4)-3);
 
-            ResultSet bandNr = stmt.executeQuery(getBand);
-            bandNr.next();
-            int bandIndex = Integer.parseInt(bandNr.getString(1));
-            String substringIndex = Integer.toString((bandIndex * 4)-3);
-
-            String rsq = "SELECT substring(sp.measurement, "+ substringIndex + ", 4) FROM specchio.spectrum AS sp " +
-                    " WHERE sp.spectrum_id = in( " + getStatementBuilder().conc_ids(space.getSpectrumIds()) + " )";
-            ResultSet rs = stmt.executeQuery(rsq);
-//            resBlob.next();
-//            Blob measurement1 = resBlob.getBlob(1);
-//            InputStream binstream1 = measurement1.getBinaryStream();
-//            DataInput dis1 = new DataInputStream(binstream1);
-//            try {
-//                Float f = dis1.readFloat();
-//                double value = f.doubleValue();
-//                System.out.println(value);
-//            } catch (IOException e) {
-//                // don't know what would cause this
-//                e.printStackTrace();
-//            }
-
+				// Define and run the query that will return the subset of the blob (1 element, 4 bytes)
+				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM specchio.spectrum AS sp " +
+						" WHERE sp.spectrum_id ";
+                query = query + " in ( " + getStatementBuilder().conc_ids(space.getSpectrumIds()) + " )";
+			} else{
+				// SELECT THE WHOLE BLOB
+				String columns[] = new String[] { "measurement", id_column };
+				query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by;
+			}
+			ResultSet rs = stmt.executeQuery(query);
             Instant endexecuteQuery = Instant.now();
             long msecondsexecuteQuery = Duration.between(startexecuteQuery, endexecuteQuery).toMillis();
 
