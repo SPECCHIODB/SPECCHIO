@@ -943,18 +943,18 @@ public class SpaceFactory extends SPECCHIOFactory {
                 InputStream binstream = measurement.getBinaryStream();
                 DataInput dis = new DataInputStream(binstream);
 
-				if(space.getSelectedBand()> 0 ){
+				if(space.getSelectedBand() != null){
 					space.setDimensionality(1);
 				} else{
 					if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
-					{
-						try {
-							space.setDimensionality(binstream.available() / 4);
-						} catch (IOException e) {
-							// dont't know what would cause this
-							e.printStackTrace();
+						{
+							try {
+								space.setDimensionality(binstream.available() / 4);
+							} catch (IOException e) {
+								// dont't know what would cause this
+								e.printStackTrace();
+							}
 						}
-					}
 				}
                 double[] vector = new double[space.getDimensionality()];
 
