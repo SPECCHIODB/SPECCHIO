@@ -1270,7 +1270,7 @@ public interface SPECCHIOClient {
 	 *
 	 * @return a complete Space object
 	 */
-	public Space loadSpace(Space space, Integer band) throws SPECCHIOClientException;
+	public Space loadSpace(Space space, int band) throws SPECCHIOClientException;
 
 
 	/**
