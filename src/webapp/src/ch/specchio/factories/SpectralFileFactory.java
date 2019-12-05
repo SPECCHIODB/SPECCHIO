@@ -147,7 +147,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 //		return file_format_id;
 		
 			file_format_id = this.getDataCache().get_file_format_id(file_format_name);
-		
+			System.out.println(file_format_name);
 		}
 		catch (NullPointerException ex) {
 			

@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 
 
@@ -134,7 +135,13 @@ public class FloX_FileLoader extends JB_FileLoader {
 					
 					// add spectrum metadata to the file object
 					spec_file.addSpectrumFilename(spectrum_number + "-" + measurement_designator + " (" + file.getName() + ")");
-					
+					/*System.out.println("---------------------------------");
+					System.out.println(" Measurement Designator (FLUO) = " + measurement_designator);
+					System.out.println("                   Name (FLUO) = " + r.get(0));
+					System.out.println("                      Filename = " + file.getName());
+					System.out.println("      Spectrum Filename (FLUO) = " + spec_file.getSpectrumFilename(measurement_row_index));
+					System.out.println("---------------------------------");*/
+
 					
 					MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Acquisition Time"));
 					DateTime dt;

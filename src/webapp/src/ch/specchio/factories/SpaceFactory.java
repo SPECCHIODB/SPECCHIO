@@ -602,8 +602,6 @@ public class SpaceFactory extends SPECCHIOFactory {
 	 * Get a reference space.
 	 * 
 	 * @param input_ids		the identifiers of the input spectra
-	 * @param output_ids	the identifier of the output spectra
-	 * 
 	 * @return a ReferenceSpaceStruct object
 	 * 
 	 * @throws SPECCHIOFactoryException	database error
@@ -850,7 +848,6 @@ public class SpaceFactory extends SPECCHIOFactory {
      * @throws SPECCHIOFactoryException	database error
      */
     public void loadSpace(Space space) throws SPECCHIOFactoryException {
-    	SensorAndInstrumentSpace newSpace = (SensorAndInstrumentSpace) space;
         Instant start = Instant.now();
         // clear existing data vectors
         Instant startclearDataVectors = Instant.now();
@@ -885,17 +882,17 @@ public class SpaceFactory extends SPECCHIOFactory {
                 //order_by = space.getOrderBy();
                 String conc_ids = SQL.conc_ids(space.getSpectrumIds());
                 order_by = null;
-//					quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
+                quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
             }
 			String query = " ";
 			if(space.getSelectedBand() != null){
 				// SELECT THE SUBSET OF THE BLOB THAT CORRESPONDS TO THE GIVEN BAND (LIMIT 1 if more than 1)
 				String getBand = "SELECT wvl, sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
-						" WHERE sensor_id = "+ newSpace.getSensor().getSensorId() + " LIMIT 1) " +
+						" WHERE sensor_id = "+ ((SensorAndInstrumentSpace) space).getSensor().getSensorId() + " LIMIT 1) " +
 						" AS x FROM ( SELECT se.avg_wavelength AS wvl, se.sensor_element_id AS sid" +
 						" , sen.* FROM specchio.sensor_element AS " +
 						" se JOIN specchio.sensor AS sen ON se.sensor_id = sen.sensor_id " +
-						" WHERE sen.sensor_id = " + newSpace.getSensor().getSensorId() + " HAVING se.avg_wavelength " +
+						" WHERE sen.sensor_id = " + ((SensorAndInstrumentSpace) space).getSensor().getSensorId() + " HAVING se.avg_wavelength " +
 						" >= " + space.getSelectedBand() + " AND se.avg_wavelength <= " + (space.getSelectedBand() + 1) + ") AS r LIMIT 1";
 
 				// Execute query to get the substring index for the blob
