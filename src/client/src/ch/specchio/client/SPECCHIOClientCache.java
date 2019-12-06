@@ -1462,9 +1462,24 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getSpectrumIdsMatchingFullTextSearch(search_str);
 		
 	}
-	
-	
-	
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the search string
+	 *
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOClientException {
+
+		return realClient.getUnprocessedHierarchies(campaignId);
+
+	}
+
+
+
+
+
 	/**
 	 * Get the spectrum identifiers that match a given query.
 	 * 

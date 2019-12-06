@@ -957,8 +957,17 @@ public interface SPECCHIOClient {
 	 * @return an array list of spectrum identifiers
 	 */
 	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearch(String search_str) throws SPECCHIOClientException;
-	
-	
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the search string
+	 *
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOClientException;
+
+
 	/**
 	 * Get the spectrum identifiers that match a given query.
 	 * 

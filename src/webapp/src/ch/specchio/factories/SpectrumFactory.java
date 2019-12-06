@@ -360,7 +360,46 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		
 		EAVDBServices eav = getEavServices();					
 		return eav.filter_by_eav(MetaParameter.SPECTRUM_LEVEL, mds.getIds(), mds.getAttribute_id(), eav.ATR.get_default_storage_field(mds.getAttribute_id()), mds.getValue());		
-	}	
+	}
+
+	/**
+	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
+	 *
+	 * @param campaignId 	specifies ids to filter and attribute and value to filter by
+	 *
+	 * @return an array list of spectrum identifiers that match the filter
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOFactoryException{
+		ArrayList<Integer> ids = new ArrayList<>();
+		// campaign id
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+
+			String query = "SELECT hl_1.hierarchy_level_id FROM specchio.hierarchy_level AS hl_1 WHERE hl_1.parent_level_id NOT IN (" +
+					"SELECT hl_2.parent_level_id FROM specchio.hierarchy_level AS hl_2 WHERE hl_2.name IN ('Radiance')) " +
+					"AND hl_1.name IN ('DN') " +
+					"AND hl_1.campaign_id = " + campaignId;
+
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();
+
+			stmt.close();
+
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		return ids;
+
+	}
 	
 		
 	

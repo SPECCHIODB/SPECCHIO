@@ -1863,7 +1863,28 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		ids.addAll(id_array);
 		return ids;
-	}	
+	}
+
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the search string
+	 *
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOClientException{
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString(campaignId);
+
+		List<Integer> id_array = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "unprocessed_hierarchies", xmlstr));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+
+		ids.addAll(id_array);
+		return ids;
+	}
 	
 	
 	/**

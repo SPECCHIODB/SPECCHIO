@@ -497,7 +497,29 @@ public class SpectrumService extends SPECCHIOService {
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		return adapter.marshalArray(ids);
 		
-	}	
+	}
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the selected campaign
+	 *
+	 * @return an array of identifiers
+	 *
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	@POST
+	@Path("unprocessed_hierarchies")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] unprocessed_Hierarchies(XmlString campaignId) throws SPECCHIOFactoryException{
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Integer> ids = factory.getUnprocessedHierarchies(campaignId.getString());
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+	}
 	
 	
 	/**
