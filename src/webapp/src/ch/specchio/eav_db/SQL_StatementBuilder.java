@@ -183,9 +183,16 @@ public class SQL_StatementBuilder {
 		   res = Integer.toString(ids.get(0));
 	   }
 	   
-	   
+	   StringBuilder builder = new StringBuilder();
 	   for(int i=1; i < ids.size(); i++)
-		   res = res.concat(", "+Integer.toString(ids.get(i)));
+	   {
+//		   res = res.concat(", "+Integer.toString(ids.get(i)));
+		   //builder.append(", "+Integer.toString(ids.get(i)));
+	   
+	   		// speed check
+	   		builder.append(", ");
+	   		builder.append(Integer.toString(ids.get(i)));
+	   }
 	   return res;	  
    }   
    
