@@ -520,7 +520,29 @@ public class SpectrumService extends SPECCHIOService {
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		return adapter.marshalArray(ids);
 	}
-	
+
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the selected campaign
+	 *
+	 * @return an array of identifiers
+	 *
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	@POST
+	@Path("irradiance_spectra")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] irradiance_spectra(XmlString campaignId) throws SPECCHIOFactoryException{
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Integer> ids = factory.getIrradiance(campaignId.getString());
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+	}
 	
 	/**
 	 * Get target-reference links that refer to a given sets of targets and references.

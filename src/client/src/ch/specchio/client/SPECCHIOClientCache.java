@@ -1477,7 +1477,9 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 
 
-
+	public ArrayList<Integer> getIrradiance(String campaignId) throws SPECCHIOClientException{
+		return realClient.getIrradiance(campaignId);
+	}
 
 
 	/**

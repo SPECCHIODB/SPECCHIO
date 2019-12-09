@@ -400,9 +400,60 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		return ids;
 
 	}
-	
-		
-	
+
+
+	/**
+	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
+	 *
+	 * @param campaignId 	specifies ids to filter and attribute and value to filter by
+	 *
+	 * @return an array list of spectrum identifiers that match the filter
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	public ArrayList<Integer> getIrradiance(String campaignId) throws SPECCHIOFactoryException{
+		ArrayList<Integer> ids = new ArrayList<>();
+		// campaign id
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+
+			String query = "SELECT sxe.spectrum_id " +
+					"FROM specchio.spectrum_x_eav AS sxe " +
+					"INNER JOIN ( " +
+					"SELECT ea.eav_id " +
+					"FROM specchio.eav AS ea " +
+					"WHERE ea.string_val LIKE ('%WR%') OR ('%WR2%') " +
+					") AS matchSpectra " +
+					"ON sxe.eav_id = matchSpectra.eav_id " +
+					"INNER JOIN ( " +
+					"SELECT sp.spectrum_id FROM specchio.spectrum AS sp " +
+					"INNER JOIN specchio.hierarchy_level AS hl " +
+					"ON sp.hierarchy_level_id = hl.hierarchy_level_id " +
+					"WHERE hl.name IN ('DN') " +
+					"AND sp.campaign_id = " + campaignId +
+					" ) AS radSpec " +
+					"On sxe.spectrum_id = radSpec.spectrum_id";
+
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();
+
+			stmt.close();
+
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		return ids;
+
+	}
+
+
 	/**																																																																																																												/**
 	 * Get the identifiers of all spectra that match a full text search.
 	 * 

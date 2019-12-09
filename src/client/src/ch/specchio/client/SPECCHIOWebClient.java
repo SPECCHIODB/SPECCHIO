@@ -1885,8 +1885,22 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		ids.addAll(id_array);
 		return ids;
 	}
-	
-	
+
+	@Override
+	public ArrayList<Integer> getIrradiance(String campaignId) throws SPECCHIOClientException {
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString(campaignId);
+
+		List<Integer> id_array = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "irradiance_spectra", xmlstr));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+
+		ids.addAll(id_array);
+		return ids;
+	}
+
+
 	/**
 	 * Get the spectrum identifiers that match a given query.
 	 * 
