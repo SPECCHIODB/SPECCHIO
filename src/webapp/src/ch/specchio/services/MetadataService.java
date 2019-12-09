@@ -813,10 +813,5 @@ public class MetadataService extends SPECCHIOService {
 		
 	}
 
-	public XmlInteger calculateSolarAngle(Integer spectrumId) throws SPECCHIOFactoryException{
-		SunAngleCaclDialog SunAngleCalcThread()
-	}
-	
-			
 
 }
