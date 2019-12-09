@@ -2,6 +2,7 @@ package ch.specchio.client;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 import au.ands.org.researchdata.RDACollectionDescriptor;
+import ch.specchio.gui.SPECCHIOApplication;
+import ch.specchio.gui.SunAngleCalcDialog;
 import ch.specchio.interfaces.ProgressReportInterface;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.plots.GonioSamplingPoints;
@@ -2301,8 +2304,16 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 
-
-
+	/**
+	 * Update the information about a user.
+	 *
+	 * @param spectrumIds	the ids for which to calculate the sun angles
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException{
+		SunAngleCalcDialog d = new SunAngleCalcDialog(SPECCHIOApplication.getInstance().get_frame(), false);
+	}
 
 
 
