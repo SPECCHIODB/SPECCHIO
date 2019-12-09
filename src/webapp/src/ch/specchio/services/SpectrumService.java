@@ -445,7 +445,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param hierarchy_id		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 

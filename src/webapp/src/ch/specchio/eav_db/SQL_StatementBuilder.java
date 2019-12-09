@@ -173,20 +173,28 @@ public class SQL_StatementBuilder {
    
    public synchronized String conc_ids(ArrayList<Integer> ids)
    {
+	   StringBuilder builder = new StringBuilder();
 	   String res;
 	   if(ids.size() == 0)
 	   {
-		   res = "null";
+		  builder.append("null");
 	   }
 	   else
 	   {
-		   res = Integer.toString(ids.get(0));
+		   builder.append(ids.get(0));
 	   }
-	   
-	   
+
+
 	   for(int i=1; i < ids.size(); i++)
-		   res = res.concat(", "+Integer.toString(ids.get(i)));
-	   return res;	  
+	   {
+//		   res = res.concat(", "+Integer.toString(ids.get(i)));
+		   //builder.append(", "+Integer.toString(ids.get(i)));
+
+		   // speed check
+		   builder.append(", ");
+		   builder.append(ids.get(i));
+	   }
+	   return builder.toString();
    }   
    
    
