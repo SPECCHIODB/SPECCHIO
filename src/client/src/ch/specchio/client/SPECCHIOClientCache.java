@@ -667,7 +667,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy id
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException {
 		return realClient.getDirectHierarchyId(spectrum_id);
@@ -680,7 +680,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getDirectHierarchyIds(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 		return realClient.getDirectHierarchyIds(spectrum_ids);
@@ -791,7 +791,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getHierarchyIdsOfSpectra(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 			
@@ -819,7 +819,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @returns path as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */
 	public String getHierarchyFilePath(int hierarchy_id) throws SPECCHIOClientException {
 		
@@ -834,7 +834,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @returns name as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */	
 	public String getHierarchyName(int hierarchy_id) throws SPECCHIOClientException	{
 		
@@ -963,7 +963,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	/**
 	 * Get the metadata categories for application domain
 	 * 
-	 * @param field	the field name
+	 * @param taxonomy_id	the field name
 	 * 
 	 * @return a ArrayList<Integer> object, or null if the field does not exist
 	 */
@@ -1083,7 +1083,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * Get metaparameters for spectrum ids and EAV attribute
 	 * 
 	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
+	 * @param attribute_name		attribute name
 	 * 
 	 * @return list of metaparameters, or null if the field does not exist	 
 	 */
@@ -1156,7 +1156,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * Get values for spectrum ids and EAV attribute
 	 * 
 	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
+	 * @param attribute_name		attribute name
 	 * @param distinct		defines if distinct values should be returned or repeated values for the given spectrum ids
 	 * 
 	 * @return list of values, or null if the field does not exist	 
@@ -1197,7 +1197,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	/**
 	 * Get newest N spectra.
 	 * 
-	 * @param N	
+	 * @param number_of_spectra
 	 * 
 	 * @return list of spectrum ids ordered by data ingestion time
 	 */	
@@ -1300,7 +1300,6 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * Get a reference space.
 	 * 
 	 * @param input_ids
-	 * @param local_ids
 	 * 
 	 * @return a Space object, or null if no space could be found
 	 */
@@ -1559,7 +1558,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @param campaign	the campaign into which to insert the hierarchy
 	 * @param parent_id			the identifier of the the parent of the hierarchy
-	 * @param hierarchy_name	the name of the desired hierarchy
+	 * @param name	the name of the desired hierarchy
 	 * 
 	 * @return the identifier of the child of parent_id with the name hierarchy_name
 	 */
@@ -1882,7 +1881,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	/**
 	 * Get the meta-parameter of the given metaparameter identifier.
 	 * 
-	 * @param id		the metaparameter identifier for which to retrieve metadata
+	 * @param metaparameter_id		the metaparameter identifier for which to retrieve metadata
 	 * 
 	 * @return the meta-parameter object corresponding to the desired id
 	 *
@@ -2263,7 +2262,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	/**
 	 * Update the metadata fields for a set of spectra
 	 * 
-	 * @param spectrum_ids	the spectrum identifiers
+	 * @param ids	the spectrum identifiers
 	 * @param field			the name of the field to be updated
 	 * @param id
 	 */
