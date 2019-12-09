@@ -176,9 +176,8 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get the count of existing metaparameters for the supplied spectrum ids and attribute id
 	 * 
-	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
-	 * 
+	 * @param ms_d		 MetadataSelectionDescriptor
+	 *
 	 * @return count of existing values
 	 * 
 	 * @throws SPECCHIOFactoryException	could not connect to the database, or invalid value for attribute name
@@ -217,7 +216,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get calibration ids for a list of spectra.
 	 * 
-	 * @param spectrum_ids	the spectrum identifiers
+	 * @param msd	the spectrum identifiers
 	 * 
 	 * @return list of calibration ids, zero where no calibration is defined
 	 */	
@@ -415,7 +414,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get the data policies for a collection of space.
 	 * 
-	 * @param spaces	the spaces
+	 * @param space	the space
 	 * 
 	 * @return an array of Objects representing the policies that apply to the input space
 	 * 
@@ -577,7 +576,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get the children nodes of a taxonomy node
 	 * 
-	 * @param taxonomy_id	id of the parent taxonomy
+	 * @param parent	id of the parent taxonomy
 	 * 
 	 * @return array of taxonomy nodes
 	 * 
@@ -623,7 +622,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get instrument ids for a list of spectra.
 	 * 
-	 * @param spectrum_ids	the spectrum identifiers
+	 * @param msd	the spectrum identifiers
 	 * 
 	 * @return list of instrument ids, zero where no instrument is defined
 	 */	
@@ -647,7 +646,7 @@ public class MetadataService extends SPECCHIOService {
 	 * Remove metadata. If the update descriptor contains an empty list of
 	 * identifier, remove the metadata from all spectra.
 	 * 
-	 * @param udpate_d	the update descriptor
+	 * @param update_d	the update descriptor
 	 * 
 	 * @return 0
 	 *
@@ -680,7 +679,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Remove metaparameters for specified attribute and spectra ids 
 	 * 
-	 * @param udpate_d	the update descriptor
+	 * @param update_d	the update descriptor
 	 * 
 	 * @return 0
 	 *
@@ -812,7 +811,11 @@ public class MetadataService extends SPECCHIOService {
 		
 		return new XmlInteger(eavId);
 		
-	}	
+	}
+
+	public XmlInteger calculateSolarAngle(Integer spectrumId) throws SPECCHIOFactoryException{
+		SunAngleCaclDialog SunAngleCalcThread()
+	}
 	
 			
 

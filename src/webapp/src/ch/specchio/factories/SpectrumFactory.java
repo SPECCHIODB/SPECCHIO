@@ -95,7 +95,6 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	 * Build a query string from a Query object, using only non EAV conditions
 	 * 
 	 * @param query		the query
-	 * @param attr		the attributes to use in building this query
 	 * 
 	 * @return an SQL query corresponding to the input object
 	 * 
@@ -318,7 +317,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -334,7 +333,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do not have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -350,7 +349,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute and value to filter by
+	 * @param mds 	specifies ids to filter and attribute and value to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -419,20 +418,13 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 			String query = "SELECT sxe.spectrum_id " +
 					"FROM specchio.spectrum_x_eav AS sxe " +
-					"INNER JOIN ( " +
-					"SELECT ea.eav_id " +
-					"FROM specchio.eav AS ea " +
-					"WHERE ea.string_val LIKE ('%WR%') OR ('%WR2%') " +
-					") AS matchSpectra " +
-					"ON sxe.eav_id = matchSpectra.eav_id " +
-					"INNER JOIN ( " +
-					"SELECT sp.spectrum_id FROM specchio.spectrum AS sp " +
-					"INNER JOIN specchio.hierarchy_level AS hl " +
-					"ON sp.hierarchy_level_id = hl.hierarchy_level_id " +
-					"WHERE hl.name IN ('DN') " +
-					"AND sp.campaign_id = " + campaignId +
-					" ) AS radSpec " +
-					"On sxe.spectrum_id = radSpec.spectrum_id";
+					"INNER JOIN specchio.eav AS ea " +
+					"ON sxe.eav_id = ea.eav_id " +
+					"INNER JOIN specchio.spectrum AS sp " +
+					"ON sxe.spectrum_id = sp.spectrum_id " +
+					"WHERE ea.taxonomy_id = 93 " +
+					"AND sp.measurement_unit_id = 2 " +
+					"AND " + campaignId;
 
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
@@ -1014,7 +1006,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the direct hierarchy id of a single spectrum
 	 * 
-	 * @param ids_d		container holding the identifier of the desired spectrum
+	 * @param spectrum_id		container holding the identifier of the desired spectrum
 	 * 
 	 * @return hierarchy id
 	 * 
@@ -1456,8 +1448,6 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	
 	/**
 	 * Get the number of spectra in database
-	 * 
-	 * @param String		empty string
 	 * 
 	 * @return the number of spectra in the database
 	 * 
@@ -1936,9 +1926,9 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Update the spectral vector of a spectrum
 	 * 
-	 * @param spectrum	the file to be inserted
+	 * @param s	the file to be inserted
 	 * 
-	 * @throws SPECCHIOClientException
+	 * @throws SPECCHIOFactoryException
 	 */
 	public void updateSpectrumVector(Spectrum s)  throws SPECCHIOFactoryException {
 		

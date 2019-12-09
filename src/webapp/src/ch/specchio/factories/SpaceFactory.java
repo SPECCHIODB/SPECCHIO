@@ -907,8 +907,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 
 				// Define and run the query that will return the subset of the blob (1 element, 4 bytes)
 				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM specchio.spectrum AS sp " +
-						" WHERE sp.spectrum_id ";
-                query = query + " in ( " + getStatementBuilder().conc_ids(space.getSpectrumIds()) + " )";
+						" WHERE sp.spectrum_id IN ( " + getStatementBuilder().conc_ids(space.getSpectrumIds()) + " )";
 			} else{
 				// SELECT THE WHOLE BLOB
 				String columns[] = new String[] { "measurement", id_column };

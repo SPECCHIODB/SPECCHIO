@@ -71,8 +71,7 @@ public class SpectrumService extends SPECCHIOService {
 	
 	/**
 	 * Get the number of spectra in database
-	 * 
-	 * @param String		empty string
+	 *
 	 * 
 	 * @return the number of spectra in the database
 	 * 
@@ -118,7 +117,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -150,7 +149,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do not have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -182,7 +181,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute and value to filter by
+	 * @param mds 	specifies ids to filter and attribute and value to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -287,7 +286,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param ids_d		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 
@@ -370,7 +369,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get hierarchy ids, directly above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param ids_d		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 
@@ -400,7 +399,7 @@ public class SpectrumService extends SPECCHIOService {
 	 * 
 	 * @return a ReferenceSpaceStruct object
 	 * 
-	 * @throws SPECCHIOFacotryException	database error
+	 * @throws SPECCHIOFactoryException	database error
 	 */
 	@POST
 	@Path("getReferenceSpace")
@@ -441,6 +440,7 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return spaces.toArray(new Space[spaces.size()]);
 	}
+
 		
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
@@ -789,8 +789,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Sort spectra by the values of the specified attributes
 	 * 
-	 * @param spectrum_ids	list of ids to sort
-	 * @param attribute_names	attribute names to sort by
+	 * @param av_list	list of ids to sort
 	 * 
 	 * @return a AVMatchingListCollection object
 	 */	
@@ -835,7 +834,7 @@ public class SpectrumService extends SPECCHIOService {
 	 * 
 	 * @param spectrum	the spectrum to be updated
 	 * 
-	 * @throws SPECCHIOClientException
+	 * @throws SPECCHIOFactoryException
 	 */
 	@POST
 	@Path("update_vector")
