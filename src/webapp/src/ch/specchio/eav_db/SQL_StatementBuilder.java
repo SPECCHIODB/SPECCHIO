@@ -120,11 +120,16 @@ public class SQL_StatementBuilder {
    // useful for insert statements
    synchronized public String conc_values(String... vals)
    {
-	   String res = quote_string(vals[0]);
-	   
+	   StringBuilder builder = new StringBuilder();
+	   builder.append(quote_string(vals[0]));
+	   	   
 	   for(int i=1; i < vals.length; i++)
-		   res = res.concat(", "+quote_string(vals[i]));
-	   return res;
+	   {
+	   		builder.append(", ");
+	   		builder.append(quote_string(vals[i]));
+	   }
+	   return builder.toString();	  
+		   
    }
    
    synchronized public String conc_values(ArrayList<String> vals)
@@ -135,20 +140,38 @@ public class SQL_StatementBuilder {
    synchronized public String conc_values(ArrayList<String> vals, boolean do_quote)
    {
 	   
-	   String res;
+	   StringBuilder builder = new StringBuilder();
+	   
 	   if(vals.size() == 0)
 	   {
-		   res = "";
+		   builder.append("");
 	   }
 	   else
 	   {
-		  res = (do_quote ? quote_string(vals.get(0)) : vals.get(0));
+		  builder.append(do_quote ? quote_string(vals.get(0)) : vals.get(0));
 	   }
-	   
-	   
+	   	   
 	   for(int i=1; i < vals.size(); i++)
-		   res = res.concat(", "+ (do_quote ? quote_string(vals.get(i)) : vals.get(i)));
-	   return res;	    
+	   {
+	   		builder.append(", ");
+	   		builder.append(do_quote ? quote_string(vals.get(i)) : vals.get(i));
+	   }
+	   return builder.toString();	  	   
+	   
+//	   String res;
+//	   if(vals.size() == 0)
+//	   {
+//		   res = "";
+//	   }
+//	   else
+//	   {
+//		  res = (do_quote ? quote_string(vals.get(0)) : vals.get(0));
+//	   }
+//	   
+//	   
+//	   for(int i=1; i < vals.size(); i++)
+//		   res = res.concat(", "+ (do_quote ? quote_string(vals.get(i)) : vals.get(i)));
+//	   return res;	    
    }
    
    synchronized public String conc_values_for_multiple_insert(ArrayList<String> vals)
@@ -173,48 +196,55 @@ public class SQL_StatementBuilder {
    
    public synchronized String conc_ids(ArrayList<Integer> ids)
    {
-	   String res;
+	   StringBuilder builder = new StringBuilder();
 	   if(ids.size() == 0)
 	   {
-		   res = "null";
+		   builder.append("null");
 	   }
 	   else
 	   {
-		   res = Integer.toString(ids.get(0));
+		   builder.append(ids.get(0));
 	   }
 	   
-	   StringBuilder builder = new StringBuilder();
+	   
 	   for(int i=1; i < ids.size(); i++)
 	   {
-//		   res = res.concat(", "+Integer.toString(ids.get(i)));
-		   //builder.append(", "+Integer.toString(ids.get(i)));
-	   
-	   		// speed check
 	   		builder.append(", ");
-	   		builder.append(Integer.toString(ids.get(i)));
+	   		builder.append(ids.get(i));
 	   }
-	   return res;	  
+	   return builder.toString();	  
    }   
    
    
    public synchronized String conc_ids(int... ids)
    {
-	   String res = Integer.toString(ids[0]);
+
 	   //System.out.println("deprecated conc_ids call");
+	   StringBuilder builder = new StringBuilder();
+	   builder.append(ids[0]);
 	   
 	   for(int i=1; i < ids.length; i++)
-		   res = res.concat(", "+Integer.toString(ids[i]));
-	   return res;	   
+	   {
+	   		builder.append(", ");
+	   		builder.append(ids[i]);
+	   }
+		   
+	   return builder.toString();	   
    }
    
    
    public synchronized String conc_ids(Integer[] ids)
    {
-	   String res = Integer.toString(ids[0]);
+	   StringBuilder builder = new StringBuilder();
+	   builder.append(ids[0]);
 	   
 	   for(int i=1; i < ids.length; i++)
-		   res = res.concat(", "+Integer.toString(ids[i]));
-	   return res;	   
+	   {
+	   		builder.append(", ");
+	   		builder.append(ids[i]);
+	   }
+		   
+	   return builder.toString();	   
    }
    
    // join the two strings with a comma separation, but only if first string is not empty
