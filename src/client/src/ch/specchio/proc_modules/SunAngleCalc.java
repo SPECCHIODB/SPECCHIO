@@ -32,7 +32,7 @@ public class SunAngleCalc {
 
     public SunAngleCalc() throws SPECCHIOClientException  {
         // get a reference to the application's client object
-        specchioClient = SPECCHIOApplication.getInstance().getClient();
+        specchioClient = SPECCHIOClientFactory.getInstance().getCurrent_client();
 
         // get the attribute descriptors to be filled in
         Hashtable<String, attribute> attributes = specchioClient.getAttributesNameHash();
@@ -50,11 +50,10 @@ public class SunAngleCalc {
             this.spectrumIds[count] = specId;
             count++;
         }
-//        this.spectrumIds = spectrumIds;
-//        this.metaParams = metaParams;
-        specchioClient = SPECCHIOClientFactory.getInstance().getCurrent_client();
+
         // get a reference to the application's client object
-//        specchioClient = client;
+        specchioClient = SPECCHIOClientFactory.getInstance().getCurrent_client();
+
 
 //         get the attribute descriptors to be filled in
         Hashtable<String, attribute> attributes = specchioClient.getAttributesNameHash();
@@ -77,24 +76,12 @@ public class SunAngleCalc {
 
             for (Integer id : spectrumIds) {
 
-                // download spectrum metadata from server
-                //Spectrum s = specchioClient.getSpectrum(id, true);
-                //Metadata md = s.getMetadata();
-                //ArrayList<Integer> ids = new ArrayList<Integer>();
-                //ids.add(id);
-
-                //System.out.println(id);
-
                 boolean spat_pos_available = false;
                 double lat = 0, lon = 0;
 
                 // get latitude and longitude
                 if(spatial_extension)
                 {
-                    //ArrayList<MetaParameter> pos_tmp = specchioClient.getMetaparameters(ids, "Spatial Position");
-                    //MetaSpatialPoint pos = (MetaSpatialPoint)md.get_first_entry("Spatial Position");
-                    //MetaSpatialPoint pos = (MetaSpatialPoint) pos_tmp.get(0);
-//						MetaParameter tmp = specchioClient.getMetaparameter(id, "Spatial Position");
                     MetaSpatialPoint pos = (MetaSpatialPoint)specchioClient.getMetaparameter(id, "Spatial Position");
 
                     if(pos != null)
@@ -106,9 +93,7 @@ public class SunAngleCalc {
 
                     if(!spat_pos_available)
                     {
-                        //MetaSpatialPolyline t = (MetaSpatialPolyline)md.get_first_entry("Spatial Transect");
-                        //pos_tmp = specchioClient.getMetaparameters(ids, "Spatial Transect");
-                        //MetaSpatialPolyline t = (MetaSpatialPolyline) pos_tmp.get(0);
+
                         MetaSpatialPolyline t = (MetaSpatialPolyline)specchioClient.getMetaparameter(id, "Spatial Transect");
 
                         if(t != null)
@@ -132,13 +117,7 @@ public class SunAngleCalc {
                 }
                 else
                 {
-//						ArrayList<MetaParameter> lat_tmp = specchioClient.getMetaparameters(ids, "Latitude");
-//						ArrayList<MetaParameter> lon_tmp = specchioClient.getMetaparameters(ids, "Longitude");
-////						MetaSimple latitude = (MetaSimple)md.get_first_entry("Latitude");
-////						MetaSimple longitude = (MetaSimple)md.get_first_entry("Longitude");
-//
-//						MetaSimple latitude = (MetaSimple) lat_tmp.get(0);
-//						MetaSimple longitude = (MetaSimple) lon_tmp.get(0);
+
 
                     MetaSimple latitude = (MetaSimple) specchioClient.getMetaparameter(id, "Latitude");
                     MetaSimple longitude = (MetaSimple) specchioClient.getMetaparameter(id, "Longitude");
@@ -152,9 +131,6 @@ public class SunAngleCalc {
                 }
 
                 // get acquisition time
-                //MetaDate acquisitionTime = (MetaDate)md.get_first_entry("Acquisition Time (UTC)");
-//					ArrayList<MetaParameter> utc_tmp = specchioClient.getMetaparameters(ids, "Acquisition Time (UTC)");
-//					MetaDate acquisitionTime = (MetaDate)utc_tmp.get(0);
                 MetaDate acquisitionTime = null;
                 if(spat_pos_available)
                 {
