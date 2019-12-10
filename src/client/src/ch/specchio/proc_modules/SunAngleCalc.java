@@ -175,9 +175,9 @@ public class SunAngleCalc {
 
                     // add the identifier to the list of updated identifiers
                     updatedIds.add(id);
-                    System.out.println("Updated Spectrum " + count + " of " + spectrumIds.length);
                 }
                 count++;
+                System.out.println("Updated Spectrum " + count + " of " + spectrumIds.length);
             }
 
         }
@@ -192,7 +192,7 @@ public class SunAngleCalc {
         catch (MetaParameterFormatException e) {
             e.printStackTrace();
         }
-
+        
         if (updatedIds.size() > 0) {
 
             attribute attr = specchioClient.getAttributesNameHash().get("Solar Angle Computation");
