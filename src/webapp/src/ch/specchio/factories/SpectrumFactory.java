@@ -422,9 +422,15 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					"ON sxe.eav_id = ea.eav_id " +
 					"INNER JOIN specchio.spectrum AS sp " +
 					"ON sxe.spectrum_id = sp.spectrum_id " +
-					"WHERE ea.taxonomy_id = 93 " +
-					"AND sp.measurement_unit_id = 2 " +
-					"AND " + campaignId;
+					"INNER JOIN ( " +
+					"SELECT ea2.eav_id " +
+					"FROM specchio.eav AS ea2 " +
+					"WHERE ea2.string_val " +
+					"LIKE ('%WR2%') " +
+					") AS wr2 " +
+					"ON sxe.eav_id = wr2.eav_id " +
+					"WHERE sp.measurement_unit_id = 2 " +
+					"AND sp.campaign_id = " + campaignId;
 
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
