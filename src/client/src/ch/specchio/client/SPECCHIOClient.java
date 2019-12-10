@@ -15,42 +15,7 @@ import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.ReferenceSpaceStruct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpectralSpace;
-import ch.specchio.types.AVMatchingListCollection;
-import ch.specchio.types.ApplicationDomainCategories;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.CalibrationMetadata;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.Category;
-import ch.specchio.types.CategoryTable;
-import ch.specchio.types.ConflictTable;
-import ch.specchio.types.Country;
-import ch.specchio.types.Hierarchy;
-import ch.specchio.types.Institute;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.InstrumentDescriptor;
-import ch.specchio.types.MatlabAdaptedArrayList;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetaparameterStatistics;
-import ch.specchio.types.Picture;
-import ch.specchio.types.PictureTable;
-import ch.specchio.types.Reference;
-import ch.specchio.types.ReferenceBrand;
-import ch.specchio.types.ReferenceDescriptor;
-import ch.specchio.types.Sensor;
-import ch.specchio.types.SpectralFile;
-import ch.specchio.types.SpectralFileInsertResult;
-import ch.specchio.types.SpectralFiles;
-import ch.specchio.types.Spectrum;
-import ch.specchio.types.SpectrumDataLink;
-import ch.specchio.types.SpectrumFactorTable;
-import ch.specchio.types.Taxonomy;
-import ch.specchio.types.TaxonomyNodeObject;
-import ch.specchio.types.User;
-import ch.specchio.types.attribute;
-import ch.specchio.types.campaign_node;
-import ch.specchio.types.database_node;
-import ch.specchio.types.spectral_node_object;
-import ch.specchio.types.Units;
+import ch.specchio.types.*;
 
 /**
  * This interfaces defines all of the methods to be implemented by a SPECCHIO client.
@@ -422,7 +387,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * @return hierarchy id
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException;			
 	
@@ -435,7 +400,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getDirectHierarchyIds(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException;			
 	
@@ -522,7 +487,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getHierarchyIdsOfSpectra(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException;				
 	
@@ -543,7 +508,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * @returns path as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */
 	public String getHierarchyFilePath(int hierarchy_id) throws SPECCHIOClientException;
 	
@@ -554,7 +519,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * @returns name as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */	
 	public String getHierarchyName(int hierarchy_id) throws SPECCHIOClientException;	
 	
@@ -646,7 +611,7 @@ public interface SPECCHIOClient {
 	/**
 	 * Get the metadata categories for application domain
 	 * 
-	 * @param field	the field name
+	 * @param taxonomy_id	the field name
 	 * 
 	 * @return a ArrayList<Integer> object, or null if the field does not exist
 	 */
@@ -676,13 +641,23 @@ public interface SPECCHIOClient {
 	 * Get metaparameters for spectrum ids and EAV attribute
 	 * 
 	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
+	 * @param attribute_name		attribute name
 	 * 
-	 * @return list of metaparameters, or null if the field does not exist	 
+	 * @return list of metaparameters, or null if the field does not exist
+	 * @throws SPECCHIOClientException
 	 */
-	public ArrayList<MetaParameter> getMetaparameters(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOWebClientException;
-		
-	
+	public ArrayList<MetaParameter> getMetaparameters(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOClientException;
+
+
+	/**
+	 * Get metaparameters for spectrum ids and EAV attribute
+	 *
+	 * @param spectrumIds		spectrum ids
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException;
+
 	/**
 	 * Get metaparameter for spectrum id and EAV attribute
 	 * 
@@ -730,9 +705,10 @@ public interface SPECCHIOClient {
 	 * Get values for spectrum ids and EAV attribute (non-distinct values by default)
 	 * 
 	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
+	 * @param attribute_name		attribute name
 	 * 
 	 * @return list of values, or null if the field does not exist
+	 * @throws SPECCHIOWebClientException
 	 */	
 	public MatlabAdaptedArrayList<Object> getMetaparameterValues(ArrayList<Integer> ids, String attribute_name) throws SPECCHIOWebClientException;	
 	
@@ -740,10 +716,11 @@ public interface SPECCHIOClient {
 	 * Get values for spectrum ids and EAV attribute
 	 * 
 	 * @param ids		spectrum ids
-	 * @param attribute		attribute name
+	 * @param attribute_name		attribute name
 	 * @param distinct		defines if distinct values should be returned or repeated values for the given spectrum ids
 	 * 
-	 * @return list of values, or null if the field does not exist	 
+	 * @return list of values, or null if the field does not exist
+	 * @throws SPECCHIOWebClientException
 	 */
 	public MatlabAdaptedArrayList<Object> getMetaparameterValues(ArrayList<Integer> ids, String attribute_name, Boolean distinct) throws SPECCHIOWebClientException;
 	
@@ -771,9 +748,10 @@ public interface SPECCHIOClient {
 	/**
 	 * Get newest N spectra.
 	 * 
-	 * @param N	
+	 * @param number_of_spectra
 	 * 
 	 * @return list of spectrum ids ordered by data ingestion time
+	 * @throws SPECCHIOWebClientException
 	 */	
 	public ArrayList<Integer> getNewestSpectra(int number_of_spectra) throws SPECCHIOWebClientException;
 	
@@ -846,9 +824,9 @@ public interface SPECCHIOClient {
 	 * Get a reference space.
 	 * 
 	 * @param input_ids
-	 * @param local_ids
 	 * 
 	 * @return a Space object, or null if no space could be found
+	 * @throws SPECCHIOClientException
 	 */
 	public ReferenceSpaceStruct getReferenceSpace(ArrayList<Integer> input_ids) throws SPECCHIOClientException;
 	
@@ -1034,9 +1012,10 @@ public interface SPECCHIOClient {
 	 * 
 	 * @param campaign	the campaign into which to insert the hierarchy
 	 * @param parent_id			the identifier of the the parent of the hierarchy
-	 * @param hierarchy_name	the name of the desired hierarchy
+	 * @param name	the name of the desired hierarchy
 	 * 
 	 * @return the identifier of the child of parent_id with the name hierarchy_name
+	 * @throws SPECCHIOClientException
 	 */
 	public int getSubHierarchyId(Campaign campaign, String name, int parent_id) throws SPECCHIOClientException;
 	
@@ -1255,7 +1234,7 @@ public interface SPECCHIOClient {
 	/**
 	 * Get the meta-parameter of the given metaparameter identifier.
 	 * 
-	 * @param id		the metaparameter identifier for which to retrieve metadata
+	 * @param metaparameter_id		the metaparameter identifier for which to retrieve metadata
 	 * 
 	 * @return the meta-parameter object corresponding to the desired id
 	 *
@@ -1509,9 +1488,10 @@ public interface SPECCHIOClient {
 	/**
 	 * Update the metadata fields for a set of spectra
 	 * 
-	 * @param spectrum_ids	the spectrum identifiers
+	 * @param ids	the spectrum identifiers
 	 * @param field			the name of the field to be updated
 	 * @param id
+	 * @throws SPECCHIOClientException
 	 */
 	public void updateSpectraMetadata(ArrayList<Integer> ids, String field, int id) throws SPECCHIOClientException;
 	

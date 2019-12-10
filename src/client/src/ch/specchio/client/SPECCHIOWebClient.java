@@ -24,6 +24,7 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.jaxb.XmlStringAdapter;
 import ch.specchio.plots.GonioSamplingPoints;
+import ch.specchio.proc_modules.SunAngleCalc;
 import ch.specchio.queries.EAVQueryConditionObject;
 import ch.specchio.queries.Query;
 import ch.specchio.spaces.MeasurementUnit;
@@ -34,7 +35,6 @@ import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.AVMatchingList;
 import ch.specchio.types.AVMatchingListCollection;
 import ch.specchio.types.ApplicationDomainCategories;
-import ch.specchio.types.ArrayListWrapper;
 import ch.specchio.types.Calibration;
 import ch.specchio.types.CalibrationMetadata;
 import ch.specchio.types.Campaign;
@@ -131,7 +131,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * Construct an anonymous connection to the web application server.
 	 * 
 	 * @param url		the URL of the SPECCHIO web application
-	 * @param default_trust_store 
+	 * @param uses_default_trust_store
 	 * 
 	 * @throws SPECCHIOClientException	invalid URL
 	 */
@@ -1313,9 +1313,36 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return out_list;
 		
-	}	
-	
-	
+	}
+
+	@Override
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException {
+		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds);
+		sunCalc.calculateSunAngle();
+	}
+
+/*	@Override
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException {
+//		Hashtable<String, attribute> attr = getAttributesNameHash();
+//		Integer latId = attr.get("Latitude").id;
+//		Integer lonId = attr.get("Longitude").id;
+//		Integer acqTime = attr.get("Acquisition Time (UTC)").id;
+//		Integer illuAzi = attr.get("Illumination Azimuth").id;
+//		Integer illuZen = attr.get("Illumination Zenith").id;
+//		ArrayList<Integer> attrIds = new ArrayList<Integer>();
+//		attrIds.add(latId);
+//		attrIds.add(lonId);
+//		attrIds.add(acqTime);
+//		attrIds.add(illuAzi);
+//		attrIds.add(illuZen);
+//		MetadataSelectionDescriptor mdsd = new MetadataSelectionDescriptor(spectrumIds,attrIds);
+//		ArrayList<ArrayList<MetaParameter>> params = getMetaparameters(spectrumIds, attrIds);
+		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds, client);
+		sunCalc.calculateSunAngle();
+		calculateSunAngle(spectrumIds);
+	}*/
+
+
 	/**
 	 * Get metaparameters for spectrum ids and EAV attribute
 	 * 

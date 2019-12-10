@@ -11,11 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 import au.ands.org.researchdata.RDACollectionDescriptor;
-import ch.specchio.gui.SPECCHIOApplication;
-import ch.specchio.gui.SunAngleCalcDialog;
 import ch.specchio.interfaces.ProgressReportInterface;
-import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.plots.GonioSamplingPoints;
+import ch.specchio.proc_modules.SunAngleCalc;
 import ch.specchio.queries.EAVQueryConditionObject;
 import ch.specchio.queries.Query;
 import ch.specchio.spaces.MeasurementUnit;
@@ -125,7 +123,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @throws SPECCHIOClientException could not log in
 	 */
-	public void connect() throws SPECCHIOClientException, SPECCHIOWebClientException {
+	public void connect() throws SPECCHIOClientException {
 		
 		// make connection
 		if (pr != null) {
@@ -2312,7 +2310,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException{
-		SunAngleCalcDialog d = new SunAngleCalcDialog(SPECCHIOApplication.getInstance().get_frame(), false);
+		realClient.calculateSunAngle(spectrumIds);
+
 	}
 
 
