@@ -73,7 +73,7 @@ public class SunAngleCalc {
         try {
 
             boolean spatial_extension = specchioClient.getCapability(Capabilities.SPATIAL_EXTENSION) != null && specchioClient.getCapability(Capabilities.SPATIAL_EXTENSION).equals("true");
-
+            int count = 0;
             for (Integer id : spectrumIds) {
 
                 boolean spat_pos_available = false;
@@ -175,9 +175,9 @@ public class SunAngleCalc {
 
                     // add the identifier to the list of updated identifiers
                     updatedIds.add(id);
-
+                    System.out.println("Updated Spectrum " + count + " of " + spectrumIds.length);
                 }
-
+                count++;
             }
 
         }
