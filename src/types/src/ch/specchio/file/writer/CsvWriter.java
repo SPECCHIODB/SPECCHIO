@@ -295,12 +295,35 @@ class CsvHdrWriter extends CsvWriter {
 			}
 			
 		}
-		
+
+		// write one row for the campaign id
+		writeField("CampaignId");
+		// write the attribute's value for each spectrum
+		for (Spectrum s : spectra) {
+			// write a field separator
+			writeFieldSeparator();
+			writeField(Integer.toString(s.campaign_id));
+		}
+
+		writeRecordSeparator();
+
+		// write one row for the spectrum id
+		writeField("SpectrumId");
+		// write the attribute's value for each spectrum
+		for (Spectrum s : spectra) {
+			// write a field separator
+			writeFieldSeparator();
+			writeField(Integer.toString(s.spectrum_id));
+		}
+
+		writeRecordSeparator();
+
+
 		super.endSpace();
 		
 	}
-	
-	
+
+
 	/**
 	 * Infer the name of a metadata field given its SQL field name.
 	 * 
@@ -358,7 +381,7 @@ class CsvHdrWriter extends CsvWriter {
 	/**
 	 * Write a spectrum to the output stream.
 	 * 
-	 * @param sp	the spectrum to be written
+	 * @param s	the spectrum to be written
 	 * 
 	 * @throws IOException	could not write to the output stream
 	 */
@@ -450,7 +473,7 @@ class CsvBodyWriter extends CsvWriter {
 	/**
 	 * Start writing a new space.
 	 * 
-	 * @param space	the space
+	 * @param spaceIn	the space
 	 * 
 	 * @throws IOException	could not write to output
 	 */
@@ -467,7 +490,7 @@ class CsvBodyWriter extends CsvWriter {
 	/**
 	 * Write a spectrum to the output stream.
 	 * 
-	 * @param sp	the spectrum to be written
+	 * @param s	the spectrum to be written
 	 * 
 	 * @throws IOException	could not write to the output stream
 	 */

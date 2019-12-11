@@ -192,7 +192,7 @@ public class SunAngleCalc {
         catch (MetaParameterFormatException e) {
             e.printStackTrace();
         }
-        
+
         if (updatedIds.size() > 0) {
 
             attribute attr = specchioClient.getAttributesNameHash().get("Solar Angle Computation");
