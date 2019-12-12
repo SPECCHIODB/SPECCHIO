@@ -222,32 +222,7 @@ public class FileOutputManager extends Thread {
 			// open output files
 			OutputStream headerStream;
 			OutputStream bodyStream;
-			if (split_hdr_and_body) {
-				
-				// separate writers for header and body
-				File headerFilename = new File(
-						target_dir,
-						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Header)
-					);
-									
-				File bodyFilename = new File(
-						target_dir,
-						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Body)
-					);
-				headerStream = new FileOutputStream(headerFilename);
-				bodyStream = new FileOutputStream(bodyFilename);
-				
-			} else {
-				// same writer for header and body
-				File filename = new File(
-						target_dir,
-						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Both)
-					);
-				headerStream = new FileOutputStream(filename);
-				bodyStream = headerStream;
-				
-			}
-			
+
 			// download spectra from the server
 			pr.set_operation("Downloading spectra");
 			Spectrum spectra[] = new Spectrum[og.getSpectrumIds().size()];
@@ -256,43 +231,82 @@ public class FileOutputManager extends Thread {
 				spectra[i] = specchio_client.getSpectrum(spectrumId, true);
 				pr.set_progress(++i);
 			}
-			
-			
-			// write header
-			pr.set_operation("Writing file header");
-			SpectrumWriter headerWriter = writerFactory.getWriter(headerStream, file_type, HeaderBody.Header);
-			headerWriter.setTimeFormat(time_format);
-			headerWriter.setUseSpectrumUnits(get_unit_from_spectrum);
-			headerWriter.startSpace(og);
-			i = 0;
-			for (Spectrum s : spectra) {
-				headerWriter.writeSpectrum(s);
-				pr.set_progress(++i);
-			}
-			headerWriter.endSpace();
-			
-			// write body
-			pr.set_operation("Writing file body");
-			SpectrumWriter bodyWriter = writerFactory.getWriter(bodyStream, file_type, HeaderBody.Body);
-			bodyWriter.setTimeFormat(time_format);
-			bodyWriter.setUseSpectrumUnits(get_unit_from_spectrum);
-			bodyWriter.startSpace(og);
-			i = 0;
-			for (Spectrum s : spectra) {
-				bodyWriter.writeSpectrum(s);
-				pr.set_progress(++i);
-				
-				// everything for this spectrum has now been written, so increment the spectrum counter
-				count++;
-			}
-			bodyWriter.endSpace();
 
-			// close files
+			if (split_hdr_and_body) {
+
+				// separate writers for header and body
+				File headerFilename = new File(
+						target_dir,
+						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Header)
+					);
+
+				File bodyFilename = new File(
+						target_dir,
+						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Body)
+					);
+				headerStream = new FileOutputStream(headerFilename);
+				bodyStream = new FileOutputStream(bodyFilename);
+
+				// write header
+				pr.set_operation("Writing file header");
+				SpectrumWriter headerWriter = writerFactory.getWriter(headerStream, file_type, HeaderBody.Header);
+				headerWriter.setTimeFormat(time_format);
+				headerWriter.setUseSpectrumUnits(get_unit_from_spectrum);
+				headerWriter.startSpace(og);
+				i = 0;
+				for (Spectrum s : spectra) {
+					headerWriter.writeSpectrum(s);
+					pr.set_progress(++i);
+				}
+				headerWriter.endSpace(false);
+
+				// write body
+				pr.set_operation("Writing file body");
+				SpectrumWriter bodyWriter = writerFactory.getWriter(bodyStream, file_type, HeaderBody.Body);
+				bodyWriter.setTimeFormat(time_format);
+				bodyWriter.setUseSpectrumUnits(get_unit_from_spectrum);
+				bodyWriter.startSpace(og);
+				i = 0;
+				for (Spectrum s : spectra) {
+					bodyWriter.writeSpectrum(s);
+					pr.set_progress(++i);
+
+					// everything for this spectrum has now been written, so increment the spectrum counter
+					count++;
+				}
+				bodyWriter.endSpace();
+				// close files
+
+
+			} else {
+				// same writer for header and body
+				File filename = new File(
+						target_dir,
+						base_name + "_" + og.get_filename_addon() + FileTypes.get_filename_extension(this.file_type, HeaderBody.Both)
+					);
+				headerStream = new FileOutputStream(filename);
+				bodyStream = headerStream;
+
+				// write header
+				pr.set_operation("Writing file ");
+				SpectrumWriter headerWriter = writerFactory.getWriter(headerStream, file_type, HeaderBody.Header);
+				headerWriter.setTimeFormat(time_format);
+				headerWriter.setUseSpectrumUnits(get_unit_from_spectrum);
+				headerWriter.startSpace(og);
+				i = 0;
+				for (Spectrum s : spectra) {
+					headerWriter.writeSpectrum(s);
+					pr.set_progress(++i);
+				}
+				headerWriter.endSpace(true);
+
+			}
+
 			headerStream.close();
 			if (split_hdr_and_body) {
 				bodyStream.close();
 			}
-			
+
 		
 		}
 		

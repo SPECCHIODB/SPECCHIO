@@ -185,8 +185,9 @@ class CsvHdrWriter extends CsvWriter {
 	 * 
 	 * @throws IOException	could not write to output
 	 */
-	public void endSpace() throws IOException {
-		
+	public void endSpace(Boolean combine) throws IOException {
+// ---------------------- START WITH THE HEADERS OF METADATA, ATTRIBUTE COLUMNS AND MEASUREMENT:
+
 		// write one row for every metadata field
 		for (String metadataField : metadataFields) {
 			
@@ -210,21 +211,7 @@ class CsvHdrWriter extends CsvWriter {
 				
 				// write the name of the field
 				writeField(metadataName);
-				
-				// write the field's value for each spectrum
-				for (Spectrum s : spectra) {
-				
-					// write a field separator
-					writeFieldSeparator();
-					
-					// write the fields's value
-					Object value = s.getMetadataValue(metadataField);
-					if (value != null) {
-						writeField(value.toString());
-					}
-					
-				}
-			
+
 			}
 			catch (NoSuchMethodException ex) {
 				// should never happen if Spectrum.METADATA_FIELDS is correct
@@ -232,10 +219,10 @@ class CsvHdrWriter extends CsvWriter {
 			}
 			
 			// write end of the record
-			writeRecordSeparator();
+			writeFieldSeparator();
 			
 		}
-		
+
 		// write one row for every attribute
 		for (String attributeName : attributeNames) {
 			
@@ -254,69 +241,155 @@ class CsvHdrWriter extends CsvWriter {
 			for(int entry_index =0;entry_index < max_number_of_entries; entry_index++)
 			{
 				writeField(attributeName);
-				
-				// write the attribute's value for each spectrum
-				int i = 0;
-				for (Spectrum s : spectra) {
-					
-					// write a field separator
-					writeFieldSeparator();
-					
-					// write the attribute's value if it exists
-					if(number_of_entries_list.get(i) > entry_index)
-					{
-						MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(entry_index);
-						if (mp != null && mp.getValue() != null) {
-
-							if (mp instanceof MetaDate) {
-
-								// output date according to the time format setting
-								DateTime date = (DateTime) mp.getValue();
-								if (getTimeFormat() == TimeFormats.Seconds) {
-									writeField(Long.toString(date.getMillis()));
-								} else {
-									//writeField(df.format(date));
-									writeField(mp.valueAsString());
-								}
-							} else {
-
-								// convert the value to its string form
-								writeField(mp.valueAsString());
-							}
-						}
-					}
-					
-					i++;
-					
-				}
-				
-				// write the end of the record
-				writeRecordSeparator();
+				writeFieldSeparator();
 			}
 			
 		}
 
 		// write one row for the campaign id
 		writeField("CampaignId");
-		// write the attribute's value for each spectrum
-		for (Spectrum s : spectra) {
-			// write a field separator
-			writeFieldSeparator();
-			writeField(Integer.toString(s.campaign_id));
-		}
-
-		writeRecordSeparator();
+		writeFieldSeparator();
 
 		// write one row for the spectrum id
-		writeField("SpectrumId");
-		// write the attribute's value for each spectrum
+		writeField("SpectrumId");		// write the attribute's value for each spectrum
+		writeFieldSeparator();
+		if(combine){
+			for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++){
+				writeField(Double.toString(getCurrentSpace().get_dimension_number(channel)));
+				writeFieldSeparator();
+			}
+		}
+		writeRecordSeparator();
+
+
+
+// ---------------------- ADD THE VALUES
 		for (Spectrum s : spectra) {
+
+			// METADATA
+			for (String metadataField : metadataFields){
+			// write the fields's value
+				Object value = null;
+				try {
+					value = s.getMetadataValue(metadataField);
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+				}
+				if (value != null) {
+				writeField(value.toString());
+			}
 			// write a field separator
 			writeFieldSeparator();
+			}
+
+			// ATTRIBUTES
+			for (String attributeName : attributeNames){
+				MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(0);
+				if (mp != null && mp.getValue() != null) {
+
+					if (mp instanceof MetaDate) {
+
+						// output date according to the time format setting
+						DateTime date = (DateTime) mp.getValue();
+						if (getTimeFormat() == TimeFormats.Seconds) {
+							writeField(Long.toString(date.getMillis()));
+						} else {
+							//writeField(df.format(date));
+							writeField(mp.valueAsString());
+						}
+					} else {
+
+						// convert the value to its string form
+						writeField(mp.valueAsString());
+					}
+				}
+				writeFieldSeparator();
+			}
+			writeField(Integer.toString(s.campaign_id));
+			writeFieldSeparator();
 			writeField(Integer.toString(s.spectrum_id));
+			writeFieldSeparator();
+			if(combine){
+				// MEASUREMENT VALUES
+				for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++) {
+					writeField(Double.toString(getCurrentSpace().get_vector_element(s.getSpectrumId(), channel)));
+					writeFieldSeparator();
+				}
+			}
+			writeRecordSeparator();
+
 		}
 
-		writeRecordSeparator();
+
+
+// -------------------------------------------------------------
+		//		HERE THE SPECTRA NEED TO BE WRITTEN IN THE ROWS!
+//		// write the field's value for each spectrum
+//		for (Spectrum s : spectra) {
+//
+//			// write a field separator
+//			writeFieldSeparator();
+//
+//			// write the fields's value
+//			Object value = s.getMetadataValue(metadataField);
+//			if (value != null) {
+//				writeField(value.toString());
+//			}
+//
+//		}
+//
+//		// write the attribute's value for each spectrum
+//		int i = 0;
+//		for (Spectrum s : spectra) {
+//
+//			// write a field separator
+//			writeFieldSeparator();
+//
+//			// write the attribute's value if it exists
+//			if(number_of_entries_list.get(i) > entry_index)
+//			{
+//				MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(entry_index);
+//				if (mp != null && mp.getValue() != null) {
+//
+//					if (mp instanceof MetaDate) {
+//
+//						// output date according to the time format setting
+//						DateTime date = (DateTime) mp.getValue();
+//						if (getTimeFormat() == TimeFormats.Seconds) {
+//							writeField(Long.toString(date.getMillis()));
+//						} else {
+//							//writeField(df.format(date));
+//							writeField(mp.valueAsString());
+//						}
+//					} else {
+//
+//						// convert the value to its string form
+//						writeField(mp.valueAsString());
+//					}
+//				}
+//			}
+//
+//			i++;
+//
+//		}
+//
+//		// write the end of the record
+//		writeRecordSeparator();
+
+
+//		// write the attribute's value for each spectrum
+//		for (Spectrum s : spectra) {
+//			// write a field separator
+//			writeFieldSeparator();
+//			writeField(Integer.toString(s.campaign_id));
+//		}
+//		for (Spectrum s : spectra) {
+//			// write a field separator
+//			writeFieldSeparator();
+//			writeField(Integer.toString(s.spectrum_id));
+//		}
+//
+//		writeRecordSeparator();
 
 
 		super.endSpace();
@@ -362,7 +435,7 @@ class CsvHdrWriter extends CsvWriter {
 	/**
 	 * Start writing a new space.
 	 * 
-	 * @param space	the space
+	 * @param spaceIn	the space
 	 * 
 	 * @throws IOException	could not write to output
 	 */
@@ -447,27 +520,23 @@ class CsvBodyWriter extends CsvWriter {
 	 * @throws IOException	could not write to output
 	 */
 	public void endSpace() throws IOException {
-		
-		// write one record for each channel
-		for (int channel = 0; channel < getCurrentSpace().getDimensionality() ; channel++) {
-			
-			// write the dimension number for this row
+
+		for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++){
 			writeField(df.format(getCurrentSpace().get_dimension_number(channel)));
-			
-			// write the vector elements for this dimension for each spectrum
-			for (Spectrum s : spectra) {
-				writeFieldSeparator();
-				writeField(df.format(getCurrentSpace().get_vector_element(s.getSpectrumId(), channel)));
-			}
-			
-			// end the row
-			writeRecordSeparator();
-			
+			writeFieldSeparator();
 		}
-		
+		writeRecordSeparator();
+		for(Spectrum s : spectra){
+			for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++) {
+				writeField(Double.toString(getCurrentSpace().get_vector_element(s.getSpectrumId(), channel)));
+				writeFieldSeparator();
+			}
+			writeRecordSeparator();
+		}
 		super.endSpace();
-		
 	}
+
+
 	
 	
 	/**
@@ -499,6 +568,11 @@ class CsvBodyWriter extends CsvWriter {
 		// add the spectrum to the list to be output
 		spectra.add(s);
 		
+	}
+
+
+	public void endSpaceCombined() throws IOException{
+
 	}
 
 }
