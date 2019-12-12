@@ -15,16 +15,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ch.specchio.types.*;
 import org.joda.time.DateTime;
 
 import ch.specchio.constants.FileTypes;
 import ch.specchio.constants.HeaderBody;
 import ch.specchio.constants.TimeFormats;
 import ch.specchio.spaces.Space;
-import ch.specchio.types.MetaDatatype;
-import ch.specchio.types.MetaDate;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.Spectrum;
 
 
 /**
@@ -284,25 +281,35 @@ class CsvHdrWriter extends CsvWriter {
 
 			// ATTRIBUTES
 			for (String attributeName : attributeNames){
-				MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(0);
-				if (mp != null && mp.getValue() != null) {
+				if(s.getMetadata().get_all_entries(attributeName).size() > 0){
+					MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(0);
+					if (mp != null && mp.getValue() != null) {
 
-					if (mp instanceof MetaDate) {
+						if (mp instanceof MetaDate) {
 
-						// output date according to the time format setting
-						DateTime date = (DateTime) mp.getValue();
-						if (getTimeFormat() == TimeFormats.Seconds) {
-							writeField(Long.toString(date.getMillis()));
+							// output date according to the time format setting
+							DateTime date = (DateTime) mp.getValue();
+							if (getTimeFormat() == TimeFormats.Seconds) {
+								writeField(Long.toString(date.getMillis()));
+							} else {
+								//writeField(df.format(date));
+								writeField(mp.valueAsString());
+							}
 						} else {
-							//writeField(df.format(date));
+
+							// convert the value to its string form
 							writeField(mp.valueAsString());
 						}
-					} else {
-
-						// convert the value to its string form
-						writeField(mp.valueAsString());
 					}
+
 				}
+				else {
+					writeField("NA");
+				}
+//				try {
+//				}catch (java.lang.IndexOutOfBoundsException e) {
+//					writeField("NA");
+//				}
 				writeFieldSeparator();
 			}
 			writeField(Integer.toString(s.campaign_id));

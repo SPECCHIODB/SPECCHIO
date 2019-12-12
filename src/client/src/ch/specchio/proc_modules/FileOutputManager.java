@@ -297,6 +297,7 @@ public class FileOutputManager extends Thread {
 				for (Spectrum s : spectra) {
 					headerWriter.writeSpectrum(s);
 					pr.set_progress(++i);
+					count++;
 				}
 				headerWriter.endSpace(true);
 
