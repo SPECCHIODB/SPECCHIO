@@ -252,8 +252,10 @@ class CsvHdrWriter extends CsvWriter {
 		writeFieldSeparator();
 		if(combine){
 			for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++){
+				if (channel != 0) {
+					writeFieldSeparator();
+				}
 				writeField(Double.toString(getCurrentSpace().get_dimension_number(channel)));
-				writeFieldSeparator();
 			}
 		}
 		writeRecordSeparator();
@@ -316,11 +318,14 @@ class CsvHdrWriter extends CsvWriter {
 			writeFieldSeparator();
 			writeField(Integer.toString(s.spectrum_id));
 			writeFieldSeparator();
+
 			if(combine){
 				// MEASUREMENT VALUES
 				for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++) {
+					if (channel != 0) {
+						writeFieldSeparator();
+					}
 					writeField(Double.toString(getCurrentSpace().get_vector_element(s.getSpectrumId(), channel)));
-					writeFieldSeparator();
 				}
 			}
 			writeRecordSeparator();
