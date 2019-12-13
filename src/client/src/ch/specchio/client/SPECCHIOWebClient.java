@@ -2723,9 +2723,29 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return eav_id;
 		
-	}	
-	
-	
+	}
+
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param mp			the meta-parameter to update or insert
+	 * @param spectrum_id	the identifiers for which to update or insert the parameter
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public int updateOrInsertEavMetadata(MetaParameter mp, int spectrum_id) throws SPECCHIOWebClientException {
+		ArrayList<Integer> specId = new ArrayList<>();
+		specId.add(spectrum_id);
+		int eav_id = postForInteger("metadata", "update_or_insert", new MetadataUpdateDescriptor(mp, specId));
+		if (mp.getEavId() == 0) {
+			mp.setEavId(eav_id);
+		}
+
+		return eav_id;
+
+	}
+
+
 	/**
 	 * Update an instrument.
 	 * 

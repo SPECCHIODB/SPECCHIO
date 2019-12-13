@@ -2192,7 +2192,21 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 		return realClient.updateOrInsertEavMetadata(mp, spectrum_ids);
 		
-	}		
+	}
+
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param mp			the meta-parameter to update or insert
+	 * @param spectrum_id	the identifiers for which to update or insert the parameter
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public int updateOrInsertEavMetadata(MetaParameter mp, int spectrum_id) throws SPECCHIOWebClientException {
+
+		return realClient.updateOrInsertEavMetadata(mp, spectrum_id);
+
+	}
 	
 	
 	/**
