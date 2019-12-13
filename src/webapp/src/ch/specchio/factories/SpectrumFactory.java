@@ -6,14 +6,11 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import ch.specchio.eav_db.AVSorter;
 import ch.specchio.eav_db.EAVDBServices;
@@ -1994,7 +1991,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		SQL_StatementBuilder SQL = getStatementBuilder();
 		try {
 			PreparedStatement statement = SQL.prepareStatement(sql);
-
+			statement.getConnection().setAutoCommit(false);
+			statement.getConnection().setClientInfo("rewriteBatchedStatements", "true");
+			final int batchSize = 1000;
+			int count = 0;
 			for (Spectrum s : spectra) {
 				statement.setString(2, Integer.toString(s.getSpectrumId()));
 
@@ -2018,9 +2018,14 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 				vector.close();
 				statement.addBatch();
+				if(++count % batchSize == 0) {
+					statement.executeBatch();
+					statement.getConnection().commit();
+				}
 			}
-
 			statement.executeBatch();
+			statement.getConnection().commit();
+			statement.getConnection().setAutoCommit(true);
 			statement.close();
 		}catch (SQLException ex) {
 			// bad SQL
