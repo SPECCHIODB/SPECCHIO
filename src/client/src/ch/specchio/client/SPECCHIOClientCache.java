@@ -3,12 +3,7 @@ package ch.specchio.client;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import au.ands.org.researchdata.RDACollectionDescriptor;
 import ch.specchio.interfaces.ProgressReportInterface;
@@ -2286,7 +2281,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		realClient.updateSpectrumVector(spectrum_id, vector);
 		
 	}
-	
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param updateMap	a map containing the spectrum_id as key and the vector as value
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void updateSpectrumVectors(HashMap<Integer, double[]> updateMap) throws SPECCHIOClientException {
+
+		realClient.updateSpectrumVectors(updateMap);
+
+	}
 	
 	
 	/**

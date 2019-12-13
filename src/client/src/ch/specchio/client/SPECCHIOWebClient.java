@@ -7,14 +7,13 @@ import java.lang.reflect.Array;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import au.ands.org.researchdata.RDACollectionDescriptor;
 import ch.specchio.interfaces.ProgressReportInterface;
@@ -146,8 +145,10 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * Constructor.
 	 * 
 	 * @param url		the URL of the SPECCHIO web application
-	 * @param user		the user name with which to log in
+	 * @param username		the user name with which to log in
 	 * @param password	the user's password
+	 * @param dataSourceName the name of the datasource
+	 * @param uses_default_trust_store
 	 * 
 	 * @throws SPECCHIOClientException	invalid URL
 	 */
@@ -803,7 +804,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy id
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException {
 		
@@ -825,7 +826,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getDirectHierarchyIds(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 		
@@ -980,7 +981,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getHierarchyIdsOfSpectra(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 		
@@ -1007,7 +1008,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return path as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */
 	public String getHierarchyFilePath(int hierarchy_id) throws SPECCHIOClientException
 	{
@@ -1023,7 +1024,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return name		name as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */	
 	public String getHierarchyName(int hierarchy_id) throws SPECCHIOClientException	{
 		String name = getString("campaign", "getHierarchyName", Integer.toString(hierarchy_id));	
@@ -1194,7 +1195,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get the metadata categories for application domain
 	 * 
-	 * @param field	the field name
+	 * @param taxonomy_id	the field name
 	 * 
 	 * @return a ArrayList<Integer> object, or null if the field does not exist
 	 */
@@ -1523,7 +1524,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get newest N spectra.
 	 * 
-	 * @param N	
+	 * @param number_of_spectra
 	 * 
 	 * @return list of spectrum ids ordered by data ingestion time
 	 */	
@@ -1721,7 +1722,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @param campaign	the campaign into which to insert the hierarchy
 	 * @param parent_id			the identifier of the the parent of the hierarchy
-	 * @param hierarchy_name	the name of the desired hierarchy
+	 * @param name	the name of the desired hierarchy
 	 * 
 	 * @return the identifier of the child of parent_id with the name hierarchy_name
 	 */
@@ -2313,7 +2314,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get the meta-parameter of the given metaparameter identifier.
 	 * 
-	 * @param id		the metaparameter identifier for which to retrieve metadata
+	 * @param metaparameter_id		the metaparameter identifier for which to retrieve metadata
 	 * 
 	 * @return the meta-parameter object corresponding to the desired id
 	 *
@@ -2824,7 +2825,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		Float[] vector_ = new Float[vector.length];
 		
-		for (int i=0;i<vector.length;i++)
+		for (int i=0; i<vector.length; i++)
 		{
 			vector_[i] = vector[i];
 		}				
@@ -2834,8 +2835,40 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		postForInteger("spectrum", "update_vector", s);
 		
 	}
-	
-	
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param updateMap	a map containing the spectrum_id as key and the vector as value
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void updateSpectrumVectors(HashMap<Integer, double[]> updateMap) throws SPECCHIOClientException {
+
+		Spectrum[] spectra = new Spectrum[updateMap.size()];
+		int count = 0;
+		for(Integer specId : updateMap.keySet()){
+			Spectrum s = new Spectrum();
+			double[] vector = updateMap.get(specId);
+			Float[] vector_ = new Float[vector.length];
+
+			for (int i=0;i<vector.length;i++)
+			{
+				vector_[i] = (float) (vector[i]);
+			}
+			s.setMeasurementVector(vector_);
+			s.setSpectrumId(specId);
+			spectra[count] = s;
+			count++;
+		}
+
+		postForInteger("spectrum", "update_vectors", spectra);
+
+//		return ids;
+
+//		postForInteger("spectrum", "update_vector", s);
+
+	}
 	
 	/**
 	 * Update the information about a user.

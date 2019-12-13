@@ -17,21 +17,18 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.plots.GonioSamplingPoints;
 import ch.specchio.queries.Query;
-import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.ReferenceSpaceStruct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.AVMatchingList;
 import ch.specchio.types.AVMatchingListCollection;
-import ch.specchio.types.ArrayListWrapper;
 import ch.specchio.types.MetadataSelectionDescriptor;
 import ch.specchio.types.PictureTable;
 import ch.specchio.types.SpectraMetadataUpdateDescriptor;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.types.SpectrumIdsDescriptor;
-import ch.specchio.types.SpectrumFactorTable;
 
 
 /**
@@ -848,7 +845,29 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return new XmlInteger(0);
 		
-	}	
-	
+	}
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param spectra    the spectrum to be updated
+	 *
+	 * @throws SPECCHIOFactoryException
+	 * @return
+	 */
+	@POST
+	@Path("update_vectors")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger update_vectors(Spectrum[] spectra) throws SPECCHIOFactoryException {
+
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+
+		factory.updateSpectrumVectors(spectra);
+		factory.dispose();
+
+		return new XmlInteger(0);
+
+	}
 
 }

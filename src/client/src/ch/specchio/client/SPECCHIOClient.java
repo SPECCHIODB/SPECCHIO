@@ -3,6 +3,7 @@ package ch.specchio.client;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -1505,7 +1506,16 @@ public interface SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	public void updateSpectrumVector(int spectrum_id, float[] vector) throws SPECCHIOClientException;
-	
+
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param updateMap	a map containing the spectrum_id as key and the vector as value
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void updateSpectrumVectors(HashMap<Integer, double[]> updateMap) throws SPECCHIOClientException;
 	
 	
 	/**

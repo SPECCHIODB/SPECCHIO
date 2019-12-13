@@ -1982,6 +1982,57 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	}
 
 
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param spectra	the files to be inserted
+	 *
+	 * @throws SPECCHIOFactoryException
+	 */
+	public void updateSpectrumVectors(Spectrum[] spectra) throws SPECCHIOFactoryException{
+		String sql = "UPDATE " + (this.Is_admin()?"spectrum":"spectrum_view") + " set measurement = ? where spectrum_id = ?";
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		try {
+			PreparedStatement statement = SQL.prepareStatement(sql);
+
+			for (Spectrum s : spectra) {
+				statement.setString(2, Integer.toString(s.getSpectrumId()));
+
+				byte[] temp_buf;
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutput dos = new DataOutputStream(baos);
+
+				for (int i = 0; i < s.getMeasurementVector().length; i++) {
+					try {
+						dos.writeFloat(s.getMeasurementVector()[i]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				temp_buf = baos.toByteArray();
+
+				InputStream vector = new ByteArrayInputStream(temp_buf);
+
+				statement.setBinaryStream(1, vector, s.getMeasurementVector().length * 4);
+
+				vector.close();
+				statement.addBatch();
+			}
+
+			statement.executeBatch();
+			statement.close();
+		}catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+
+	}
+
 	public List<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) {
 		
 		
