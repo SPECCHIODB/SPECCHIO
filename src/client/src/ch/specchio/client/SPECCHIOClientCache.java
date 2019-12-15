@@ -167,6 +167,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	
 	
 	/**
+	 * Close this client
+	 * 
+	 * @throws SPECCHIOClientException could not close client
+	 */
+	public void close() throws SPECCHIOClientException{
+		
+		realClient.close();
+		realClient = null;
+	}
+	
+	
+	
+	/**
 	 * Copy a spectrum to a specified hierarchy.
 	 * 
 	 * @param spectrum_id		the spectrum_id of the spectrum to copy

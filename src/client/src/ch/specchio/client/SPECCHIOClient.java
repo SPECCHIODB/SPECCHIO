@@ -67,6 +67,14 @@ public interface SPECCHIOClient {
 	
 	
 	/**
+	 * Close this client
+	 * 
+	 * @throws SPECCHIOClientException could not close client
+	 */
+	public void close() throws SPECCHIOClientException;
+
+	
+	/**
 	 * Copy a spectrum to a specified hierarchy.
 	 * 
 	 * @param spectrum_id		the spectrum_id of the spectrum to copy

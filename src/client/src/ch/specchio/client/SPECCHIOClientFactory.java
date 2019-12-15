@@ -23,8 +23,8 @@ public class SPECCHIOClientFactory {
 	/** the list of known servers */
 	private List<SPECCHIOServerDescriptor> apps;
 	
-	/** the current client object */
-	private SPECCHIOClient current_client;
+//	/** the current client object */
+//	private SPECCHIOClient current_client;
 	
 	private String default_trust_store;
 	private String default_trust_store_password = null;
@@ -240,7 +240,7 @@ public class SPECCHIOClientFactory {
 			System.setProperty("javax.net.ssl.trustStorePassword", "specchio");			
 		}
 		
-		current_client = new SPECCHIOClientCache(app.createClient());
+		SPECCHIOClient current_client = new SPECCHIOClientCache(app.createClient());
 		((SPECCHIOClientCache) current_client).setServerDescriptor(app);
 		return current_client;
 	
