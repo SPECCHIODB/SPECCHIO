@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.ListIterator;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -310,33 +312,18 @@ public class EAVDBServices extends Thread {
 		
 		int eav_id = 0;
 		
-		StringBuilder sb = new StringBuilder();
+		String hex_str = "";
 				
 		ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
 		ObjectOutputStream out_;
 		try {
 			out_ = new ObjectOutputStream(baos_);
 			out_.writeObject(value);
-
+			out_.flush();
 			out_.close();	
 			
-			String test = baos_.toString();
-			
-			byte[] bytearr = baos_.toByteArray();
-			
-			
-			
-			for (int i = 0; i < bytearr.length; i++) {
-								
-				int b = bytearr[i] & 0xFF;
-				
-				String tmp = Integer.toHexString(b);
-				
-				sb.append(tmp);
-				
-			}
-			
-			int x = 0;
+			hex_str = DatatypeConverter.printHexBinary(baos_.toByteArray());
+
 			
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -344,7 +331,7 @@ public class EAVDBServices extends Thread {
 		}
 		
 		
-		value = "x'" + sb + "'";		
+		value = "x'" + hex_str + "'";		
 		
 		String query = "insert into " + this.eav_view_name + " (campaign_id, attribute_id, unit_id, " + field + ") " + 
 				"values(" + campaign_id + "," + attribute_id + "," + unit_id + ","  + value + ")";
@@ -359,24 +346,7 @@ public class EAVDBServices extends Thread {
 			
 		rs.close();
 		stmt.close();
-			
-//		String update_stm = "UPDATE " + this.eav_view_name + " set " + field + " = ? where eav_id = " + eav_id;
-//		//update_stm = "UPDATE eav set " + field + " = ? where eav_id = " + eav_id;
-//		PreparedStatement statement = SQL.prepareStatement(update_stm);
-//			
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		ObjectOutputStream out = new ObjectOutputStream(baos);
-//		out.writeObject(value);
-//		out.close();
-//			
-//		//statement.setBinaryStream(1, new ByteArrayInputStream(baos.toByteArray()), baos.size());
-//		statement.setBlob(1, new ByteArrayInputStream(baos.toByteArray()));
-//		statement.executeUpdate();			
-			
-//		rs.close();
-//		statement.close();
-			
-		
+					
 		return eav_id;
 
 	}
