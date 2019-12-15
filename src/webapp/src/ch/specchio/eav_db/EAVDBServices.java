@@ -446,24 +446,18 @@ public class EAVDBServices extends Thread {
 			else if(fieldname.equals("binary_val"))
 			{
 				
+				String hex_str = "";
 				
-				Serializable value_ = (Serializable) e.getValue();
-				
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ObjectOutputStream out;
+				ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
+				ObjectOutputStream out_;
 				try {
-					out = new ObjectOutputStream(baos);
-					out.writeObject(value_);
+					out_ = new ObjectOutputStream(baos_);
+					out_.writeObject((Serializable) e.getValue());
+					out_.flush();
+					out_.close();	
+					
+					hex_str = DatatypeConverter.printHexBinary(baos_.toByteArray());
 
-					out.close();	
-					
-					String test = baos.toString();
-					
-					byte[] bytearr = baos.toByteArray();
-					
-					
-					
-					int x = 0;
 					
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -471,7 +465,8 @@ public class EAVDBServices extends Thread {
 				}
 				
 				
-				value = "x'" + "'";
+				value = "x'" + hex_str + "'";						
+				
 			}
 			else
 			{
