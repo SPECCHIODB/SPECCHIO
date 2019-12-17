@@ -73,9 +73,12 @@ public class DatabaseConnectionDialog extends JFrame implements ActionListener
 			conn_combo = new JComboBox();	
 			// insert connections
 			ListIterator<SPECCHIOServerDescriptor> li = descriptor_list.listIterator();
+			int cnt = 0;
 			while(li.hasNext())
 			{
-				conn_combo.addItem(li.next());			
+				SPECCHIOServerDescriptor descriptor = li.next();
+				descriptor.setList_index(cnt++);
+				conn_combo.addItem(descriptor);			
 			}		
 			l.insertComponent(conn_combo, constraints);
 			constraints.gridy++;

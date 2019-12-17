@@ -226,6 +226,17 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * Close this client
+	 * 
+	 * @throws SPECCHIOClientException could not close client
+	 */
+	public void close() throws SPECCHIOClientException{
+		this.web_service = null;
+		this.web_client.destroy();
+	}
+	
+	
 	
 	/**
 	 * Copy a spectrum to a specified hierarchy.
