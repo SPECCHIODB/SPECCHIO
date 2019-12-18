@@ -307,8 +307,5 @@ public class SPECCHIOClientFactory {
 		}
 	}
 
-	public SPECCHIOClient getCurrent_client(){
-		return this.current_client;
-	}
 
 }

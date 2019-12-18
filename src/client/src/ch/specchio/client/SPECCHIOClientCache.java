@@ -190,6 +190,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.copySpectrum(spectrum_id, target_hierarchy_id);
 		
 	}
+
+	/**
+	 * Copy a spectrum to a specified hierarchy.
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOClientException could not log in
+	 */
+	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException {
+
+		return realClient.copySpectra(spectrum_id, target_hierarchy_id);
+
+	}
 	
 	/**
 	 * Copy a hierarchy to a specified hierarchy with a new name.
@@ -2343,8 +2359,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 *
 	 * @throws SPECCHIOClientException
 	 */
-	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException{
-		realClient.calculateSunAngle(spectrumIds);
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException{
+		realClient.calculateSunAngle(spectrumIds, client);
 
 	}
 

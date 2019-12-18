@@ -439,7 +439,7 @@ public class MetadataService extends SPECCHIOService {
 	/**
 	 * Get the meta-parameter of the given metaparameter identifier.
 	 * 
-	 * @param id		the metaparameter identifier for which to retrieve metadata
+	 * @param metaparameter_id		the metaparameter identifier for which to retrieve metadata
 	 * 
 	 * @return the meta-parameter object corresponding to the desired id
 	 *

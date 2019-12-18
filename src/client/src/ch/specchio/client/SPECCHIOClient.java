@@ -51,6 +51,18 @@ public interface SPECCHIOClient {
 	 * @throws SPECCHIOClientException could not log in
 	 */
 	public int copySpectrum(int spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException;
+
+	/**
+	 * Copy a spectrum to a specified hierarchy.
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOClientException could not log in
+	 */
+	public  ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException;
 	
 	/**
 	 * Copy a hierarchy to a specified hierarchy with a new name.
@@ -665,7 +677,7 @@ public interface SPECCHIOClient {
 	 *
 	 * @throws SPECCHIOClientException
 	 */
-	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException;
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException;
 
 	/**
 	 * Get metaparameter for spectrum id and EAV attribute

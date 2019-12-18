@@ -202,15 +202,15 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Creates a copy of a spectrum in the specified hierarchy
 	 * 
-	 * @param spectrum_id		the spectrum_id of the spectrum to copy
-	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 * @param mds		metadata selction descriptor having an arraylist of ids and a target hierarchy_id
 	 * 
 	 * @return new spectrum id
 	 * 
 	 * @throws SPECCHIOFactoryException	database error
 	 */	
-	public int copySpectrum(int spectrum_id, int target_hierarchy_id) throws SPECCHIOFactoryException {
-		
+	/*public int copySpectra(MetadataSelectionDescriptor mds) throws SPECCHIOFactoryException {
+		ArrayList<Integer> spectra = mds.getAttribute_ids();
+		int target_hierarchy_id = mds.getTarget_hierarchy_id();
 		int copy_spectrum_id = 0;
 		
 				
@@ -273,8 +273,84 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		
 		
 		return copy_spectrum_id;
+	}*/
+
+
+	/**
+	 * Creates a copy of a spectrum in the specified hierarchy
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	public int copySpectrum(int spectrum_id, int target_hierarchy_id) throws SPECCHIOFactoryException {
+
+		int copy_spectrum_id = 0;
+
+
+
+		String query = "INSERT INTO spectrum_view ("
+				+ " hierarchy_level_id, sensor_id, campaign_id, "
+				+ "file_format_id, instrument_id, calibration_id, "
+				+ "measurement_unit_id, measurement) "
+				+ "select "
+				+ " hierarchy_level_id, sensor_id, campaign_id, "
+				+ "file_format_id, instrument_id, calibration_id, "
+				+ "measurement_unit_id, measurement "
+				+ " from " + (this.Is_admin()?"spectrum":"spectrum_view") + " where spectrum_id = " + spectrum_id;
+
+		Statement stmt;
+		try {
+			stmt = getStatementBuilder().createStatement();
+
+
+			int no_of_inserted_rows = stmt.executeUpdate(query);
+
+			if(no_of_inserted_rows > 0)
+			{
+				ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
+				while (rs.next())
+					copy_spectrum_id = rs.getInt(1);
+				rs.close();
+
+//				stmt.close();
+
+
+				// copy all eav references at spectrum level without inherited eav data
+				ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectrum_id, false); // false = no inheritance
+				getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copy_spectrum_id, eav_ids);
+
+				// exchange hierarchy id
+				query = "update " + (this.Is_admin()?"spectrum":"spectrum_view") + " set hierarchy_level_id = " + target_hierarchy_id + " where spectrum_id = " + copy_spectrum_id;
+
+//				stmt = getStatementBuilder().createStatement();
+				stmt.executeUpdate(query);
+
+
+				// update the aggregated info in the upper hierarchies
+				SpectralFileFactory sf_factory = new SpectralFileFactory(this);
+				sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0, stmt);
+
+				stmt.close();
+			}
+			else
+			{
+				String msg = "Missing user rights: copying spectra is not allowed. Ask the owner of the dataset to be added to the research group.";
+				SPECCHIOFactoryException e = new SPECCHIOFactoryException(msg);
+				throw(e);
+			}
+
+
+		} catch (SQLException e) {
+			throw new SPECCHIOFactoryException(e);
+		}
+
+
+		return copy_spectrum_id;
 	}
-	
 	
 	/**
 	 * Delete target-reference links.

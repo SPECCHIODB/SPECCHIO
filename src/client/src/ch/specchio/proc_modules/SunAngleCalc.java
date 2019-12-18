@@ -30,9 +30,9 @@ public class SunAngleCalc {
     private Integer spectrumIds[];
 
 
-    public SunAngleCalc() throws SPECCHIOClientException  {
+    public SunAngleCalc(SPECCHIOClient client) throws SPECCHIOClientException  {
         // get a reference to the application's client object
-        specchioClient = SPECCHIOClientFactory.getInstance().getCurrent_client();
+        specchioClient = client;
 
         // get the attribute descriptors to be filled in
         Hashtable<String, attribute> attributes = specchioClient.getAttributesNameHash();
@@ -43,7 +43,7 @@ public class SunAngleCalc {
         }
     }
 
-    public SunAngleCalc(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException  {
+    public SunAngleCalc(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException  {
         this.spectrumIds = new Integer[spectrumIds.size()];
         int count = 0;
         for(Integer specId : spectrumIds){
@@ -52,7 +52,7 @@ public class SunAngleCalc {
         }
 
         // get a reference to the application's client object
-        specchioClient = SPECCHIOClientFactory.getInstance().getCurrent_client();
+        specchioClient = client;
 
 
 //         get the attribute descriptors to be filled in

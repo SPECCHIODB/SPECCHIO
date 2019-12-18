@@ -252,8 +252,33 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 				
 		int new_spectrum_id = getInteger("spectrum", "copySpectrum", Integer.toString(spectrum_id), Integer.toString(target_hierarchy_id));
 		return new_spectrum_id;
-	}	
-	
+	}
+
+	/**
+	 * Copy a spectrum to a specified hierarchy.
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOClientException could not log in
+	 */
+	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException {
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrum_id, target_hierarchy_id);
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		Integer[] id_array = adapter.unmarshalArray(postForArray(XmlInteger.class, "spectrum", "copySpectra", mds));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		for (int id : id_array) {
+			ids.add(id);
+		}
+
+		return ids;
+
+	}
+
 	/**
 	 * Copy a hierarchy to a specified hierarchy with a new name.
 	 * 
@@ -1328,8 +1353,8 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 
 	@Override
-	public void calculateSunAngle(ArrayList<Integer> spectrumIds) throws SPECCHIOClientException {
-		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds);
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException {
+		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds, client);
 		sunCalc.calculateSunAngle();
 	}
 
