@@ -11,9 +11,7 @@ import java.util.*;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import au.ands.org.researchdata.RDACollectionDescriptor;
 import ch.specchio.interfaces.ProgressReportInterface;
@@ -23,7 +21,7 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.jaxb.XmlStringAdapter;
 import ch.specchio.plots.GonioSamplingPoints;
-import ch.specchio.proc_modules.SunAngleCalc;
+import ch.specchio.proc_modules.SunAngleCalcThread;
 import ch.specchio.queries.EAVQueryConditionObject;
 import ch.specchio.queries.Query;
 import ch.specchio.spaces.MeasurementUnit;
@@ -1354,8 +1352,8 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 
 	@Override
 	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException {
-		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds, client);
-		sunCalc.calculateSunAngle();
+		SunAngleCalcThread sunCalc = new SunAngleCalcThread(spectrumIds, client, null);
+//		sunCalc.run();
 	}
 
 /*	@Override

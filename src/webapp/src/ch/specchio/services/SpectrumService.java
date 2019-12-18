@@ -63,7 +63,32 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return new XmlInteger(new_spectrum_id);
 		
-	}	
+	}
+
+	/**
+	 * Creates a copy of a spectrum in the specified hierarchy
+	 *
+	 * @param mds		the selection description of the spectrum to copy
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	@GET
+	@Path("copySpectra")
+	@Produces(MediaType.APPLICATION_XML)
+	public  XmlInteger[] copySpectrum(
+			@PathParam("mds") MetadataSelectionDescriptor mds
+	) throws SPECCHIOFactoryException {
+
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<Integer> ids = factory.copySpectra(mds);
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+
+	}
 	
 	
 	/**
