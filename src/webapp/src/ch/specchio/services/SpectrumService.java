@@ -77,8 +77,7 @@ public class SpectrumService extends SPECCHIOService {
 	@GET
 	@Path("copySpectra")
 	@Produces(MediaType.APPLICATION_XML)
-	public  XmlInteger[] copySpectrum(
-			@PathParam("mds") MetadataSelectionDescriptor mds
+	public  XmlInteger[] copySpectra(MetadataSelectionDescriptor mds
 	) throws SPECCHIOFactoryException {
 
 		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
