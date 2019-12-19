@@ -62,7 +62,7 @@ public interface SPECCHIOClient {
 	 *
 	 * @throws SPECCHIOClientException could not log in
 	 */
-	public  ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException;
+	public  ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id, int current_hierarchy_id) throws SPECCHIOClientException;
 	
 	/**
 	 * Copy a hierarchy to a specified hierarchy with a new name.

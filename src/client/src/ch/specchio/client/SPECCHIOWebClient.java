@@ -262,8 +262,8 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 *
 	 * @throws SPECCHIOClientException could not log in
 	 */
-	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException {
-		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrum_id, target_hierarchy_id);
+	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id, int current_hierarchy_id) throws SPECCHIOClientException {
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrum_id, target_hierarchy_id, current_hierarchy_id);
 
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		Integer[] id_array = adapter.unmarshalArray(postForArray(XmlInteger.class, "spectrum", "copySpectra", mds));

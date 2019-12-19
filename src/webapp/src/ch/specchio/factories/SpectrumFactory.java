@@ -211,78 +211,64 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	public ArrayList<Integer> copySpectra(MetadataSelectionDescriptor mds) throws SPECCHIOFactoryException {
 		ArrayList<Integer> spectra = mds.getIds();
 		int trgtHier = mds.getTarget_hierarchy_id();
+		int currHier = mds.getCurrent_hierarchy_id();
 		ArrayList<Integer> newSpectra = new ArrayList<>();
-
-		for (int id : spectra){
-
-			int copy_spectrum_id = 0;
-
-
-
-			String query = "INSERT INTO spectrum_view ("
+		ArrayList<Integer> copyId = new ArrayList<>();
+		try {//VALUES('val_1', (SELECT  val_2 FROM table_2 WHERE val_2 = something))
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String conc_ids = SQL.conc_ids(spectra);
+			String sql = "INSERT INTO spectrum_view ("
 					+ " hierarchy_level_id, sensor_id, campaign_id, "
 					+ "file_format_id, instrument_id, calibration_id, "
 					+ "measurement_unit_id, measurement) "
-					+ "select "
+					+ "SELECT "
 					+ " hierarchy_level_id, sensor_id, campaign_id, "
 					+ "file_format_id, instrument_id, calibration_id, "
 					+ "measurement_unit_id, measurement "
-					+ " from " + (this.Is_admin()?"spectrum":"spectrum_view") + " where spectrum_id = " + id;
+					+ " FROM " + (this.Is_admin()?"spectrum":"spectrum_view") + " WHERE spectrum_id IN ( " + conc_ids + " )";
+//					+ " FROM spectrum WHERE spectrum_id IN (" + conc_ids + ")";
 
-			Statement stmt;
-			try {
-				stmt = getStatementBuilder().createStatement();
+			PreparedStatement statement = SQL.prepareStatement(sql);
+			int rowNr = statement.executeUpdate();
 
-
-				int no_of_inserted_rows = stmt.executeUpdate(query);
-
-				if(no_of_inserted_rows > 0)
-				{
-					ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
-					while (rs.next())
-						copy_spectrum_id = rs.getInt(1);
-					rs.close();
-
-	//				stmt.close();
-
-
-					// copy all eav references at spectrum level without inherited eav data
-					ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, id, false); // false = no inheritance
-					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copy_spectrum_id, eav_ids);
-
-					// exchange hierarchy id
-					query = "update " + (this.Is_admin()?"spectrum":"spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copy_spectrum_id;
-
-	//				stmt = getStatementBuilder().createStatement();
-					stmt.executeUpdate(query);
-
-
-					// update the aggregated info in the upper hierarchies
-					SpectralFileFactory sf_factory = new SpectralFileFactory(this);
-					sf_factory.insertHierarchySpectrumReferences(trgtHier, copy_spectrum_id, 0, stmt);
-
-					stmt.close();
-					newSpectra.add(copy_spectrum_id);
+			if(rowNr > 0){
+				//ResultSet rs = statement.executeQuery("SELECT * FROM spectrum ORDER BY spectrum_id DESC LIMIT " + rowNr);
+//				ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID()")
+//				ResultSet rs = statement.excuteQuery("SELECT LAST_INSERT_ID() ROW_COUNT()-1)
+				ResultSet rs = statement.executeQuery("SELECT spectrum_id FROM spectrum WHERE hierarchy_level_id = " + currHier + " ORDER BY spectrum_id DESC LIMIT " + rowNr);
+				while(rs.next()){
+					copyId.add(rs.getInt(1));
 				}
-				else
-				{
-					String msg = "Missing user rights: copying spectra is not allowed. Ask the owner of the dataset to be added to the research group.";
-					SPECCHIOFactoryException e = new SPECCHIOFactoryException(msg);
-					throw(e);
+				rs.close();
+
+				// copy all eav references at spectrum level without inherited eav data
+				for(int i = 0; i < spectra.size(); i++) {
+					ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectra.get(i), false); // false = no inheritance
+					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copyId.get(i), eav_ids);
+//
+//				// exchange hierarchy id
+//					String new_conc_ids = SQL.conc_ids(copyId);
+					sql = "update " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copyId.get(i);
+					statement.executeUpdate(sql);
+
 				}
-
-
-			} catch (SQLException e) {
-				throw new SPECCHIOFactoryException(e);
+				// update the aggregated info in the upper hierarchies
+				SpectralFileFactory sf_factory = new SpectralFileFactory(this);
+				sf_factory.insertHierarchySpectrumReferences(trgtHier, copyId, 0, statement);
 			}
 
 		}
+			catch (SQLClientInfoException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-		return newSpectra;
+		return copyId;
 	}
 
 
-	/**
+		/**
 	 * Creates a copy of a spectrum in the specified hierarchy
 	 *
 	 * @param spectrum_id		the spectrum_id of the spectrum to copy
@@ -2073,6 +2059,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		SQL_StatementBuilder SQL = getStatementBuilder();
 		try {
 			PreparedStatement statement = SQL.prepareStatement(sql);
+//			com.mysql.jdbc
 			statement.getConnection().setAutoCommit(false);
 			statement.getConnection().setClientInfo("rewriteBatchedStatements", "true");
 			final int batchSize = 1000;

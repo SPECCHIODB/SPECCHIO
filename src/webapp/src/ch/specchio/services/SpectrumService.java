@@ -74,9 +74,13 @@ public class SpectrumService extends SPECCHIOService {
 	 *
 	 * @throws SPECCHIOFactoryException	database error
 	 */
-	@GET
+	@POST
 	@Path("copySpectra")
+	@Consumes(MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_XML)
+//	@GET
+//	@Path("copySpectra")
+//	@Produces(MediaType.APPLICATION_XML)
 	public  XmlInteger[] copySpectra(MetadataSelectionDescriptor mds
 	) throws SPECCHIOFactoryException {
 

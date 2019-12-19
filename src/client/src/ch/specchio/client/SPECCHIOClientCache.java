@@ -196,9 +196,9 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 *
 	 * @throws SPECCHIOClientException could not log in
 	 */
-	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id) throws SPECCHIOClientException {
+	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id, int current_hierarchy_id) throws SPECCHIOClientException {
 
-		return realClient.copySpectra(spectrum_id, target_hierarchy_id);
+		return realClient.copySpectra(spectrum_id, target_hierarchy_id, current_hierarchy_id);
 
 	}
 	
