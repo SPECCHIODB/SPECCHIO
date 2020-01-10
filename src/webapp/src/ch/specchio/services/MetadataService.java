@@ -1,5 +1,8 @@
 package ch.specchio.services;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,25 +13,14 @@ import javax.annotation.security.*;
 import ch.specchio.constants.UserRoles;
 import ch.specchio.factories.MetadataFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
+import ch.specchio.factories.SpectralFileFactory;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.jaxb.XmlStringAdapter;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.Space;
-import ch.specchio.types.ApplicationDomainCategories;
-import ch.specchio.types.Category;
-import ch.specchio.types.CategoryTable;
-import ch.specchio.types.ConflictDetectionDescriptor;
-import ch.specchio.types.ConflictTable;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetadataSelectionDescriptor;
-import ch.specchio.types.MetadataUpdateDescriptor;
-import ch.specchio.types.MetaparameterStatistics;
-import ch.specchio.types.Taxonomy;
-import ch.specchio.types.TaxonomyNodeObject;
-import ch.specchio.types.attribute;
-import ch.specchio.types.Units;
+import ch.specchio.types.*;
 
 
 /**
@@ -813,5 +805,58 @@ public class MetadataService extends SPECCHIOService {
 		
 	}
 
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param update_d	the update descriptor
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	@POST
+	@Path("update_or_insert_mandy")
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	public void update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
+
+		// SETUP THE FACTORIES
+		MetadataFactory factory = new MetadataFactory(getClientUsername(),
+				getClientPassword(),
+				getDataSourceName(),
+				isAdmin()
+		);
+
+		SpectralFileFactory  specFactory = new SpectralFileFactory(
+				getClientUsername(),
+				getClientPassword(),
+				getSecurityContext().isUserInRole(UserRoles.ADMIN),
+				getDataSourceName(),
+				update_d.getCampaignId()
+		);
+
+		// STEP 1 - SPECTRAL FILE
+		SpectralFile spec_file = new SpectralFile();
+		spec_file.setNumberOfSpectra(update_d.getIds().size());
+		spec_file.setEavMetadata(update_d.getMetadata());
+		// STEP 1 - REDUCE REDUNDANCY
+		specFactory.reduce_metadata_redundancy_of_file(spec_file);
+		Metadata md = new Metadata();
+		md.setEntries(spec_file.getUniqueMetaParameters());
+
+		// STEP 2 - CREATE THE A STATEMENT
+		Statement stmt = null;
+		stmt = specFactory.getStatementBuilder().createStatement();
+		stmt.execute("START TRANSACTION");
+		// STEP 2 - GET THE EAV IDS
+		ArrayList<Integer> eav_ids = factory.getEavServices().insert_metadata_into_db(update_d.getCampaignId(), md, this.isAdmin(), stmt);
+
+		// STEP 3 - INSERT LINKS
+		factory.getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, update_d.getIds(),
+				spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
+
+
+		factory.dispose();
+		specFactory.dispose();
+
+	}
 
 }

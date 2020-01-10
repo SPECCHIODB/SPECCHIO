@@ -1467,6 +1467,15 @@ public interface SPECCHIOClient {
 	 */
 	public int updateOrInsertEavMetadata(MetaParameter mp, int spectrum_id) throws SPECCHIOWebClientException;
 
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param md	list containing all metadata
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException;
+
 
 	/**
 	 * Update an instrument.

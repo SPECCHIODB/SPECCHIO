@@ -29,53 +29,7 @@ import ch.specchio.spaces.ReferenceSpaceStruct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.spaces.SpectralSpace;
-import ch.specchio.types.AVMatchingList;
-import ch.specchio.types.AVMatchingListCollection;
-import ch.specchio.types.ApplicationDomainCategories;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.CalibrationMetadata;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.Category;
-import ch.specchio.types.Capabilities;
-import ch.specchio.types.CategoryTable;
-import ch.specchio.types.ChildParentIdContainer;
-import ch.specchio.types.ConflictDetectionDescriptor;
-import ch.specchio.types.ConflictTable;
-import ch.specchio.types.Country;
-import ch.specchio.types.Hierarchy;
-import ch.specchio.types.Institute;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.InstrumentDescriptor;
-import ch.specchio.types.MatlabAdaptedArrayList;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetadataSelectionDescriptor;
-import ch.specchio.types.MetadataUpdateDescriptor;
-import ch.specchio.types.MetaparameterStatistics;
-import ch.specchio.types.Picture;
-import ch.specchio.types.PictureTable;
-import ch.specchio.types.Reference;
-import ch.specchio.types.ReferenceBrand;
-import ch.specchio.types.ReferenceDescriptor;
-import ch.specchio.types.Sensor;
-import ch.specchio.types.SpecchioCampaign;
-import ch.specchio.types.SpectraMetadataUpdateDescriptor;
-import ch.specchio.types.SpectralFile;
-import ch.specchio.types.SpectralFileInsertResult;
-import ch.specchio.types.SpectralFiles;
-import ch.specchio.types.Spectrum;
-import ch.specchio.types.SpectrumDataLink;
-import ch.specchio.types.SpectrumFactorTable;
-import ch.specchio.types.SpectrumIdsDescriptor;
-import ch.specchio.types.Taxonomy;
-import ch.specchio.types.TaxonomyNodeObject;
-import ch.specchio.types.attribute;
-import ch.specchio.types.campaign_node;
-import ch.specchio.types.database_node;
-import ch.specchio.types.hierarchy_node;
-import ch.specchio.types.User;
-import ch.specchio.types.spectral_node_object;
-import ch.specchio.types.spectrum_node;
-import ch.specchio.types.Units;
+import ch.specchio.types.*;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -2779,6 +2733,17 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 
 	}
 
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param md			the meta-parameter to update or insert
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException {
+		MetadataUpdateDescriptor mud = new MetadataUpdateDescriptor(md, ids, campaignId);
+		postForInteger("metadata", "update_or_insert_many", mud);
+	}
 
 	/**
 	 * Update an instrument.
