@@ -98,7 +98,8 @@ public class MetadataService extends SPECCHIOService {
 	@Produces(MediaType.APPLICATION_XML)	
 	public ApplicationDomainCategories[] application_domain_categories(MetadataSelectionDescriptor dummy) {
 		
-		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+//		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		MetadataFactory factory = new MetadataFactory(getDataSourceName()); // connect as admin to get the categories (there is currently no view associated with the required table)
 		ApplicationDomainCategories[] adcs = factory.getMetadataCategoriesForApplicationDomains();
 		factory.dispose();
 		

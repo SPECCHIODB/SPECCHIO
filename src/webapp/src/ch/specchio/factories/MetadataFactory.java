@@ -80,6 +80,17 @@ public class MetadataFactory extends SPECCHIOFactory {
 		
 	}
 	
+	/**
+	 * Connect as admin
+	 * 
+	 * @param ds_name	data source name
+	 * 
+	 * @throws SPECCHIOFactoryException	database error
+	 */	
+	public MetadataFactory(String ds_name) throws SPECCHIOFactoryException {
+		super(ds_name);
+	}
+	
 	
 	/**
 	 * Check for metadata conflicts.
