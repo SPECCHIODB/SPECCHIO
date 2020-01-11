@@ -69,6 +69,10 @@ import ch.specchio.query_builder.QueryController;
 import ch.specchio.spaces.Space;
 import ch.specchio.types.Campaign;
 import ch.specchio.types.MatlabAdaptedArrayList;
+import ch.specchio.types.MetaParameter;
+import ch.specchio.types.MetaParameterFormatException;
+import ch.specchio.types.Metadata;
+import ch.specchio.types.MetadataUpdateDescriptor;
 import ch.specchio.types.Spectrum;
 
 public class QueryBuilder extends SpectralMetaDataBase  implements ActionListener, TreeSelectionListener, ChangeListener, ClipboardOwner, QueryConditionChangeInterface, ListSelectionListener 
@@ -444,11 +448,11 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    
 	    // test menu for developing and debugging purposes
 	    // TODO the Test menu is here ....
-//	    test_menu = new JMenu("Test");
-//	    menuItem = new JMenuItem("Test");
-//	    menuItem.addActionListener(this);
-//	    test_menu.add(menuItem);	    
-//	    menuBar.add(test_menu);
+	    test_menu = new JMenu("Test");
+	    menuItem = new JMenuItem("Test");
+	    menuItem.addActionListener(this);
+	    test_menu.add(menuItem);	    
+	    menuBar.add(test_menu);
 	    
 	    
 	    this.setJMenuBar(menuBar);		
@@ -894,7 +898,25 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    		  
 //	    		  specchio_client.copyHierarchy(540, 538, "New Name");
 	    		  
-//	    		  ArrayList<Integer> ids = get_ids_matching_query();
+	    		  ArrayList<Integer> ids = get_ids_matching_query();
+	    		  
+	    		  	
+	    		  	
+	    		  	MetaParameter mp;
+	    		  	ArrayList<Metadata> md_list = new ArrayList<Metadata>();
+	    		  
+	    		  	for(int i=1;i<=ids.size();i++)
+	    		  	{
+	    		  		Metadata md = new Metadata();
+						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"));							
+						mp.setValue(i, "m2");
+						md.addEntry(mp);	
+						md_list.add(md);
+	    		  	}
+
+	    		  	specchio_client.updateOrInsertEavMetadata(md_list, ids,  sdb.get_selected_campaign().getId());
+
+	    		  
 //	    		  
 //	    		  MetaSpatialPoint mp1 = (MetaSpatialPoint) specchio_client.getMetaparameter(ids.get(0), "Spatial Position");
 //	    		  MetaSpatialPoint mp2 = (MetaSpatialPoint) specchio_client.getMetaparameter(ids.get(1), "Spatial Position");
@@ -902,10 +924,14 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 //	    		  
 //	    		  boolean matches = mp1.hasEqualValue(mp2);
 	    		  
+//	    		  specchio_client.copySpectrum(6790, 278);
+//	    		  int id = specchio_client.getDirectHierarchyId(6790);
+	    		  
+//	    		  ArrayList<MetaParameter> p = specchio_client.getMetaparameters(ids, "Spatial Position");
 	    		  
 //	    		  MatlabAdaptedArrayList<Object> out = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Site ID");
 	    		  
-	    		  MatlabAdaptedArrayList<Object> joda_time = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Acquisition Time");
+//	    		  MatlabAdaptedArrayList<Object> joda_time = specchio_client.getMetaparameterValues(get_ids_matching_query(), "Acquisition Time");
 	    		  
 //	    		  System.out.println(joda_time.size());
 	    		  
@@ -924,6 +950,9 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (SPECCHIOClientException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (MetaParameterFormatException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}	    	  
@@ -1038,6 +1067,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	
 	public ArrayList<Integer> get_ids_matching_query()
 	{
+		// ids need ordered by whatever attribute to ensure their sequence
 		if(!this.sorted_ids_ready)
 		{
 			changed(true); // initiate loading of sorted ids

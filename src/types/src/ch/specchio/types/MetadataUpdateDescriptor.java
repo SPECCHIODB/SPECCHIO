@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.*;
  * This class describes an update to metadata, for use with the metadata services.
  */
 @XmlRootElement(name="metadata_update")
-@XmlSeeAlso({SerialisableBufferedImage.class, ArrayListWrapper.class})
+@XmlSeeAlso({SerialisableBufferedImage.class})
 public class MetadataUpdateDescriptor {
 	
 	/** the new metadata */	
@@ -19,8 +19,7 @@ public class MetadataUpdateDescriptor {
 	private ArrayListWrapper<Integer> ids;
 
 	/** the list of metadata to be updated of the objects to be updated */
-	private ArrayListWrapper<Metadata> metaData;
-
+	private ArrayListWrapper<Metadata> metaData = new ArrayListWrapper<Metadata>();
 	
 	/** the metadata to be replaced (if any) */
 	private MetaParameter mp_old;
@@ -66,7 +65,7 @@ public class MetadataUpdateDescriptor {
 	}
 
 	public MetadataUpdateDescriptor(ArrayList<Metadata> metaData, ArrayList<Integer> ids){
-		this.metaData = new ArrayListWrapper<Metadata>(metaData);
+		this.metaData = new ArrayListWrapper<Metadata>(metaData); 
 		this.ids = new ArrayListWrapper<Integer>(ids);
 	}
 
@@ -134,9 +133,11 @@ public class MetadataUpdateDescriptor {
 		this.level = level;
 	}			
 
-	@XmlElement(name="metaarray")
+	@XmlElement(name="metaData")
+	public void setMetadata(ArrayList<Metadata> md_list){this.metaData = new ArrayListWrapper<Metadata>(md_list);}
 	public ArrayList<Metadata> getMetadata(){return (ArrayList<Metadata>) metaData.getList();}
 
+	@XmlElement(name="campaignId")
 	public int getCampaignId(){ return this.campaignId;}
 	public void setCampaignId(int campaignId){
 		this.campaignId = campaignId;

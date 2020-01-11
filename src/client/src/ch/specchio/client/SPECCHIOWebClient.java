@@ -2742,7 +2742,8 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 */
 	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException {
 		MetadataUpdateDescriptor mud = new MetadataUpdateDescriptor(md, ids, campaignId);
-		postForInteger("metadata", "update_or_insert_many", mud);
+		postForObject(SpectralFileInsertResult.class,"metadata", "update_or_insert_many", mud);
+//		postForInteger("metadata", "update_or_insert_many", mud);
 	}
 
 	/**
@@ -3307,6 +3308,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		}
 		catch (UniformInterfaceException ex) {
 			// could represent any kind of HTTP error
+		    ClientResponse response = ex.getResponse();	
 			throw new SPECCHIOWebClientException(ex);
 		}
 		catch (ClientHandlerException ex) {

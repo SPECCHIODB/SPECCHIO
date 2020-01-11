@@ -815,9 +815,9 @@ public class MetadataService extends SPECCHIOService {
 	 */
 	@POST
 	@Path("update_or_insert_many")
-	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
-	public XmlInteger update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
+	@Produces(MediaType.APPLICATION_XML)
+	public SpectralFileInsertResult update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
 
 		// SETUP THE FACTORIES
 		MetadataFactory factory = new MetadataFactory(getClientUsername(),
@@ -857,7 +857,10 @@ public class MetadataService extends SPECCHIOService {
 
 		factory.dispose();
 		specFactory.dispose();
-		return new XmlInteger(eav_ids.get(0));
+		
+		stmt.execute("COMMIT");
+		
+		return new SpectralFileInsertResult(); // currently returning a dummy object here ...
 
 	}
 
