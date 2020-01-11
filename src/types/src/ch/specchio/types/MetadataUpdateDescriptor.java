@@ -17,12 +17,17 @@ public class MetadataUpdateDescriptor {
 	
 	/** the identifiers of the objects to be updated */
 	private ArrayListWrapper<Integer> ids;
+
+	/** the list of metadata to be updated of the objects to be updated */
+	private ArrayListWrapper<Metadata> metaData;
+
 	
 	/** the metadata to be replaced (if any) */
 	private MetaParameter mp_old;
 	
 	private int level = MetaParameter.SPECTRUM_LEVEL; // default value
-	
+	private int campaignId;
+
 	
 	/**
 	 * Constructor.
@@ -58,6 +63,17 @@ public class MetadataUpdateDescriptor {
 		
 		this(mp, new ArrayList<Integer>(), null);
 		
+	}
+
+	public MetadataUpdateDescriptor(ArrayList<Metadata> metaData, ArrayList<Integer> ids){
+		this.metaData = new ArrayListWrapper<Metadata>(metaData);
+		this.ids = new ArrayListWrapper<Integer>(ids);
+	}
+
+	public MetadataUpdateDescriptor(ArrayList<Metadata> metaData, ArrayList<Integer> ids, int campaignId){
+		this.metaData = new ArrayListWrapper<Metadata>(metaData);
+		this.ids = new ArrayListWrapper<Integer>(ids);
+		this.campaignId = campaignId;
 	}
 	
 	
@@ -117,6 +133,13 @@ public class MetadataUpdateDescriptor {
 	public void setLevel(int level) {
 		this.level = level;
 	}			
-	
+
+	@XmlElement(name="metaarray")
+	public ArrayList<Metadata> getMetadata(){return (ArrayList<Metadata>) metaData.getList();}
+
+	public int getCampaignId(){ return this.campaignId;}
+	public void setCampaignId(int campaignId){
+		this.campaignId = campaignId;
+	}
 	
 }

@@ -91,7 +91,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		campaign = campaign_factory.getCampaign(campaign_id, is_admin);
 		
 	}
-	
+
 	
 	/**
 	 * Copy constructor. Construct a new factory that uses the same database connection
@@ -147,7 +147,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 //		return file_format_id;
 		
 			file_format_id = this.getDataCache().get_file_format_id(file_format_name);
-		
+			System.out.println(file_format_name);
 		}
 		catch (NullPointerException ex) {
 			
@@ -1204,7 +1204,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	}
 
 
-	private void reduce_metadata_redundancy_of_file(SpectralFile spec_file) {
+	public void reduce_metadata_redundancy_of_file(SpectralFile spec_file) {
 		
 		
 		// go through all metaparameters of all spectra in file and create unique list of metaparameters

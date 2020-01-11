@@ -17,21 +17,18 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.plots.GonioSamplingPoints;
 import ch.specchio.queries.Query;
-import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.ReferenceSpaceStruct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.spaces.SpectralSpace;
 import ch.specchio.types.AVMatchingList;
 import ch.specchio.types.AVMatchingListCollection;
-import ch.specchio.types.ArrayListWrapper;
 import ch.specchio.types.MetadataSelectionDescriptor;
 import ch.specchio.types.PictureTable;
 import ch.specchio.types.SpectraMetadataUpdateDescriptor;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.types.SpectrumIdsDescriptor;
-import ch.specchio.types.SpectrumFactorTable;
 
 
 /**
@@ -66,13 +63,40 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return new XmlInteger(new_spectrum_id);
 		
-	}	
+	}
+
+	/**
+	 * Creates a copy of a spectrum in the specified hierarchy
+	 *
+	 * @param mds		the selection description of the spectrum to copy
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	@POST
+	@Path("copySpectra")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+//	@GET
+//	@Path("copySpectra")
+//	@Produces(MediaType.APPLICATION_XML)
+	public  XmlInteger[] copySpectra(MetadataSelectionDescriptor mds
+	) throws SPECCHIOFactoryException {
+
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<Integer> ids = factory.copySpectra(mds);
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+
+	}
 	
 	
 	/**
 	 * Get the number of spectra in database
-	 * 
-	 * @param String		empty string
+	 *
 	 * 
 	 * @return the number of spectra in the database
 	 * 
@@ -118,7 +142,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -150,7 +174,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do not have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -182,7 +206,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute and value to filter by
+	 * @param mds 	specifies ids to filter and attribute and value to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -287,7 +311,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param ids_d		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 
@@ -370,7 +394,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Get hierarchy ids, directly above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param ids_d		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 
@@ -400,7 +424,7 @@ public class SpectrumService extends SPECCHIOService {
 	 * 
 	 * @return a ReferenceSpaceStruct object
 	 * 
-	 * @throws SPECCHIOFacotryException	database error
+	 * @throws SPECCHIOFactoryException	database error
 	 */
 	@POST
 	@Path("getReferenceSpace")
@@ -441,11 +465,12 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return spaces.toArray(new Space[spaces.size()]);
 	}
+
 		
 	/**
 	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
 	 * 
-	 * @param spectrum_ids		the identifiers of the desired spectra
+	 * @param hierarchy_id		the identifiers of the desired spectra
 	 * 
 	 * @return hierarchy ids
 	 * 
@@ -497,8 +522,52 @@ public class SpectrumService extends SPECCHIOService {
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		return adapter.marshalArray(ids);
 		
-	}	
-	
+	}
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the selected campaign
+	 *
+	 * @return an array of identifiers
+	 *
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	@POST
+	@Path("unprocessed_hierarchies")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] unprocessed_Hierarchies(XmlString campaignId) throws SPECCHIOFactoryException{
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Integer> ids = factory.getUnprocessedHierarchies(campaignId.getString());
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+	}
+
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the selected campaign
+	 *
+	 * @return an array of identifiers
+	 *
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	@POST
+	@Path("irradiance_spectra")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] irradiance_spectra(XmlString campaignId) throws SPECCHIOFactoryException{
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Integer> ids = factory.getIrradiance(campaignId.getString());
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+	}
 	
 	/**
 	 * Get target-reference links that refer to a given sets of targets and references.
@@ -745,8 +814,7 @@ public class SpectrumService extends SPECCHIOService {
 	/**
 	 * Sort spectra by the values of the specified attributes
 	 * 
-	 * @param spectrum_ids	list of ids to sort
-	 * @param attribute_names	attribute names to sort by
+	 * @param av_list	list of ids to sort
 	 * 
 	 * @return a AVMatchingListCollection object
 	 */	
@@ -791,7 +859,7 @@ public class SpectrumService extends SPECCHIOService {
 	 * 
 	 * @param spectrum	the spectrum to be updated
 	 * 
-	 * @throws SPECCHIOClientException
+	 * @throws SPECCHIOFactoryException
 	 */
 	@POST
 	@Path("update_vector")
@@ -805,7 +873,29 @@ public class SpectrumService extends SPECCHIOService {
 		
 		return new XmlInteger(0);
 		
-	}	
-	
+	}
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param spectra    the spectrum to be updated
+	 *
+	 * @throws SPECCHIOFactoryException
+	 * @return
+	 */
+	@POST
+	@Path("update_vectors")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger update_vectors(Spectrum[] spectra) throws SPECCHIOFactoryException {
+
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+
+		factory.updateSpectrumVectors(spectra);
+		factory.dispose();
+
+		return new XmlInteger(0);
+
+	}
 
 }

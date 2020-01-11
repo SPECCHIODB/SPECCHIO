@@ -51,12 +51,26 @@ public abstract class SpectrumWriter {
 	 */
 	public void endSpace() throws IOException {
 		
-		// flush the wirte buffer
+		// flush the write buffer
 		os.flush();
 		
 		// reset for a new space
 		space = null;
 		
+	}
+
+
+	/**
+	 * Finish writing the current space.
+	 * @param combine indicates if the measurement should be appended at the end of the metadata and attribute columns
+	 * @throws IOException	could not write to output
+	 */
+	public void endSpace(Boolean combine) throws IOException{
+		// flush the write buffer
+		os.flush();
+
+		// reset for a new space
+		space = null;
 	}
 	
 	

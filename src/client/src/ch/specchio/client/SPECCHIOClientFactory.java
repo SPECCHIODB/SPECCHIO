@@ -223,7 +223,7 @@ public class SPECCHIOClientFactory {
 	 *
 	 * @return a web client object connected to the new application server
 	 * 
-	 * @throws SPECCHIOClientConnection	could not create the client
+	 * @throws SPECCHIOClientException	could not create the client
 	 */
 	public SPECCHIOClient createClient(SPECCHIOServerDescriptor app) throws SPECCHIOClientException {
 		
@@ -306,5 +306,6 @@ public class SPECCHIOClientFactory {
 			+ "\nConsider using the legacy db_config.txt if the Java Preference Store does not work on your machine.");
 		}
 	}
+
 
 }

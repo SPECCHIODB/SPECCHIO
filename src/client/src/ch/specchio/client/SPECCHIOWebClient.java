@@ -7,10 +7,7 @@ import java.lang.reflect.Array;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Cookie;
@@ -24,6 +21,7 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
 import ch.specchio.jaxb.XmlStringAdapter;
 import ch.specchio.plots.GonioSamplingPoints;
+import ch.specchio.proc_modules.SunAngleCalcThread;
 import ch.specchio.queries.EAVQueryConditionObject;
 import ch.specchio.queries.Query;
 import ch.specchio.spaces.MeasurementUnit;
@@ -31,54 +29,7 @@ import ch.specchio.spaces.ReferenceSpaceStruct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.spaces.SpectralSpace;
-import ch.specchio.types.AVMatchingList;
-import ch.specchio.types.AVMatchingListCollection;
-import ch.specchio.types.ApplicationDomainCategories;
-import ch.specchio.types.ArrayListWrapper;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.CalibrationMetadata;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.Category;
-import ch.specchio.types.Capabilities;
-import ch.specchio.types.CategoryTable;
-import ch.specchio.types.ChildParentIdContainer;
-import ch.specchio.types.ConflictDetectionDescriptor;
-import ch.specchio.types.ConflictTable;
-import ch.specchio.types.Country;
-import ch.specchio.types.Hierarchy;
-import ch.specchio.types.Institute;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.InstrumentDescriptor;
-import ch.specchio.types.MatlabAdaptedArrayList;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetadataSelectionDescriptor;
-import ch.specchio.types.MetadataUpdateDescriptor;
-import ch.specchio.types.MetaparameterStatistics;
-import ch.specchio.types.Picture;
-import ch.specchio.types.PictureTable;
-import ch.specchio.types.Reference;
-import ch.specchio.types.ReferenceBrand;
-import ch.specchio.types.ReferenceDescriptor;
-import ch.specchio.types.Sensor;
-import ch.specchio.types.SpecchioCampaign;
-import ch.specchio.types.SpectraMetadataUpdateDescriptor;
-import ch.specchio.types.SpectralFile;
-import ch.specchio.types.SpectralFileInsertResult;
-import ch.specchio.types.SpectralFiles;
-import ch.specchio.types.Spectrum;
-import ch.specchio.types.SpectrumDataLink;
-import ch.specchio.types.SpectrumFactorTable;
-import ch.specchio.types.SpectrumIdsDescriptor;
-import ch.specchio.types.Taxonomy;
-import ch.specchio.types.TaxonomyNodeObject;
-import ch.specchio.types.attribute;
-import ch.specchio.types.campaign_node;
-import ch.specchio.types.database_node;
-import ch.specchio.types.hierarchy_node;
-import ch.specchio.types.User;
-import ch.specchio.types.spectral_node_object;
-import ch.specchio.types.spectrum_node;
-import ch.specchio.types.Units;
+import ch.specchio.types.*;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -131,7 +82,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * Construct an anonymous connection to the web application server.
 	 * 
 	 * @param url		the URL of the SPECCHIO web application
-	 * @param default_trust_store 
+	 * @param uses_default_trust_store
 	 * 
 	 * @throws SPECCHIOClientException	invalid URL
 	 */
@@ -146,8 +97,10 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * Constructor.
 	 * 
 	 * @param url		the URL of the SPECCHIO web application
-	 * @param user		the user name with which to log in
+	 * @param username		the user name with which to log in
 	 * @param password	the user's password
+	 * @param dataSourceName the name of the datasource
+	 * @param uses_default_trust_store
 	 * 
 	 * @throws SPECCHIOClientException	invalid URL
 	 */
@@ -251,8 +204,33 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 				
 		int new_spectrum_id = getInteger("spectrum", "copySpectrum", Integer.toString(spectrum_id), Integer.toString(target_hierarchy_id));
 		return new_spectrum_id;
-	}	
-	
+	}
+
+	/**
+	 * Copy a spectrum to a specified hierarchy.
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOClientException could not log in
+	 */
+	public ArrayList<Integer> copySpectra(ArrayList<Integer> spectrum_id, int target_hierarchy_id, int current_hierarchy_id) throws SPECCHIOClientException {
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrum_id, target_hierarchy_id, current_hierarchy_id);
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		Integer[] id_array = adapter.unmarshalArray(postForArray(XmlInteger.class, "spectrum", "copySpectra", mds));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		for (int id : id_array) {
+			ids.add(id);
+		}
+
+		return ids;
+
+	}
+
 	/**
 	 * Copy a hierarchy to a specified hierarchy with a new name.
 	 * 
@@ -814,7 +792,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy id
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public Integer getDirectHierarchyId(int spectrum_id) throws SPECCHIOClientException {
 		
@@ -836,7 +814,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getDirectHierarchyIds(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 		
@@ -991,7 +969,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return hierarchy ids
 	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * @throws SPECCHIOClientException
 	 */	
 	public ArrayList<Integer> getHierarchyIdsOfSpectra(ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException {
 		
@@ -1018,7 +996,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return path as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */
 	public String getHierarchyFilePath(int hierarchy_id) throws SPECCHIOClientException
 	{
@@ -1034,7 +1012,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return name		name as string
 	 * 
-	 * @throws SPECCHIOFactoryException	the database could not accessed
+	 * @throws SPECCHIOClientException	the database could not accessed
 	 */	
 	public String getHierarchyName(int hierarchy_id) throws SPECCHIOClientException	{
 		String name = getString("campaign", "getHierarchyName", Integer.toString(hierarchy_id));	
@@ -1205,7 +1183,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get the metadata categories for application domain
 	 * 
-	 * @param field	the field name
+	 * @param taxonomy_id	the field name
 	 * 
 	 * @return a ArrayList<Integer> object, or null if the field does not exist
 	 */
@@ -1324,9 +1302,36 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return out_list;
 		
-	}	
-	
-	
+	}
+
+	@Override
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException {
+		SunAngleCalcThread sunCalc = new SunAngleCalcThread(spectrumIds, client, null);
+//		sunCalc.run();
+	}
+
+/*	@Override
+	public void calculateSunAngle(ArrayList<Integer> spectrumIds, SPECCHIOClient client) throws SPECCHIOClientException {
+//		Hashtable<String, attribute> attr = getAttributesNameHash();
+//		Integer latId = attr.get("Latitude").id;
+//		Integer lonId = attr.get("Longitude").id;
+//		Integer acqTime = attr.get("Acquisition Time (UTC)").id;
+//		Integer illuAzi = attr.get("Illumination Azimuth").id;
+//		Integer illuZen = attr.get("Illumination Zenith").id;
+//		ArrayList<Integer> attrIds = new ArrayList<Integer>();
+//		attrIds.add(latId);
+//		attrIds.add(lonId);
+//		attrIds.add(acqTime);
+//		attrIds.add(illuAzi);
+//		attrIds.add(illuZen);
+//		MetadataSelectionDescriptor mdsd = new MetadataSelectionDescriptor(spectrumIds,attrIds);
+//		ArrayList<ArrayList<MetaParameter>> params = getMetaparameters(spectrumIds, attrIds);
+		SunAngleCalc sunCalc = new SunAngleCalc(spectrumIds, client);
+		sunCalc.calculateSunAngle();
+		calculateSunAngle(spectrumIds);
+	}*/
+
+
 	/**
 	 * Get metaparameters for spectrum ids and EAV attribute
 	 * 
@@ -1507,7 +1512,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get newest N spectra.
 	 * 
-	 * @param N	
+	 * @param number_of_spectra
 	 * 
 	 * @return list of spectrum ids ordered by data ingestion time
 	 */	
@@ -1705,7 +1710,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @param campaign	the campaign into which to insert the hierarchy
 	 * @param parent_id			the identifier of the the parent of the hierarchy
-	 * @param hierarchy_name	the name of the desired hierarchy
+	 * @param name	the name of the desired hierarchy
 	 * 
 	 * @return the identifier of the child of parent_id with the name hierarchy_name
 	 */
@@ -1874,9 +1879,44 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		ids.addAll(id_array);
 		return ids;
-	}	
-	
-	
+	}
+
+
+	/**
+	 * Get the identifiers of all spectra that match a full text search.
+	 *
+	 * @param campaignId		the search string
+	 *
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOClientException{
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString(campaignId);
+
+		List<Integer> id_array = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "unprocessed_hierarchies", xmlstr));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+
+		ids.addAll(id_array);
+		return ids;
+	}
+
+	@Override
+	public ArrayList<Integer> getIrradiance(String campaignId) throws SPECCHIOClientException {
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString(campaignId);
+
+		List<Integer> id_array = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "irradiance_spectra", xmlstr));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+
+		ids.addAll(id_array);
+		return ids;
+	}
+
+
 	/**
 	 * Get the spectrum identifiers that match a given query.
 	 * 
@@ -2262,7 +2302,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Get the meta-parameter of the given metaparameter identifier.
 	 * 
-	 * @param id		the metaparameter identifier for which to retrieve metadata
+	 * @param metaparameter_id		the metaparameter identifier for which to retrieve metadata
 	 * 
 	 * @return the meta-parameter object corresponding to the desired id
 	 *
@@ -2299,7 +2339,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return postForObject(Space.class, "spectrum", "loadSpace", space);
 		
 	}
-	
+
 	/**
 	 * Move a hierarchy to a new parent hierarchy within the same campaign. If a hierarchy of the same name exists in the target hierarchy then the hierarchies are merged.
 	 * 
@@ -2671,9 +2711,40 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		return eav_id;
 		
-	}	
-	
-	
+	}
+
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param mp			the meta-parameter to update or insert
+	 * @param spectrum_id	the identifiers for which to update or insert the parameter
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public int updateOrInsertEavMetadata(MetaParameter mp, int spectrum_id) throws SPECCHIOWebClientException {
+		ArrayList<Integer> specId = new ArrayList<>();
+		specId.add(spectrum_id);
+		int eav_id = postForInteger("metadata", "update_or_insert", new MetadataUpdateDescriptor(mp, specId));
+		if (mp.getEavId() == 0) {
+			mp.setEavId(eav_id);
+		}
+
+		return eav_id;
+
+	}
+
+	/**
+	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
+	 *
+	 * @param md			the meta-parameter to update or insert
+	 *
+	 * @return the identifier of the inserted or updated metadata
+	 */
+	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException {
+		MetadataUpdateDescriptor mud = new MetadataUpdateDescriptor(md, ids, campaignId);
+		postForInteger("metadata", "update_or_insert_many", mud);
+	}
+
 	/**
 	 * Update an instrument.
 	 * 
@@ -2773,7 +2844,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		Float[] vector_ = new Float[vector.length];
 		
-		for (int i=0;i<vector.length;i++)
+		for (int i=0; i<vector.length; i++)
 		{
 			vector_[i] = vector[i];
 		}				
@@ -2783,8 +2854,40 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		postForInteger("spectrum", "update_vector", s);
 		
 	}
-	
-	
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param updateMap	a map containing the spectrum_id as key and the vector as value
+	 *
+	 * @throws SPECCHIOClientException
+	 */
+	public void updateSpectrumVectors(HashMap<Integer, double[]> updateMap) throws SPECCHIOClientException {
+
+		Spectrum[] spectra = new Spectrum[updateMap.size()];
+		int count = 0;
+		for(Integer specId : updateMap.keySet()){
+			Spectrum s = new Spectrum();
+			double[] vector = updateMap.get(specId);
+			Float[] vector_ = new Float[vector.length];
+
+			for (int i=0;i<vector.length;i++)
+			{
+				vector_[i] = (float) (vector[i]);
+			}
+			s.setMeasurementVector(vector_);
+			s.setSpectrumId(specId);
+			spectra[count] = s;
+			count++;
+		}
+
+		postForInteger("spectrum", "update_vectors", spectra);
+
+//		return ids;
+
+//		postForInteger("spectrum", "update_vector", s);
+
+	}
 	
 	/**
 	 * Update the information about a user.
@@ -3240,7 +3343,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		}
 		
 	}
-	
+
 	
 	/**
 	 * Post an object to a web service that returns a string.

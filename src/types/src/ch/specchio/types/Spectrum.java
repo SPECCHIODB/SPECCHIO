@@ -192,7 +192,7 @@ public class Spectrum implements MetadataInterface
 	@XmlElement(name="file_format_id")
 	public int getFileFormatId() { return this.file_format_id; }
 	public void setFileFormatId(int file_format_id) { this.file_format_id = file_format_id; }
-	
+
 //	@XmlElement(name="file_name")
 //	public MetaDatatype<String> getFileName() { return this.file_name; }
 //	public void setFileName(MetaDatatype<String> file_name) { this.file_name = file_name; }
@@ -369,7 +369,7 @@ public class Spectrum implements MetadataInterface
 	@XmlElement(name="spectrum_id")
 	public int getSpectrumId() { return this.spectrum_id; }
 	public void setSpectrumId(int spectrum_id) { this.spectrum_id = spectrum_id; }
-	
+
 //	//@XmlElement(name="spectrum_names")
 //	public MetaDatatype<ArrayList<String>> getSpectrumNames() { return this.spectrum_names; }
 //	public void setSpectrumNames(MetaDatatype<ArrayList<String>> spectrum_names) { this.spectrum_names = spectrum_names; }

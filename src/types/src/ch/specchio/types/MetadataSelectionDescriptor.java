@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlRootElement(name="metadata_selection")
 public class MetadataSelectionDescriptor {
-	
+
 	/** the identifiers of the objects to be updated */
 	private ArrayList<Integer> ids;
 	private String attribute_name;
@@ -19,6 +19,8 @@ public class MetadataSelectionDescriptor {
 	private ArrayList<Integer> attribute_ids;
 	private Boolean distinct = true;
 	private int level = MetaParameter.SPECTRUM_LEVEL; // default value
+	private int target_hierarchy_id;
+	private  int current_hierarchy_id;
 	
 	/**
 	 * Default Constructor.
@@ -38,6 +40,12 @@ public class MetadataSelectionDescriptor {
 		this.ids = ids;
 		this.attribute_name = attribute_name;
 		
+	}
+
+	public MetadataSelectionDescriptor(ArrayList<Integer> ids, int target_hierarchy_id, int current_hierarchy_id){
+		this.ids = ids;
+		this.current_hierarchy_id = current_hierarchy_id;
+		this.target_hierarchy_id = target_hierarchy_id;
 	}
 	
 	public MetadataSelectionDescriptor(ArrayList<Integer> ids, String attribute_name, Object value) {
@@ -60,7 +68,15 @@ public class MetadataSelectionDescriptor {
 		this.attribute_ids = attribute_ids;
 		
 	}	
-		
+
+
+	@XmlElement(name = "target_hierarchy_id")
+	public int getTarget_hierarchy_id(){return this.target_hierarchy_id;}
+	public void setTarget_hierarchy_id(int target_hierarchy_id){this.target_hierarchy_id = target_hierarchy_id;}
+
+	@XmlElement(name = "current_hierarchy_id")
+	public int getCurrent_hierarchy_id(){return this.current_hierarchy_id;}
+	public void setCurrent_hierarchy_id(int current_hierarchy_id){this.current_hierarchy_id = current_hierarchy_id;}
 	
 	@XmlElement(name="ids")
 	public ArrayList<Integer> getIds() { return this.ids; }

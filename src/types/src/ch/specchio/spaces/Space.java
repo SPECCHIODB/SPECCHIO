@@ -10,6 +10,8 @@ public abstract class Space {
 	
 	ArrayList<Integer> spectrum_ids;
 	Integer dimensionality;
+	Integer selectedBand;
+	float selectedWavelength;
 	ArrayList<double[]> vectors;
 	String SpaceTypeName;
 	String space_name_str = "";
@@ -27,6 +29,7 @@ public abstract class Space {
 		this.spectrum_ids = new ArrayList<Integer>();
 		this.vectors = new ArrayList<double[]>();
 		this.order_by = "date";
+		this.selectedBand = null;
 	}
 	
 	
@@ -57,6 +60,10 @@ public abstract class Space {
 	@XmlElement(name="vectors")
 	public ArrayList<double[]> getVectors() { return this.vectors; }
 	public void setVectors(ArrayList<double[]> vectors) { this.vectors = vectors; }
+	public void setSelectedBand(Integer selectedBand) {	this.selectedBand = selectedBand; }
+	public void setSelectedWavelength(Float selectedWavelength) {
+		this.selectedWavelength = selectedWavelength;
+	}
 	public void addVector(double[] vector) { vectors.add(vector); }
 	public void clearDataVectors() { vectors.clear(); }
 	public int getNumberOfDataPoints() { return vectors.size(); }
@@ -76,6 +83,10 @@ public abstract class Space {
 
 		return array;
 
+	}
+	public Integer getSelectedBand() { return selectedBand; }
+	public Float getSelectedWavelength() {
+		return selectedWavelength;
 	}
 	public double[][] getVectorsAsArray()
 	{

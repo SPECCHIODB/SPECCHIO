@@ -6,14 +6,11 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import ch.specchio.eav_db.AVSorter;
 import ch.specchio.eav_db.EAVDBServices;
@@ -95,7 +92,6 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	 * Build a query string from a Query object, using only non EAV conditions
 	 * 
 	 * @param query		the query
-	 * @param attr		the attributes to use in building this query
 	 * 
 	 * @return an SQL query corresponding to the input object
 	 * 
@@ -206,36 +202,105 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Creates a copy of a spectrum in the specified hierarchy
 	 * 
-	 * @param spectrum_id		the spectrum_id of the spectrum to copy
-	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 * @param mds		metadata selction descriptor having an arraylist of ids and a target hierarchy_id
 	 * 
 	 * @return new spectrum id
 	 * 
 	 * @throws SPECCHIOFactoryException	database error
 	 */	
+	public ArrayList<Integer> copySpectra(MetadataSelectionDescriptor mds) throws SPECCHIOFactoryException {
+		ArrayList<Integer> spectra = mds.getIds();
+		int trgtHier = mds.getTarget_hierarchy_id();
+		int currHier = mds.getCurrent_hierarchy_id();
+		ArrayList<Integer> newSpectra = new ArrayList<>();
+		ArrayList<Integer> copyId = new ArrayList<>();
+		try {//VALUES('val_1', (SELECT  val_2 FROM table_2 WHERE val_2 = something))
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String conc_ids = SQL.conc_ids(spectra);
+			String sql = "INSERT INTO spectrum_view ("
+					+ " hierarchy_level_id, sensor_id, campaign_id, "
+					+ "file_format_id, instrument_id, calibration_id, "
+					+ "measurement_unit_id, measurement) "
+					+ "SELECT "
+					+ " hierarchy_level_id, sensor_id, campaign_id, "
+					+ "file_format_id, instrument_id, calibration_id, "
+					+ "measurement_unit_id, measurement "
+					+ " FROM " + (this.Is_admin()?"spectrum":"spectrum_view") + " WHERE spectrum_id IN ( " + conc_ids + " )";
+//					+ " FROM spectrum WHERE spectrum_id IN (" + conc_ids + ")";
+
+			PreparedStatement statement = SQL.prepareStatement(sql);
+			int rowNr = statement.executeUpdate();
+
+			if(rowNr > 0){
+				//ResultSet rs = statement.executeQuery("SELECT * FROM spectrum ORDER BY spectrum_id DESC LIMIT " + rowNr);
+//				ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID()")
+//				ResultSet rs = statement.excuteQuery("SELECT LAST_INSERT_ID() ROW_COUNT()-1)
+				ResultSet rs = statement.executeQuery("SELECT spectrum_id FROM spectrum WHERE hierarchy_level_id = " + currHier + " ORDER BY spectrum_id DESC LIMIT " + rowNr);
+				while(rs.next()){
+					copyId.add(rs.getInt(1));
+				}
+				rs.close();
+
+				// copy all eav references at spectrum level without inherited eav data
+				for(int i = 0; i < spectra.size(); i++) {
+					ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectra.get(i), false); // false = no inheritance
+					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copyId.get(i), eav_ids);
+//
+//				// exchange hierarchy id
+//					String new_conc_ids = SQL.conc_ids(copyId);
+					sql = "update " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copyId.get(i);
+					statement.executeUpdate(sql);
+
+				}
+				// update the aggregated info in the upper hierarchies
+				SpectralFileFactory sf_factory = new SpectralFileFactory(this);
+				sf_factory.insertHierarchySpectrumReferences(trgtHier, copyId, 0, statement);
+			}
+
+		}
+			catch (SQLClientInfoException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+		return copyId;
+	}
+
+
+		/**
+	 * Creates a copy of a spectrum in the specified hierarchy
+	 *
+	 * @param spectrum_id		the spectrum_id of the spectrum to copy
+	 * @param target_hierarchy_id	the hierarchy_id where the copy is to be stored
+	 *
+	 * @return new spectrum id
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
 	public int copySpectrum(int spectrum_id, int target_hierarchy_id) throws SPECCHIOFactoryException {
-		
+
 		int copy_spectrum_id = 0;
-		
-				
-		
+
+
+
 		String query = "INSERT INTO spectrum_view ("
-		+ " hierarchy_level_id, sensor_id, campaign_id, "
-		+ "file_format_id, instrument_id, calibration_id, "
-		+ "measurement_unit_id, measurement) "
-		+ "select "
-		+ " hierarchy_level_id, sensor_id, campaign_id, "
-		+ "file_format_id, instrument_id, calibration_id, "
-		+ "measurement_unit_id, measurement "
-		+ " from " + (this.Is_admin()?"spectrum":"spectrum_view") + " where spectrum_id = " + spectrum_id;
-		
+				+ " hierarchy_level_id, sensor_id, campaign_id, "
+				+ "file_format_id, instrument_id, calibration_id, "
+				+ "measurement_unit_id, measurement) "
+				+ "select "
+				+ " hierarchy_level_id, sensor_id, campaign_id, "
+				+ "file_format_id, instrument_id, calibration_id, "
+				+ "measurement_unit_id, measurement "
+				+ " from " + (this.Is_admin()?"spectrum":"spectrum_view") + " where spectrum_id = " + spectrum_id;
+
 		Statement stmt;
 		try {
 			stmt = getStatementBuilder().createStatement();
-			
-			
+
+
 			int no_of_inserted_rows = stmt.executeUpdate(query);
-			
+
 			if(no_of_inserted_rows > 0)
 			{
 				ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
@@ -243,10 +308,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					copy_spectrum_id = rs.getInt(1);
 				rs.close();
 
-//				stmt.close();		
+//				stmt.close();
 
 
-				// copy all eav references at spectrum level without inherited eav data 
+				// copy all eav references at spectrum level without inherited eav data
 				ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectrum_id, false); // false = no inheritance
 				getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copy_spectrum_id, eav_ids);
 
@@ -255,13 +320,13 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 //				stmt = getStatementBuilder().createStatement();
 				stmt.executeUpdate(query);
-				
+
 
 				// update the aggregated info in the upper hierarchies
-				SpectralFileFactory sf_factory = new SpectralFileFactory(this);			
+				SpectralFileFactory sf_factory = new SpectralFileFactory(this);
 				sf_factory.insertHierarchySpectrumReferences(target_hierarchy_id, copy_spectrum_id, 0, stmt);
-				
-				stmt.close();	
+
+				stmt.close();
 			}
 			else
 			{
@@ -269,16 +334,15 @@ public class SpectrumFactory extends SPECCHIOFactory {
 				SPECCHIOFactoryException e = new SPECCHIOFactoryException(msg);
 				throw(e);
 			}
-			
-			
+
+
 		} catch (SQLException e) {
 			throw new SPECCHIOFactoryException(e);
-		}		
-		
-		
+		}
+
+
 		return copy_spectrum_id;
 	}
-	
 	
 	/**
 	 * Delete target-reference links.
@@ -318,7 +382,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -334,7 +398,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do not have a reference to the specified attribute.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute to filter by
+	 * @param mds 	specifies ids to filter and attribute to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -350,7 +414,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
 	 * 
-	 * @param MetadataSelectionDescriptor 	specifies ids to filter and attribute and value to filter by
+	 * @param mds 	specifies ids to filter and attribute and value to filter by
 	 * 
 	 * @return an array list of spectrum identifiers that match the filter
 	 * 
@@ -360,10 +424,99 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		
 		EAVDBServices eav = getEavServices();					
 		return eav.filter_by_eav(MetaParameter.SPECTRUM_LEVEL, mds.getIds(), mds.getAttribute_id(), eav.ATR.get_default_storage_field(mds.getAttribute_id()), mds.getValue());		
-	}	
-	
-		
-	
+	}
+
+	/**
+	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
+	 *
+	 * @param campaignId 	specifies ids to filter and attribute and value to filter by
+	 *
+	 * @return an array list of spectrum identifiers that match the filter
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	public ArrayList<Integer> getUnprocessedHierarchies(String campaignId) throws SPECCHIOFactoryException{
+		ArrayList<Integer> ids = new ArrayList<>();
+		// campaign id
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+
+			String query = "SELECT hl_1.hierarchy_level_id FROM specchio.hierarchy_level AS hl_1 WHERE hl_1.parent_level_id NOT IN (" +
+					"SELECT hl_2.parent_level_id FROM specchio.hierarchy_level AS hl_2 WHERE hl_2.name IN ('Radiance')) " +
+					"AND hl_1.name IN ('DN') " +
+					"AND hl_1.campaign_id = " + campaignId;
+
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();
+
+			stmt.close();
+
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		return ids;
+
+	}
+
+
+	/**
+	 * Get the spectrum identifiers that do reference to the specified attribute of a specified value.
+	 *
+	 * @param campaignId 	specifies ids to filter and attribute and value to filter by
+	 *
+	 * @return an array list of spectrum identifiers that match the filter
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	public ArrayList<Integer> getIrradiance(String campaignId) throws SPECCHIOFactoryException{
+		ArrayList<Integer> ids = new ArrayList<>();
+		// campaign id
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+
+			String query = "SELECT sxe.spectrum_id " +
+					"FROM specchio.spectrum_x_eav AS sxe " +
+					"INNER JOIN specchio.eav AS ea " +
+					"ON sxe.eav_id = ea.eav_id " +
+					"INNER JOIN specchio.spectrum AS sp " +
+					"ON sxe.spectrum_id = sp.spectrum_id " +
+					"INNER JOIN ( " +
+					"SELECT ea2.eav_id " +
+					"FROM specchio.eav AS ea2 " +
+					"WHERE ea2.string_val " +
+					"LIKE ('%WR2%') " +
+					") AS wr2 " +
+					"ON sxe.eav_id = wr2.eav_id " +
+					"WHERE sp.measurement_unit_id = 2 " +
+					"AND sp.campaign_id = " + campaignId;
+
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();
+
+			stmt.close();
+
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		return ids;
+
+	}
+
+
 	/**																																																																																																												/**
 	 * Get the identifiers of all spectra that match a full text search.
 	 * 
@@ -924,7 +1077,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Get the direct hierarchy id of a single spectrum
 	 * 
-	 * @param ids_d		container holding the identifier of the desired spectrum
+	 * @param spectrum_id		container holding the identifier of the desired spectrum
 	 * 
 	 * @return hierarchy id
 	 * 
@@ -1366,8 +1519,6 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	
 	/**
 	 * Get the number of spectra in database
-	 * 
-	 * @param String		empty string
 	 * 
 	 * @return the number of spectra in the database
 	 * 
@@ -1846,9 +1997,9 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	/**
 	 * Update the spectral vector of a spectrum
 	 * 
-	 * @param spectrum	the file to be inserted
+	 * @param s	the file to be inserted
 	 * 
-	 * @throws SPECCHIOClientException
+	 * @throws SPECCHIOFactoryException
 	 */
 	public void updateSpectrumVector(Spectrum s)  throws SPECCHIOFactoryException {
 		
@@ -1895,6 +2046,66 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		
 	}
 
+
+	/**
+	 * Update the spectral vector of a spectrum
+	 *
+	 * @param spectra	the files to be inserted
+	 *
+	 * @throws SPECCHIOFactoryException
+	 */
+	public void updateSpectrumVectors(Spectrum[] spectra) throws SPECCHIOFactoryException{
+		String sql = "UPDATE " + (this.Is_admin()?"spectrum":"spectrum_view") + " set measurement = ? where spectrum_id = ?";
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		try {
+			PreparedStatement statement = SQL.prepareStatement(sql);
+//			com.mysql.jdbc
+			statement.getConnection().setAutoCommit(false);
+			statement.getConnection().setClientInfo("rewriteBatchedStatements", "true");
+			final int batchSize = 1000;
+			int count = 0;
+			for (Spectrum s : spectra) {
+				statement.setString(2, Integer.toString(s.getSpectrumId()));
+
+				byte[] temp_buf;
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutput dos = new DataOutputStream(baos);
+
+				for (int i = 0; i < s.getMeasurementVector().length; i++) {
+					try {
+						dos.writeFloat(s.getMeasurementVector()[i]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				temp_buf = baos.toByteArray();
+
+				InputStream vector = new ByteArrayInputStream(temp_buf);
+
+				statement.setBinaryStream(1, vector, s.getMeasurementVector().length * 4);
+
+				vector.close();
+				statement.addBatch();
+				if(++count % batchSize == 0) {
+					statement.executeBatch();
+					statement.getConnection().commit();
+				}
+			}
+			statement.executeBatch();
+			statement.getConnection().commit();
+			statement.getConnection().setAutoCommit(true);
+			statement.close();
+		}catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		} catch (IOException ex) {
+			// TODO Auto-generated catch block
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+
+	}
 
 	public List<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) {
 		

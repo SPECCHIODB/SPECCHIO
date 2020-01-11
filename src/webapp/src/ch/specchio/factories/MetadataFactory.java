@@ -2282,7 +2282,7 @@ public class MetadataFactory extends SPECCHIOFactory {
 	/**
 	 * Update or insert EAV metadata. Will automatically update existing entries or insert a new metaparameter if not existing.
 	 * 
-	 * @param mp		the new metadata
+	 * @param metaParameter		the new metadata
 	 * @param ids		the identifiers of the spectra to be updated or inserted
 	 * 
 	 * @return the identifier of the inserted or updated metadata
