@@ -1,6 +1,8 @@
 package ch.specchio.gui;
 
 
+import javax.swing.*;
+
 // This class serves as an interactive data visualization and analysis tool. Much like Kibana or Tableau, the visualization
 // will try to adapt to the provided data. Creating interesting visualizations. The interactivity includes filtering,
 // zooming, brushing and linking, machine learning techniques, data analysis techniques, data manipulation techniques
@@ -20,5 +22,16 @@ public class InfoVis {
     // Include data export comes with a report - selection criteria (e.g. campaign(s), researcher(s), metadata selections)
     // Include data amount checker - if too many spectra are selected, a warning pops-up, that it might take a long time to load. ...
     // Then start by showing a selection of the data while the other data loads in the background.
+
+    public InfoVis(){
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new InfoVisMainFrame();
+            }
+        });
+
+    }
 
 }
