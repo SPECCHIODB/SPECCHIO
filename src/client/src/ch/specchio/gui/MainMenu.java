@@ -387,7 +387,7 @@ private JMenuItem dbConfigmenuItem;
       if(create_user_account.equals(e.getActionCommand()))
       {
     	  try {
-    		  UserAccountDialog d = new UserAccountDialog(SPECCHIOApplication.getInstance().get_frame(), null, null);
+    		  UserAccountDialog d = new UserAccountDialog(SPECCHIOApplication.getInstance().get_frame(), SPECCHIOApplication.getInstance().getClient(), null);
     		  d.setVisible(true);
     	  }
     	  catch (SPECCHIOClientException ex) {
