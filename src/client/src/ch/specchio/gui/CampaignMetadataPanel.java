@@ -155,7 +155,7 @@ public class CampaignMetadataPanel extends JPanel implements KeyListener, ListDa
 		pathLabel = new JLabel("Paths:");
 		add(pathLabel, constraints);
 		constraints.gridx = 1;
-		pathPanel = new CampaignPathPanel(owner, false, true);
+		pathPanel = new CampaignPathPanel(owner, true, true);
 		pathPanel.addListDataListener(this);
 		add(pathPanel, constraints);
 		constraints.gridy++;
