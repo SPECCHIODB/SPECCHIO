@@ -19,7 +19,7 @@ public class SpectralFileInsertStruct {
 	public String sensor_id;
 	public Object file_format_id;
 	public String instrument_id;
-	public int calibration_id;
+	public String calibration_id;
 	public String measurement_unit_id;
 	public String measurement_as_hex;
 	public Metadata metadata;
