@@ -1139,6 +1139,12 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		 } catch (SQLException ex) {
 			 // TODO Auto-generated catch block
 			 ex.printStackTrace();
+			 try {
+				stmt.getConnection().rollback();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			 throw new SPECCHIOFactoryException(ex);
 		 } catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -1353,6 +1359,12 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			}
 			catch (SQLException ex) {
 				// database error
+				try {
+					stmt.getConnection().rollback();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				throw new SPECCHIOFactoryException(ex);
 			}
 
@@ -1580,7 +1592,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				insert_struct.sensor_id = SQL.is_null_key_get_val_and_op(sensor_id).id;
 				insert_struct.file_format_id = (file_format_id == -1 ? "null" : Integer.toString(file_format_id));
 				insert_struct.instrument_id = instrument_id;
-				insert_struct.calibration_id = calibration_id;
+				insert_struct.calibration_id = SQL.is_null_key_get_val_and_op(calibration_id).id;
 				insert_struct.measurement_unit_id = SQL.is_null_key_get_val_and_op(getDataCache().get_measurement_unit_id_for_file(spec_file, spec_no)).id;
 				
 				
