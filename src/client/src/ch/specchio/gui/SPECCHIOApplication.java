@@ -75,7 +75,7 @@ public class SPECCHIOApplication {
 		OperationsPane op = OperationsPane.getInstance();
 		specchio_icon = new ImageIcon(ClassLoader.getSystemClassLoader().getResource("SPECCHIO_Icon_Mid_Res_small.jpg"));
 
-		JLabel test = new JLabel("Spectral Database System", specchio_icon, JLabel.CENTER);
+		JLabel test = new JLabel(" Spectral Information System ", specchio_icon, JLabel.CENTER);
 		test.setVerticalTextPosition(JLabel.BOTTOM);
 		test.setHorizontalTextPosition(JLabel.CENTER);
 		test.setOpaque(true);
