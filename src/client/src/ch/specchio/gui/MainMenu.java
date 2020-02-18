@@ -59,6 +59,7 @@ class MainMenu implements ActionListener, ItemListener {
    String data_removal = "Remove data";
    String data_browser = "Browse data hierarchy";
    String query_builder = "Build query";
+   String fluoSpecchioVis = "DataVis";
    String measure_density = "Measure Metadata Space Density";
    String gonio_explorer = "Explore goniometer data";
    String data_explorer = "Explore & process data";
@@ -194,6 +195,16 @@ private JMenuItem dbConfigmenuItem;
       user_menu_items.put(query_builder, menuItem);
 
       menuBar.add(menu);
+
+      // Data Visualizations
+	   menu = new JMenu("Visual Analysis Toolbox");
+
+	   menuItem = new JMenuItem(this.fluoSpecchioVis);
+	   menuItem.addActionListener(this);
+	   menu.add(menuItem);
+	   user_menu_items.put(fluoSpecchioVis, menuItem);
+
+	   menuBar.add(menu);
       
       // Data Maintenance 
       menu = new JMenu("Data Maintenance");
@@ -256,6 +267,7 @@ private JMenuItem dbConfigmenuItem;
       user_menu_items.put(gonio_angle_calc, menuItem);
       
       menuBar.add(menu);
+
       
       // Help 
       menu = new JMenu("Help");
@@ -700,7 +712,20 @@ private JMenuItem dbConfigmenuItem;
 			}
          
       }
-      
+
+      if(fluoSpecchioVis.equals(e.getActionCommand())){
+      	try{
+      		InfoVis vis = new InfoVis();
+		}
+      	catch (SPECCHIOClientException ex){
+      		JOptionPane.showMessageDialog(
+					SPECCHIOApplication.getInstance().get_frame(),
+					ex.getMessage(),
+					"Error",
+					JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
+			);
+		}
+	  }
       
       if(load_sensor.equals(e.getActionCommand()))
       {
