@@ -24,16 +24,12 @@ public class DataPanel extends JPanel {
     private ButtonGroup genderGroup;
 
     public DataPanel(){
-        Dimension dim = getPreferredSize();
-        dim.width = 250;
-        setPreferredSize(dim);
-
         nameLabel = new JLabel("Name:");
         occupationLabel = new JLabel("Occupation:");
         nameField = new JTextField(10);
         occupationField = new JTextField(10);
         ageList = new JList();
-//        ageList.setDragEnabled(true);
+        ageList.setDragEnabled(true);
         empCombo = new JComboBox();
         citizenCheck = new JCheckBox();
         taxField = new JTextField(10);
@@ -103,7 +99,7 @@ public class DataPanel extends JPanel {
             }
         });
 
-        Border innerBorder = BorderFactory.createTitledBorder("Add Data");
+        Border innerBorder = BorderFactory.createTitledBorder("Filter Data");
         Border outerBorder = BorderFactory.createEmptyBorder(5,5,5,5);
         setBorder(BorderFactory.createCompoundBorder(outerBorder, innerBorder));
 

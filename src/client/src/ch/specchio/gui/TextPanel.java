@@ -9,6 +9,7 @@ public class TextPanel extends JPanel {
 
     public TextPanel(){
         textArea = new JTextArea();
+        textArea.setTransferHandler(new TransferHandler("node"));
 
         setLayout(new BorderLayout());
         add(new JScrollPane(textArea), BorderLayout.CENTER);
