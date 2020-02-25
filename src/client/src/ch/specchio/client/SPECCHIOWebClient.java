@@ -504,7 +504,9 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 */
 	public attribute[] getAttributesForCategory(String category) throws SPECCHIOWebClientException, SPECCHIOClientException {
 		
-		return getArray(attribute.class, "metadata", "attributes", category);
+		attribute[] array = getArray(attribute.class, "metadata", "attributes", category);
+	
+		return array;
 		
 	}
 	
