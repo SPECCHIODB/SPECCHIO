@@ -41,7 +41,7 @@ public class EAVDBServices extends Thread {
 	public ArrayList<String> aliases = new ArrayList<String>();
 	
 	//ArrayList<MetaParameter> known_metaparameters = new ArrayList<MetaParameter>();
-	private static Hashtable<String, ArrayList<MetaParameter>> known_metaparameters_hash = new Hashtable<String, ArrayList<MetaParameter>>();
+	private static Hashtable<Integer, ArrayList<MetaParameter>> known_metaparameters_hash = new Hashtable<Integer, ArrayList<MetaParameter>>();
 	
 //	private String primary_x_eav_tablename = "frame_x_eav";
 //	private String primary_x_eav_viewname = "frame_x_eav_view";
@@ -539,12 +539,12 @@ public class EAVDBServices extends Thread {
 	
 	synchronized public void clear_redundancy_list()
 	{
-		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
+//		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
 		
-		if(known_metaparameters != null)
-		{
-			known_metaparameters.clear();
-		}
+//		if(known_metaparameters_hash != null)
+//		{
+			known_metaparameters_hash.clear();
+//		}
 	}
 	
 	synchronized public int count_metaparameters(int metadata_level, ArrayList<Integer> primary_ids)
@@ -575,12 +575,13 @@ public class EAVDBServices extends Thread {
 		MetaParameter curr_mp = null;
 		boolean matches = false;
 		
-		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
+		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(mp.getAttributeId());
 		
 		if(known_metaparameters == null)
 		{
 			known_metaparameters = new ArrayList<MetaParameter>();
-			known_metaparameters_hash.put(databaseUserName, known_metaparameters);
+			known_metaparameters.add(mp);
+			known_metaparameters_hash.put(mp.getAttributeId(), known_metaparameters);
 		}
 		
 		// check if it is already contained in the list
@@ -591,8 +592,8 @@ public class EAVDBServices extends Thread {
 			curr_mp = li.next();
 			
 			// attribute must be matching
-			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
-			{
+//			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
+//			{
 		
 				boolean equalValues = (mp.getValue() == null && curr_mp.getValue() == null) || (mp.getValue() != null && mp.hasEqualValue(curr_mp)); // mp.getValue().equals(curr_mp.getValue())
 				if(mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
@@ -603,7 +604,7 @@ public class EAVDBServices extends Thread {
 				{
 					matches = mp.getUnitId().equals(curr_mp.getUnitId()) && equalValues;
 				}
-			}
+//			}
 
 		}
 		
