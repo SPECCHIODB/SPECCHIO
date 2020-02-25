@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -834,31 +835,67 @@ public class MetadataService extends SPECCHIOService {
 				update_d.getCampaignId()
 		);
 
-		// STEP 1 - SPECTRAL FILE
-		SpectralFile spec_file = new SpectralFile();
-		spec_file.setNumberOfSpectra(update_d.getIds().size());
-		spec_file.setEavMetadata(update_d.getMetadata());
-		// STEP 1 - REDUCE REDUNDANCY
-		specFactory.reduce_metadata_redundancy_of_file(spec_file);
-		Metadata md = new Metadata();
-		md.setEntries(spec_file.getUniqueMetaParameters());
-
-		// STEP 2 - CREATE THE A STATEMENT
-		Statement stmt = null;
-		stmt = specFactory.getStatementBuilder().createStatement();
-		stmt.execute("START TRANSACTION");
-		// STEP 2 - GET THE EAV IDS
-		ArrayList<Integer> eav_ids = factory.getEavServices().insert_metadata_into_db(update_d.getCampaignId(), md, this.isAdmin(), stmt);
-
-		// STEP 3 - INSERT LINKS
-		factory.getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, update_d.getIds(),
-				spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
-
-
-		factory.dispose();
-		specFactory.dispose();
 		
-		stmt.execute("COMMIT");
+		boolean suboptimal = false;
+		
+		if(suboptimal) {
+			// STEP 1 - SPECTRAL FILE
+			SpectralFile spec_file = new SpectralFile();
+			spec_file.setNumberOfSpectra(update_d.getIds().size());
+			spec_file.setEavMetadata(update_d.getMetadata());
+			// STEP 1 - REDUCE REDUNDANCY
+			specFactory.reduce_metadata_redundancy_of_file(spec_file);
+			Metadata md = new Metadata();
+			md.setEntries(spec_file.getUniqueMetaParameters());
+
+			// STEP 2 - CREATE THE A STATEMENT
+			Statement stmt = null;
+			stmt = specFactory.getStatementBuilder().createStatement();
+			stmt.execute("START TRANSACTION");
+			// STEP 2 - GET THE EAV IDS
+			ArrayList<Integer> eav_ids = factory.getEavServices().insert_metadata_into_db(update_d.getCampaignId(), md, this.isAdmin(), stmt);
+
+			// STEP 3 - INSERT LINKS
+			factory.getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, update_d.getIds(),
+					spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
+			factory.dispose();
+			specFactory.dispose();
+
+			stmt.execute("COMMIT");
+		}
+		else
+		{
+		
+			ArrayList<Integer> attribute_id_unique_list = new ArrayList<Integer>();
+			ListIterator<Metadata> it = update_d.getMetadata().listIterator();
+			
+			while(it.hasNext())
+			{
+				Metadata md = it.next();
+				
+				ListIterator<MetaParameter> md_it = md.getEntries().listIterator();
+				
+				while(md_it.hasNext())
+				{
+					MetaParameter mp = md_it.next();
+					
+					if(!attribute_id_unique_list.contains(mp.getAttributeId()))
+					{
+						attribute_id_unique_list.add(mp.getAttributeId());
+					}
+				}
+				
+			}
+
+			
+			factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, factory.getEavServices().SQL.conc_ids(attribute_id_unique_list));
+			
+			
+		}
+		
+
+
+
 		
 		return new SpectralFileInsertResult(); // currently returning a dummy object here ...
 

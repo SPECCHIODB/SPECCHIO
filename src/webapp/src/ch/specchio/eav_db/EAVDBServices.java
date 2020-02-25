@@ -1357,6 +1357,42 @@ public class EAVDBServices extends Thread {
 //		}		
 	}
 	
+	
+	public synchronized ArrayList<Integer> get_eav_ids_per_primary_incl_null(int metadata_level, String primary_ids, boolean distinct, String attribute_ids)
+	{
+		
+		ArrayList<Integer> list = new ArrayList<Integer>();
+
+		String distinct_str = " ";
+		
+		if (distinct) distinct_str = " distinct ";		
+				
+		String query = "select" + distinct_str +"eav.eav_id from eav eav, " + get_primary_x_eav_tablename(metadata_level) + " " + get_primary_x_eav_tablename(metadata_level) + 
+				" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " + 
+				get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")"
+				+ ((!distinct)? " order by FIELD (" + SQL.prefix(get_primary_x_eav_tablename(metadata_level), get_primary_id_name(metadata_level)) + ", "+ primary_ids +")" : "");
+
+		ResultSet rs;
+		try {
+			Statement stmt = SQL.createStatement();
+			rs = stmt.executeQuery(query);
+			
+			while (rs.next()) {
+				list.add(rs.getInt(1));			
+			}			
+			rs.close();
+			stmt.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return list;
+		
+		
+	}
+	
 	synchronized public SingularFrameEAVStructure get_eav_ids_(int metadata_level, ArrayList<Integer> primary_ids, ArrayList<Integer> attribute_ids)
 	{		
 		return get_eav_ids_(metadata_level, primary_ids, false, SQL.conc_ids(attribute_ids));
