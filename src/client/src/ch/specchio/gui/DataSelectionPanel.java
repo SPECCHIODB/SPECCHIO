@@ -2,8 +2,10 @@ package ch.specchio.gui;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.types.Campaign;
+import org.w3c.dom.ranges.Range;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;

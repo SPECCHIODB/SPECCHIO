@@ -1,5 +1,6 @@
 package ch.specchio.gui;
 
+import com.jidesoft.swing.RangeSlider;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -9,6 +10,7 @@ import java.awt.event.ActionListener;
 public class DataPanel extends JPanel {
 
     private JLabel nameLabel;
+    private RangeSlider testingSlider;
     private JLabel occupationLabel;
     private JTextField nameField;
     private JTextField occupationField;
@@ -41,6 +43,12 @@ public class DataPanel extends JPanel {
         maleRadio.setActionCommand("male");
         femaleRadio.setActionCommand("female");
         maleRadio.setSelected(true);
+
+        testingSlider = new RangeSlider(0, 100, 10, 90);
+        testingSlider.setPaintTicks(true);
+        testingSlider.setMajorTickSpacing(10);
+        testingSlider.setPaintLabels(true);
+
 
         // SETUP GENDER RADIOS
         genderGroup.add(maleRadio);
@@ -217,12 +225,20 @@ public class DataPanel extends JPanel {
         ///// NEXT ROW /////////////////
         gc.weightx = 1;
         gc.weighty = 0.2;
-        gc.gridx = 0;
         gc.gridy++;
         gc.gridx = 1;
         gc.anchor = GridBagConstraints.FIRST_LINE_START;
         gc.insets = new Insets(0,0,0,0);
         add(femaleRadio, gc);
+
+        ///// NEXT ROW /////////////////
+        gc.weightx = 1;
+        gc.weighty = 1;
+        gc.gridx = 1;
+        gc.gridy++;
+        gc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gc.insets = new Insets(0,0,0,0);
+        add(testingSlider, gc);
 
         ///// NEXT ROW /////////////////
         gc.weightx = 1;

@@ -699,7 +699,7 @@ private JMenuItem dbConfigmenuItem;
       if(query_builder.equals(e.getActionCommand()))
       {
 		try {
-			QueryBuilder d = new QueryBuilder("Query Builder", "mds_restrictions");
+			QueryBuilder d = new QueryBuilder("Query Builder", "combined");
 			d.setVisible(true);
 		} 
 		catch (SPECCHIOClientException ex) {

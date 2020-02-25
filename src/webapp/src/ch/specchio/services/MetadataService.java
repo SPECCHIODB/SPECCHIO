@@ -834,6 +834,9 @@ public class MetadataService extends SPECCHIOService {
 				update_d.getCampaignId()
 		);
 
+
+
+
 		// STEP 1 - SPECTRAL FILE
 		SpectralFile spec_file = new SpectralFile();
 		spec_file.setNumberOfSpectra(update_d.getIds().size());
@@ -843,11 +846,22 @@ public class MetadataService extends SPECCHIOService {
 		Metadata md = new Metadata();
 		md.setEntries(spec_file.getUniqueMetaParameters());
 
+//		build a list of the metaparameters
+		ArrayList<Integer> attrIds = new ArrayList<>();
+		for(MetaParameter mp : spec_file.getUniqueMetaParameters()){
+			attrIds.add(mp.getAttributeId());
+		}
 		// STEP 2 - CREATE THE A STATEMENT
 		Statement stmt = null;
 		stmt = specFactory.getStatementBuilder().createStatement();
 		stmt.execute("START TRANSACTION");
 		// STEP 2 - GET THE EAV IDS
+		// HERE REPLACE INSERT WITH INSERT... ON DUPLICATE KEY UPDATE
+		// FIGURE OUT HOW TO FIND DUPLICATES! THIS IS TRICKY BECAUSE WE CAN INSERT AS MANY EAVs AS WE WANT
+		// check if metaparameter(s) exists
+//		ArrayList<Integer> eav_ids = factory.getEavServices().get_eav_ids(update_d.getLevel(), update_d.getIds(), true, attrIds);
+
+
 		ArrayList<Integer> eav_ids = factory.getEavServices().insert_metadata_into_db(update_d.getCampaignId(), md, this.isAdmin(), stmt);
 
 		// STEP 3 - INSERT LINKS

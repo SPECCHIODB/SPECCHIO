@@ -31,7 +31,7 @@ public class SpectralFileService extends SPECCHIOService {
 	/**
 	 * Test whether or not a given spectral file exists in the database.
 	 * 
-	 * @param descriptor	the descriptor of the spectrum file to test
+	 * @param spec_file	the spectrum file to test
 	 * 
 	 * @return true if the spectrum exists, or false if not
 	 * 
