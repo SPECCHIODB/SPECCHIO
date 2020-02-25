@@ -1365,12 +1365,22 @@ public class EAVDBServices extends Thread {
 
 		String distinct_str = " ";
 		
-		if (distinct) distinct_str = " distinct ";		
-				
-		String query = "select" + distinct_str +"eav.eav_id from eav eav, " + get_primary_x_eav_tablename(metadata_level) + " " + get_primary_x_eav_tablename(metadata_level) + 
-				" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " + 
-				get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")"
-				+ ((!distinct)? " order by FIELD (" + SQL.prefix(get_primary_x_eav_tablename(metadata_level), get_primary_id_name(metadata_level)) + ", "+ primary_ids +")" : "");
+		if (distinct) distinct_str = " distinct ";
+
+		String query = "SELECT sp1.spectrum_id, join1.e_eav_id FROM spectrum AS sp1 " +
+		"LEFT JOIN( " +
+			"SELECT sxe.spectrum_id AS 'sxe_spectrum_id', e.eav_id AS 'e_eav_id' FROM spectrum_x_eav AS sxe " +
+			"INNER JOIN specchio.eav AS e " +
+			"ON sxe.eav_id = e.eav_id " +
+			" WHERE e.attribute_id IN(" + attribute_ids + ") " +
+		") AS join1 " +
+		"ON join1.sxe_spectrum_id = sp1.spectrum_id " +
+		"WHERE sp1.spectrum_id IN (" + primary_ids +") ";
+
+//		String query = "select" + distinct_str +"eav.eav_id from eav eav, " + get_primary_x_eav_tablename(metadata_level) + " " + get_primary_x_eav_tablename(metadata_level) +
+//				" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " +
+//				get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")"
+//				+ ((!distinct)? " order by FIELD (" + SQL.prefix(get_primary_x_eav_tablename(metadata_level), get_primary_id_name(metadata_level)) + ", "+ primary_ids +")" : "");
 
 		ResultSet rs;
 		try {
