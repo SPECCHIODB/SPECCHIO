@@ -484,6 +484,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 	// check all fields for multiple updates and ask user if it should be applied
 	private void removeFields() throws SPECCHIOClientException
 	{
+		int no_of_removed_fields = 0;
+		
 		for (MDE_Controller mdec : MDE_Controllers)
 		{
 
@@ -519,13 +521,16 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 						
 			removeFieldsBasedOnDecision(mdec, shared_hierarchy_field_opt, MetaParameter.HIERARCHY_LEVEL);
 
-
+			no_of_removed_fields = no_of_removed_fields + mdec.getRemoved_fields().size();
 
 		}
 		
 		// reset the redundancy buffer to avoid linking to deleted parameters.
 		// ideally, this should only include the reset for the fields that were removed and not the whole buffer ...
-		this.specchio_client.clearMetaparameterRedundancyList();		
+		if(no_of_removed_fields > 0)
+		{
+			this.specchio_client.clearMetaparameterRedundancyList();		
+		}
 
 		// update button states
 		setUpdateResetButtonsState();
