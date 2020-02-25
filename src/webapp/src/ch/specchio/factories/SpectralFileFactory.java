@@ -615,7 +615,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		Statement stmt = null;
 		try {
 			stmt = getStatementBuilder().createStatement();
-//			stmt.getConnection().setAutoCommit(false);
+			stmt.getConnection().setAutoCommit(false);
 			
 			stmt.execute("START TRANSACTION");
 
