@@ -1,6 +1,7 @@
 package ch.specchio.services;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -10,6 +11,7 @@ import javax.ws.rs.core.*;
 import javax.annotation.security.*;
 
 import ch.specchio.constants.UserRoles;
+import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.factories.MetadataFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.factories.SpectralFileFactory;
@@ -863,13 +865,9 @@ public class MetadataService extends SPECCHIOService {
 		else
 		{
 
-			// Build hashmap key = spectrum_id value = metadata
-			HashMap<Integer, Metadata> metadataPerSpectrum = new HashMap<>();
-			int specIdIndex;
-			for(Integer i : update_d.getIds()){
-				specIdIndex = update_d.getIds().indexOf(i);
-				metadataPerSpectrum.put(i, update_d.getMetadata().get(specIdIndex));
-			}
+			// Build hashmap key = spectrum_id value = metaparameter <- this will be used to disentangle updatable from insertable metaparameters
+			HashMap<Integer, MetaParameter> metadataPerUpdateSpectrum = new HashMap<>();
+			HashMap<Integer, MetaParameter> metadataPerInsertSpectrum = new HashMap<>();
 
 			// Get campaign id
 			int campaignId = update_d.getCampaignId();
@@ -896,54 +894,37 @@ public class MetadataService extends SPECCHIOService {
 			}
 
 			// Use unique attribute list to find spectra with eav and spectra without for a certain attribute
-			ArrayList<ArrayList<int[]>> collectedResults = new ArrayList<>();
+			ArrayList<int[]> collectedResults;
+			ArrayList<Integer> eav_ids = new ArrayList<>();
 			for (Integer attr_id : attribute_id_unique_list){
 				// Find spectra for which a certain attribute already exists
 				// returns array with arr[0] = spectrum_id and arr[1] = eav_id or 0;
-				collectedResults.add(factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, attr_id));
-			}
+				collectedResults = factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, attr_id);
+				metadataPerUpdateSpectrum.clear();
+				metadataPerInsertSpectrum.clear();
+				eav_ids.clear();
+				for(int[] list : collectedResults){
+					// use the spectrum identifier (specId) to get disentangle updatable from non-updatable spectra
+					int specId = list[0];
+					int eavId = list[1];
+					int specIdIndex = update_d.getIds().indexOf(specId);
+					if(eavId != 0){
+						MetaParameter mp = update_d.getMetadata().get(specIdIndex).get_first_entry(attr_id);
+						mp.setEavId(eavId);
+						metadataPerUpdateSpectrum.put(specId, mp);
+						eav_ids.add(eavId);
+					}else{
+						metadataPerInsertSpectrum.put(specId, update_d.getMetadata().get(specIdIndex).get_first_entry(attr_id));
+					}
+				}
 
-			// Handle the results
-			ArrayList<String> values_strings = new ArrayList<>();
-			for(ArrayList<int[]> res : collectedResults){
-				for(int[] row : res){
-					Metadata md = metadataPerSpectrum.get(row[0]);
-					MetaParameter mp = md.get_all_entries(row[2]).get(0);
-					values_strings.add(factory.getEavServices().get_metaparameter_value_string(campaignId, mp));
+				if(metadataPerInsertSpectrum.size() > 0){
+					factory.getEavServices().insertMetadataUsingHashMap(metadataPerInsertSpectrum, campaignId);
+				} else if (metadataPerUpdateSpectrum.size() > 0){
+					factory.getEavServices().updateMetadataUsingHashMap(metadataPerUpdateSpectrum, campaignId);
 				}
 			}
 
-//			// using the obtained results filter for the spectrum and the attribute
-//			for(int[] rs : resultSet){
-//				if(rs[1] != 0){
-//					md = specMeta.get(specIds.indexOf(rs[0]));
-//					for(MetaParameter mp : md.getEntries()){
-//						if(mp.getAttributeId() == attr_id){
-//							spectrum_ids.add(rs[0]);
-//							attribute_id.add(attr_id);
-//							values.add(mp.getValue());
-//							mp.getDefaultStorageField();
-//						}
-//					}
-//					updateableSpecIds.add(rs[0]);
-//				}else{
-//					notUpdateableSpecIds.add(rs[0]);
-//				}
-//			}
-//			ArrayList<MetaParameter> =
-//			specMeta = update_d.getMetadata();
-
-
-//			String query = "INSERT INTO eav_view " +
-//			"(eav_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, unit_id, campaign_id, " +
-//			"taxonomy_id, spectrum_id, spatial_val) " +
-//			"VALUES(15568,70, NULL, NULL, 'HELLO', NULL, NULL, 5, 2, NULL, 8928, NULL) " +
-//			"ON DUPLICATE KEY UPDATE " +
-//			"string_val = 'HELLO'"
-
-			// INSERT INTO ... VALUES()... ON DUPLICATE KEY UPDATE
-			// The only addition to the INSERT statement is the ON DUPLICATE KEY UPDATE
-			// clause where you specify a list of column-value-pair assignments in case of duplicate.
 		}
 		
 

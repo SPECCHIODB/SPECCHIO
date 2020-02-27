@@ -905,11 +905,12 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    		  	MetaParameter mp;
 	    		  	ArrayList<Metadata> md_list = new ArrayList<Metadata>();
 	    		  
-	    		  	for(int i=1;i<=ids.size();i++)
+//	    		  	for(int i=1;i<=ids.size();i++)
+	    		  	for(int i : ids)
 	    		  	{
 	    		  		Metadata md = new Metadata();
 						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"));							
-						mp.setValue(i, "m2");
+						mp.setValue(i*i, "m2");
 						md.addEntry(mp);	
 						md_list.add(md);
 	    		  	}

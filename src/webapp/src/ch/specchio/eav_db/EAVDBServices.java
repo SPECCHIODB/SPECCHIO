@@ -11,10 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -502,6 +499,180 @@ public class EAVDBServices extends Thread {
 //		}
 		
 	}
+
+	public String get_metaparameter_value_string_with_spectrum(int campaign_id, int spectrumId, MetaParameter e) throws SQLException
+	{
+		try {
+			get_metaparameter_attribute_and_unit_ids(e);
+		} catch (SQLException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+
+//		if (e.allows_multi_insert() == false)
+//		{
+//			return null; // Matrix values must be inserted by update statements externally
+//		}
+//		else
+//		{
+		// fields: campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, unit_id
+
+		String fieldname = e.getDefaultStorageField();
+		String value;
+
+		if(fieldname.equals("spatial_val"))
+		{
+			value = (String) e.getEAVValue();
+		}
+		else if(fieldname.equals("binary_val"))
+		{
+
+			String hex_str = "";
+
+			ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
+			ObjectOutputStream out_;
+			try {
+				out_ = new ObjectOutputStream(baos_);
+				out_.writeObject((Serializable) e.getValue());
+				out_.flush();
+				out_.close();
+
+				hex_str = DatatypeConverter.printHexBinary(baos_.toByteArray());
+
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+
+			value = "x'" + hex_str + "'";
+
+		}
+		else
+		{
+			value = SQL.quote_value(e.getValue());
+		}
+
+		StringBuffer query = new StringBuffer("(");
+		query.append(Integer.toString(spectrumId));
+		query.append(",");
+		query.append(Integer.toString(campaign_id));
+		query.append(",");
+		query.append(e.getAttributeId());
+		query.append(",");
+		query.append("int_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("double_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("string_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("binary_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("datetime_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("taxonomy_id".equals(fieldname) ? value : "null");
+		query.append(",");
+		if(this.isSpatially_enabled())
+		{
+			query.append("spatial_val".equals(fieldname) ? value : "null");
+			query.append(",");
+		}
+		query.append(e.getUnitId().toString() + ")");
+
+		return query.toString();
+
+//		}
+
+	}
+
+	public String get_metaparameter_value_string_with_spectrum_and_eav(int campaign_id, int spectrumId, int eav_id, MetaParameter e) throws SQLException
+	{
+		try {
+			get_metaparameter_attribute_and_unit_ids(e);
+		} catch (SQLException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+
+//		if (e.allows_multi_insert() == false)
+//		{
+//			return null; // Matrix values must be inserted by update statements externally
+//		}
+//		else
+//		{
+		// fields: campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, unit_id
+
+		String fieldname = e.getDefaultStorageField();
+		String value;
+
+		if(fieldname.equals("spatial_val"))
+		{
+			value = (String) e.getEAVValue();
+		}
+		else if(fieldname.equals("binary_val"))
+		{
+
+			String hex_str = "";
+
+			ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
+			ObjectOutputStream out_;
+			try {
+				out_ = new ObjectOutputStream(baos_);
+				out_.writeObject((Serializable) e.getValue());
+				out_.flush();
+				out_.close();
+
+				hex_str = DatatypeConverter.printHexBinary(baos_.toByteArray());
+
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+
+			value = "x'" + hex_str + "'";
+
+		}
+		else
+		{
+			value = SQL.quote_value(e.getValue());
+		}
+
+		StringBuffer query = new StringBuffer("(");
+		query.append(Integer.toString(eav_id));
+		query.append(",");
+		query.append(Integer.toString(spectrumId));
+		query.append(",");
+		query.append(Integer.toString(campaign_id));
+		query.append(",");
+		query.append(e.getAttributeId());
+		query.append(",");
+		query.append("int_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("double_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("string_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("binary_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("datetime_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("taxonomy_id".equals(fieldname) ? value : "null");
+		query.append(",");
+		if(this.isSpatially_enabled())
+		{
+			query.append("spatial_val".equals(fieldname) ? value : "null");
+			query.append(",");
+		}
+		query.append(e.getUnitId().toString() + ")");
+
+		return query.toString();
+
+//		}
+
+	}
 	
 	public String get_primary_id_name(int metadata_level) {		
 		return this.eav_table_infos[metadata_level].primary_id_name;		
@@ -924,24 +1095,45 @@ public class EAVDBServices extends Thread {
 	
 	// this function expects that the eav_ids apply to each frame_id entry
 	synchronized public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> primary_ids, Integer[] eav_ids) throws SQLException
-	{			
+	{
 
 		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
 		ArrayList<String> value_strings = new ArrayList<String>();
-		
+
 		// build multi insert string
 		for (int primary_id : primary_ids) {
 			for (int eav_id : eav_ids) {
 				value_strings.add("(" + String.valueOf(primary_id) + ", " + String.valueOf(eav_id) +")");
-			}	
+			}
 		}
-		
+
 		// carry out the multi insert statement
 		query = query + SQL.conc_cols(value_strings);
 		Statement stmt = SQL.createStatement();
 		stmt.executeUpdate(query);
 		stmt.close();
-		
+
+	}
+
+	// this function expects that the eav_ids apply to each frame_id entry
+	synchronized public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> primary_ids, ArrayList<Integer> eav_ids) throws SQLException
+	{
+
+		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
+		ArrayList<String> value_strings = new ArrayList<String>();
+
+		// build multi insert string update_d.getMetadata().listIterator()
+
+		for(int i = 0; i < primary_ids.size(); i++){
+			value_strings.add("(" + String.valueOf(primary_ids.get(i)) + ", " + String.valueOf(eav_ids.get(i)) +")");
+		}
+
+		// carry out the multi insert statement
+		query = query + SQL.conc_cols(value_strings);
+		Statement stmt = SQL.createStatement();
+		stmt.executeUpdate(query);
+		stmt.close();
+
 	}
 	
 	// inserts links between spectra and eavs by using the redundancy index
@@ -1381,8 +1573,8 @@ public class EAVDBServices extends Thread {
 		try {
 			Statement stmt = SQL.createStatement();
 			rs = stmt.executeQuery(query);
-			int[] tmp = new int[3];
 			while (rs.next()) {
+				int[] tmp = new int[3];
 				tmp[0] = rs.getInt(1);
 				tmp[1] = rs.getInt(2);
 				tmp[2] = rs.getInt(3);
@@ -1763,7 +1955,7 @@ public class EAVDBServices extends Thread {
 	/**
 	 * Load a MetaParameter object from the database.
 	 * 
-	 * @param mp	the MetaParameter object to be loaded
+	 * @param eav_id	the MetaParameter object to be loaded
 	 * 
 	 * @throws SQLException	SQL error
 	 */
@@ -2412,11 +2604,90 @@ public class EAVDBServices extends Thread {
 	}
 
 
+	public void insertMetadataUsingHashMap(HashMap<Integer, MetaParameter> metadataPerInsertSpectrum, Integer campaignId) throws SQLException {
+
+	 	String query = "insert into eav_view (spectrum_id, campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) values";
+		ArrayList<String> value_strings = new ArrayList<String>();
+		ArrayList<Integer> spectrumIds = new ArrayList<Integer>();
+
+		for(Integer i : metadataPerInsertSpectrum.keySet()){
+			spectrumIds.add(i);
+			value_strings.add(get_metaparameter_value_string_with_spectrum(campaignId, i, metadataPerInsertSpectrum.get(i)));
+		}
+
+		ArrayList<Integer> eav_ids = new ArrayList<Integer>();
+
+		if(value_strings.size() > 0)
+		{
+
+			// carry out the multi insert statement
+			query = query + SQL.conc_cols(value_strings);
+
+			PreparedStatement ps = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
+			//now update
+			ps.executeUpdate();
+
+			ResultSet rs = ps.getGeneratedKeys();
+
+			int eav_id;
+			while (rs.next()) {
+				eav_id = rs.getInt(1);
+				eav_ids.add(eav_id);
+			}
 
 
+			rs.close();
+			ps.close();
 
-	
+		}
 
+		insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrumIds, eav_ids);
+
+	}
+
+	public void updateMetadataUsingHashMap(HashMap<Integer, MetaParameter> metadataPerUpdateSpectrum, Integer campaignId) throws SQLException {
+		String query = "INSERT INTO eav_view (eav_id, spectrum_id, campaign_id, attribute_id, int_val, double_val, string_val, " +
+				"binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) VALUES ";
+
+
+		ArrayList<String> value_strings = new ArrayList<String>();
+		ArrayList<Integer> spectrumIds = new ArrayList<Integer>();
+
+
+		for(Integer i : metadataPerUpdateSpectrum.keySet()){
+			spectrumIds.add(i);
+			value_strings.add(get_metaparameter_value_string_with_spectrum_and_eav(campaignId, i, metadataPerUpdateSpectrum.get(i).getEavId(), metadataPerUpdateSpectrum.get(i)));
+		}
+
+
+		if(value_strings.size() > 0)
+		{
+
+			// carry out the multi insert statement
+			query = query + SQL.conc_cols(value_strings);
+			query = query +
+					"ON DUPLICATE KEY UPDATE " +
+					"int_val = VALUES(int_val), " +
+					"double_val = VALUES(double_val), " +
+					"string_val = VALUES(string_val), " +
+					"binary_val = VALUES(binary_val), " +
+					"datetime_val = VALUES(datetime_val), " +
+					"taxonomy_id = VALUES(taxonomy_id), " +
+					"spatial_val = VALUES(spatial_val), " +
+					"unit_id = VALUES(unit_id)";
+
+			PreparedStatement ps = SQL.prepareStatement(query);
+
+			//now update
+			ps.execute();
+
+			ps.close();
+
+		}
+
+//		insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrumIds, eav_ids);
+	}
 }
 
 
