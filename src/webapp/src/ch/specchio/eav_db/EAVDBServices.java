@@ -419,7 +419,7 @@ public class EAVDBServices extends Thread {
 	}
 
 	
-	private String get_metaparameter_value_string(int campaign_id, MetaParameter e) throws SQLException
+	public String get_metaparameter_value_string(int campaign_id, MetaParameter e) throws SQLException
 	{	
 		try {
 			get_metaparameter_attribute_and_unit_ids(e);
@@ -1356,49 +1356,48 @@ public class EAVDBServices extends Thread {
 //			e.printStackTrace();
 //		}		
 	}
+
+
 	
 	
-	public synchronized ArrayList<Integer> get_eav_ids_per_primary_incl_null(int metadata_level, String primary_ids, boolean distinct, String attribute_ids)
+	public synchronized ArrayList<int[]> get_eav_ids_per_primary_incl_null(int metadata_level, String primary_ids, boolean distinct, int attribute_id)
 	{
-		
-		ArrayList<Integer> list = new ArrayList<Integer>();
 
-		String distinct_str = " ";
-		
-		if (distinct) distinct_str = " distinct ";
 
-		String query = "SELECT sp1.spectrum_id, join1.e_eav_id FROM spectrum AS sp1 " +
-		"LEFT JOIN( " +
-			"SELECT sxe.spectrum_id AS 'sxe_spectrum_id', e.eav_id AS 'e_eav_id' FROM spectrum_x_eav AS sxe " +
-			"INNER JOIN specchio.eav AS e " +
+		ArrayList<int[]> updateSpectra = new ArrayList<>();
+
+		String query = "SELECT sp1.spectrum_id, join1.eav_id, " + attribute_id + " AS 'attribute' FROM spectrum as sp1 " +
+			"LEFT OUTER JOIN( " +
+			"SELECT sxe.spectrum_id as 'sxe_spectrum_id', e.eav_id, e.attribute_id FROM spectrum_x_eav as sxe " +
+			"INNER JOIN eav as e " +
 			"ON sxe.eav_id = e.eav_id " +
-			" WHERE e.attribute_id IN(" + attribute_ids + ") " +
-		") AS join1 " +
-		"ON join1.sxe_spectrum_id = sp1.spectrum_id " +
-		"WHERE sp1.spectrum_id IN (" + primary_ids +") ";
+			"WHERE e.attribute_id =" + attribute_id +
+			") AS join1 " +
+			"ON join1.sxe_spectrum_id = sp1.spectrum_id " +
+			"WHERE sp1.spectrum_id IN (" + primary_ids + ") ";
 
-//		String query = "select" + distinct_str +"eav.eav_id from eav eav, " + get_primary_x_eav_tablename(metadata_level) + " " + get_primary_x_eav_tablename(metadata_level) +
-//				" where " + (attribute_ids.equals("null") ? "":("attribute_id in (" + attribute_ids + ") and ")) + get_primary_x_eav_tablename(metadata_level) + ".eav_id = eav.eav_id and " +
-//				get_primary_x_eav_tablename(metadata_level) + "." + get_primary_id_name(metadata_level) + " in (" + primary_ids + ")"
-//				+ ((!distinct)? " order by FIELD (" + SQL.prefix(get_primary_x_eav_tablename(metadata_level), get_primary_id_name(metadata_level)) + ", "+ primary_ids +")" : "");
 
 		ResultSet rs;
 		try {
 			Statement stmt = SQL.createStatement();
 			rs = stmt.executeQuery(query);
-			
+			int[] tmp = new int[3];
 			while (rs.next()) {
-				list.add(rs.getInt(1));			
-			}			
+				tmp[0] = rs.getInt(1);
+				tmp[1] = rs.getInt(2);
+				tmp[2] = rs.getInt(3);
+				updateSpectra.add(tmp);
+			}
 			rs.close();
 			stmt.close();
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return list;
+
+
+		return updateSpectra;
 		
 		
 	}
