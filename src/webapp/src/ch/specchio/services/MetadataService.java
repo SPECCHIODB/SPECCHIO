@@ -818,7 +818,7 @@ public class MetadataService extends SPECCHIOService {
 	@Path("update_or_insert_many")
 	@Consumes(MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_XML)
-	public SpectralFileInsertResult update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
+	public int update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
 		// SETUP THE FACTORIES
 		MetadataFactory factory = new MetadataFactory(getClientUsername(),
 				getClientPassword(),
@@ -826,113 +826,55 @@ public class MetadataService extends SPECCHIOService {
 				isAdmin()
 		);
 
-		SpectralFileFactory  specFactory = new SpectralFileFactory(
-				getClientUsername(),
-				getClientPassword(),
-				getSecurityContext().isUserInRole(UserRoles.ADMIN),
-				getDataSourceName(),
-				update_d.getCampaignId()
-		);
+		// Build hashmap key = spectrum_id value = metaparameter <- this will be used to disentangle updatable from insertable metaparameters
+		HashMap<Integer, MetaParameter> metadataPerUpdateSpectrum = new HashMap<>();
+		HashMap<Integer, MetaParameter> metadataPerInsertSpectrum = new HashMap<>();
 
-		
-		boolean suboptimal = false;
-		
-		if(suboptimal) {
-			// STEP 1 - SPECTRAL FILE
-			SpectralFile spec_file = new SpectralFile();
-			spec_file.setNumberOfSpectra(update_d.getIds().size());
-			spec_file.setEavMetadata(update_d.getMetadata());
-			// STEP 1 - REDUCE REDUNDANCY
-			specFactory.reduce_metadata_redundancy_of_file(spec_file);
-			Metadata md = new Metadata();
-			md.setEntries(spec_file.getUniqueMetaParameters());
+		// Get campaign id
+		int campaignId = update_d.getCampaignId();
 
-			// STEP 2 - CREATE THE A STATEMENT
-			Statement stmt = null;
-			stmt = specFactory.getStatementBuilder().createStatement();
-			stmt.execute("START TRANSACTION");
-			// STEP 2 - GET THE EAV IDS
-			ArrayList<Integer> eav_ids = factory.getEavServices().insert_metadata_into_db(update_d.getCampaignId(), md, this.isAdmin(), stmt);
+		// Find unique attribute ids
+		ArrayList<Integer> attribute_id_unique_list = new ArrayList<Integer>();
+		ListIterator<Metadata> it = update_d.getMetadata().listIterator();
 
-			// STEP 3 - INSERT LINKS
-			factory.getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, update_d.getIds(),
-					spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
-			factory.dispose();
-			specFactory.dispose();
+		while (it.hasNext()) {
+			Metadata md = it.next();
 
-			stmt.execute("COMMIT");
-		}
-		else
-		{
+			ListIterator<MetaParameter> md_it = md.getEntries().listIterator();
 
-			// Build hashmap key = spectrum_id value = metaparameter <- this will be used to disentangle updatable from insertable metaparameters
-			HashMap<Integer, MetaParameter> metadataPerUpdateSpectrum = new HashMap<>();
-			HashMap<Integer, MetaParameter> metadataPerInsertSpectrum = new HashMap<>();
+			while (md_it.hasNext()) {
+				MetaParameter mp = md_it.next();
 
-			// Get campaign id
-			int campaignId = update_d.getCampaignId();
-
-			// Find unique attribute ids
-			ArrayList<Integer> attribute_id_unique_list = new ArrayList<Integer>();
-			ListIterator<Metadata> it = update_d.getMetadata().listIterator();
-
-			while(it.hasNext())
-			{
-				Metadata md = it.next();
-				
-				ListIterator<MetaParameter> md_it = md.getEntries().listIterator();
-				
-				while(md_it.hasNext())
-				{
-					MetaParameter mp = md_it.next();
-					
-					if(!attribute_id_unique_list.contains(mp.getAttributeId()))
-					{
-						attribute_id_unique_list.add(mp.getAttributeId());
-					}
+				if (!attribute_id_unique_list.contains(mp.getAttributeId())) {
+					attribute_id_unique_list.add(mp.getAttributeId());
 				}
 			}
-
-			// Use unique attribute list to find spectra with eav and spectra without for a certain attribute
-			ArrayList<int[]> collectedResults;
-			ArrayList<Integer> eav_ids = new ArrayList<>();
-			for (Integer attr_id : attribute_id_unique_list){
-				// Find spectra for which a certain attribute already exists
-				// returns array with arr[0] = spectrum_id and arr[1] = eav_id or 0;
-				collectedResults = factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, attr_id);
-				metadataPerUpdateSpectrum.clear();
-				metadataPerInsertSpectrum.clear();
-				eav_ids.clear();
-				for(int[] list : collectedResults){
-					// use the spectrum identifier (specId) to get disentangle updatable from non-updatable spectra
-					int specId = list[0];
-					int eavId = list[1];
-					int specIdIndex = update_d.getIds().indexOf(specId);
-					if(eavId != 0){
-						MetaParameter mp = update_d.getMetadata().get(specIdIndex).get_first_entry(attr_id);
-						mp.setEavId(eavId);
-						metadataPerUpdateSpectrum.put(specId, mp);
-						eav_ids.add(eavId);
-					}else{
-						metadataPerInsertSpectrum.put(specId, update_d.getMetadata().get(specIdIndex).get_first_entry(attr_id));
-					}
-				}
-
-				if(metadataPerInsertSpectrum.size() > 0){
-					factory.getEavServices().insertMetadataUsingHashMap(metadataPerInsertSpectrum, campaignId);
-				} else if (metadataPerUpdateSpectrum.size() > 0){
-					factory.getEavServices().updateMetadataUsingHashMap(metadataPerUpdateSpectrum, campaignId);
-				}
-			}
-
 		}
-		
 
+		// Use unique attribute list to find spectra with eav and spectra without for a certain attribute
+		ArrayList<int[]> collectedResults;
+		ArrayList<Integer> eav_ids = new ArrayList<>();
+		HashMap<Integer, MetaParameter> metadat = new HashMap<>();
+		for (Integer attr_id : attribute_id_unique_list) {
+			// Find spectra for which a certain attribute already exists
+			// returns array with arr[0] = spectrum_id and arr[1] = eav_id or 0 where DB returned "NULL";
+			collectedResults = factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, attr_id);
+			metadataPerUpdateSpectrum.clear();
+			metadataPerInsertSpectrum.clear();
+			eav_ids.clear();
+			for (int[] list : collectedResults) {
+				// use the spectrum identifier (specId) to disentangle updatable from non-updatable spectra
+				int specId = list[0];
+				int eavId = list[1];
+				int specIdIndex = update_d.getIds().indexOf(specId);
+				MetaParameter mp = update_d.getMetadata().get(specIdIndex).get_first_entry(attr_id);
+				mp.setEavId(eavId);
+				metadat.put(specId, mp);
+			}
+			factory.getEavServices().insertOrUpdateMetadataUsingHashMap(metadat, campaignId, attr_id);
+		}
 
-
-		
-		return new SpectralFileInsertResult(); // currently returning a dummy object here ...
-
+		return 1;
 	}
 
 }
