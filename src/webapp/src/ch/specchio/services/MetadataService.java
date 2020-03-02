@@ -818,7 +818,7 @@ public class MetadataService extends SPECCHIOService {
 	@Path("update_or_insert_many")
 	@Consumes(MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_XML)
-	public int update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
+	public XmlInteger update_or_insert_many(MetadataUpdateDescriptor update_d) throws SPECCHIOFactoryException, IOException, SQLException {
 		// SETUP THE FACTORIES
 		MetadataFactory factory = new MetadataFactory(getClientUsername(),
 				getClientPassword(),
@@ -873,8 +873,7 @@ public class MetadataService extends SPECCHIOService {
 			}
 			factory.getEavServices().insertOrUpdateMetadataUsingHashMap(metadat, campaignId, attr_id);
 		}
-
-		return 1;
+		return new XmlInteger(1);
 	}
 
 }

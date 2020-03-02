@@ -2221,8 +2221,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 *
 	 * @return the identifier of the inserted or updated metadata
 	 */
-	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException{
-		realClient.updateOrInsertEavMetadata(md, ids, campaignId);
+	public int updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException{
+		return realClient.updateOrInsertEavMetadata(md, ids, campaignId);
 	}
 
 

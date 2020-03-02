@@ -2742,10 +2742,10 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 *
 	 * @return the identifier of the inserted or updated metadata
 	 */
-	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException {
+	public int updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException {
 		MetadataUpdateDescriptor mud = new MetadataUpdateDescriptor(md, ids, campaignId);
-		postForObject(SpectralFileInsertResult.class,"metadata", "update_or_insert_many", mud);
-//		postForInteger("metadata", "update_or_insert_many", mud);
+		int result = postForInteger("metadata", "update_or_insert_many", mud);
+		return result;
 	}
 
 	/**

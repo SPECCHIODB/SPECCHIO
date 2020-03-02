@@ -2549,13 +2549,20 @@ public class EAVDBServices extends Thread {
 			PreparedStatement ps = SQL.prepareStatement(query);
 			ps.executeUpdate();
 
-			query = "SELECT eav_id, spectrum_id FROM eav " +
-					"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
-					"AND attribute_id = " + attributeId +
-					" AND eav_id NOT IN (" + SQL.conc_ids(eav_ids) + ") ";
+			if(eav_ids.size() > 0 ){
+				query = "SELECT eav_id, spectrum_id FROM eav " +
+						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+						"AND attribute_id = " + attributeId +
+						" AND eav_id NOT IN (" +  SQL.conc_ids(eav_ids) + ")";
+			} else{
+				query = "SELECT eav_id, spectrum_id FROM eav " +
+						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+						" AND attribute_id = " + attributeId;
+			}
+
 
 			ps = SQL.prepareStatement(query);
-			ps.executeQuery();
+//			ps.executeQuery();
 			ResultSet rs = ps.executeQuery();
 
 //			int eav_id;
@@ -2570,7 +2577,9 @@ public class EAVDBServices extends Thread {
 
 		}
 
-		insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrumIds, eav_ids);
+		if(eav_ids.size() > 0) {
+			insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrumIds, eav_ids);
+		}
 	}
 }
 
