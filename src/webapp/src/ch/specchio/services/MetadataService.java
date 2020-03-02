@@ -826,9 +826,6 @@ public class MetadataService extends SPECCHIOService {
 				isAdmin()
 		);
 
-		// Build hashmap key = spectrum_id value = metaparameter <- this will be used to disentangle updatable from insertable metaparameters
-		HashMap<Integer, MetaParameter> metadataPerUpdateSpectrum = new HashMap<>();
-		HashMap<Integer, MetaParameter> metadataPerInsertSpectrum = new HashMap<>();
 
 		// Get campaign id
 		int campaignId = update_d.getCampaignId();
@@ -859,8 +856,7 @@ public class MetadataService extends SPECCHIOService {
 			// Find spectra for which a certain attribute already exists
 			// returns array with arr[0] = spectrum_id and arr[1] = eav_id or 0 where DB returned "NULL";
 			collectedResults = factory.getEavServices().get_eav_ids_per_primary_incl_null(MetaParameter.SPECTRUM_LEVEL, factory.getEavServices().SQL.conc_ids(update_d.getIds()), false, attr_id);
-			metadataPerUpdateSpectrum.clear();
-			metadataPerInsertSpectrum.clear();
+
 			eav_ids.clear();
 			for (int[] list : collectedResults) {
 				// use the spectrum identifier (specId) to disentangle updatable from non-updatable spectra
