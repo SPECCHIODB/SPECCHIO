@@ -174,13 +174,8 @@ public class EAVDBServices extends Thread {
 			
 				// carry out the multi insert statement
 				query = query + SQL.conc_cols(value_strings);
-				
-				PreparedStatement ps = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-
-				//now update
-				ps.executeUpdate();		
-
-				ResultSet rs = ps.getGeneratedKeys();
+				stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+				ResultSet rs = stmt.getGeneratedKeys();
 								
 			    int _eav_id = -1;
 			    int cnt = 0;
@@ -192,7 +187,6 @@ public class EAVDBServices extends Thread {
 				
 			    
 			    rs.close();
-			    ps.close();
 			
 			}
 			
