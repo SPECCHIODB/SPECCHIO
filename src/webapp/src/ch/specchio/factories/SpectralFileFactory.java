@@ -8,28 +8,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.ListIterator;
+import java.util.*;
 
+import ch.specchio.services.MetadataService;
+import ch.specchio.types.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import ch.specchio.spaces.MeasurementUnit;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.MetaDate;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetaParameterFormatException;
-import ch.specchio.types.MetaSpatialGeometry;
-import ch.specchio.types.Metadata;
-import ch.specchio.types.Point2D;
-import ch.specchio.types.SpecchioMessage;
-import ch.specchio.types.SpectralFile;
-import ch.specchio.types.SpectralFileInsertResult;
-import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.eav_db.SpectralFileInsertStruct;
 import ch.specchio.eav_db.id_and_op_struct;
@@ -1060,83 +1046,63 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 
 			 SpectralFileInsertResult insert_result = new SpectralFileInsertResult();
 
-			 ArrayList<SpectralFileInsertStruct> spec_file_insert_structs = new ArrayList<SpectralFileInsertStruct>();
 
-			 
-			 Instant start = Instant.now();
+
+			 StringBuffer valueStatement = new StringBuffer();
 
 			 for (int i = 0; i < spec_file.getNumberOfSpectra(); i++) {
-
 				 SpectralFileInsertStruct spec_file_insert_struct = getSpectrumInsertStruct(spec_file, i, exists_info);
-				 spec_file_insert_structs.add(spec_file_insert_struct);
-				 
+
 				 if(spec_file_insert_struct.getErrors().size()>0) insert_result.addErrors(spec_file_insert_struct.getErrors());
 				 if(spec_file_insert_struct.getAdded_new_instrument().size()>0) insert_result.addAdded_new_instruments(spec_file_insert_struct.getAdded_new_instrument());
 
+
+				 getValueString(valueStatement, spec_file_insert_struct);
+
+				 if(i < spec_file.getNumberOfSpectra()-1){
+				 	valueStatement.append(",");
+				 }
+
+
 			 }
-			 
-			 Instant end = Instant.now();
-			 
-			 SpecchioMessage info = new SpecchioMessage("getSpectrumInsertStructs: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO);
-			insert_result.addError(info );
-			
-			start = Instant.now();
-
+			 String valueString = valueStatement.toString();
 			 reduce_metadata_redundancy_of_file(spec_file);
-
-			 end = Instant.now();
-			 info = new SpecchioMessage("reduce_metadata_redundancy_of_file: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO);
-			 insert_result.addError(info );
 
 			 // insert process follows hereafter
 			 //------------
 			 // step 1: insert spectrum rows as single statement
 			 //------------
-			 
-			 start = Instant.now();
-			 
-			 ArrayList<Integer> spectrum_ids = insert_spectrum_rows(spec_file_insert_structs, stmt);
 
+			 
+			 ArrayList<Integer> spectrum_ids = insert_spectrum_rows(valueString, stmt);
 			 insert_result.setSpectrumIds(spectrum_ids);
 
 			 //------------
-			 // step 2: insert unique metaparameters
+			 // step 2 AND step 3: insert metaparameters AND insert links between spectra and eav entries
 			 //------------
 
 			 Metadata md = new Metadata();
 			 md.setEntries(spec_file.getUniqueMetaParameters());
 			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), md, this.Is_admin(), stmt);
-			 
-			 
+
+
 			 //------------
 			 // step 3: insert links between spectra and eav entries
 			 //------------
-			 
+
 			 getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrum_ids, spec_file.getRedundancy_reduced_metaparameter_index_per_spectrum(), eav_ids, stmt);
 
-			 
+
 			 //------------
 			 // step 4: insert hierarchy links
 			 //------------
-			 
-			 
+
 			 insertHierarchySpectrumReferences(exists_info.hierarchy_id, spectrum_ids, 0, stmt);		
-			 
-			 
-			 
-			 
-			 
-			 end = Instant.now();
-			 info = new SpecchioMessage("all SQL inserts: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO);
-			 insert_result.addError(info );
-			 insert_result.addError(new SpecchioMessage("SQL stats: #spectra = " + spec_file.getNumberOfSpectra() + ", " + "# of MP = " +  md.getEntries().size()
-			  , SpecchioMessage.INFO));
-			 
-			 
+
 
 			 return insert_result;
 
-		 } catch (SQLException ex) {
+		 } catch (SQLException | IOException ex) {
 			 // TODO Auto-generated catch block
 			 ex.printStackTrace();
 			 try {
@@ -1146,66 +1112,52 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				e.printStackTrace();
 			}
 			 throw new SPECCHIOFactoryException(ex);
-		 } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new SPECCHIOFactoryException(e);
-		}
+		 }
 		
 	 }
-	
-	
-	private ArrayList<Integer> insert_spectrum_rows(ArrayList<SpectralFileInsertStruct> spec_file_insert_structs,
-			Statement stmt) throws SQLException {
-		 ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 
-		 StringBuffer query = new StringBuffer("INSERT INTO spectrum_view "
-				 + "("
-				 + " hierarchy_level_id, sensor_id, campaign_id, "
-				 + "file_format_id, instrument_id, calibration_id, "
-				 + "measurement_unit_id, measurement) "
-				 + "VALUES ");
+	private StringBuffer getValueString(StringBuffer valueStatement, SpectralFileInsertStruct sfis) {
+		// HERE CRATE THE "VALUES"
+		valueStatement.append("(" + sfis.hierarchy_id_and_op.id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.sensor_id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.campaign_id_and_op.id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.file_format_id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.instrument_id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.calibration_id);
+		valueStatement.append(",");
+		valueStatement.append(sfis.measurement_unit_id);
+		valueStatement.append(",");
+		valueStatement.append("x'" + sfis.measurement_as_hex + "')");
+		return valueStatement;
+	}
 
+	private ArrayList<Integer> insert_spectrum_rows(String valueString, Statement stmt) throws SQLException {
+		ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 
-		 ListIterator<SpectralFileInsertStruct> li = spec_file_insert_structs.listIterator();
+		String query = "INSERT INTO spectrum_view "
+				+ "("
+				+ " hierarchy_level_id, sensor_id, campaign_id, "
+				+ "file_format_id, instrument_id, calibration_id, "
+				+ "measurement_unit_id, measurement) "
+				+ "VALUES ";
 
-		 while(li.hasNext())
-		 {
-			 SpectralFileInsertStruct sfis = li.next();
+		query += valueString;
 
-			 query.append("(" + sfis.hierarchy_id_and_op.id);
-			 query.append(",");
-			 query.append(sfis.sensor_id);
-			 query.append(",");
-			 query.append(sfis.campaign_id_and_op.id);
-			 query.append(",");
-			 query.append(sfis.file_format_id);
-			 query.append(",");
-			 query.append(sfis.instrument_id);
-			 query.append(",");
-			 query.append(sfis.calibration_id);
-			 query.append(",");			
-			 query.append(sfis.measurement_unit_id);
-			 query.append(",");			
-			 query.append("x'" + sfis.measurement_as_hex + "')");
-			 
-			 if(li.hasNext()) query.append(",");
+		stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
 
-		 }
+		ResultSet rs = stmt.getGeneratedKeys();
 
-//			PreparedStatement ps = getStatementBuilder().prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-			//now update
-		 
-		 	stmt.executeUpdate(query.toString(), Statement.RETURN_GENERATED_KEYS);		
+		while (rs.next()) {
+			spectrum_ids.add(rs.getInt(1));
+		}
 
-			ResultSet rs = stmt.getGeneratedKeys();
-							
-		    while (rs.next()) {
-		    	spectrum_ids.add(rs.getInt(1));
-		    }		
-		 
-		 rs.close();
-		 
+		rs.close();
+
 		return spectrum_ids;
 	}
 
@@ -1333,8 +1285,14 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				ArrayList<SpectralFileInsertStruct> spec_file_insert_structs = new ArrayList<SpectralFileInsertStruct>();
 				spec_file_insert_structs.add(insert_struct);
 
-				
-				ArrayList<Integer> spectrum_ids = insert_spectrum_rows(spec_file_insert_structs, stmt);
+
+				ListIterator<SpectralFileInsertStruct> li = spec_file_insert_structs.listIterator();
+				StringBuffer valueStatement = new StringBuffer();
+				while(li.hasNext()){
+					getValueString(valueStatement, li.next());
+				}
+				String valueString = valueStatement.toString();
+				ArrayList<Integer> spectrum_ids = insert_spectrum_rows(valueString, stmt);
 				
 				id = spectrum_ids.get(0);	
 		
