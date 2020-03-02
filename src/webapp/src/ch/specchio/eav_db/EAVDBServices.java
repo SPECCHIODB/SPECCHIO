@@ -11,10 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -41,7 +38,7 @@ public class EAVDBServices extends Thread {
 	public ArrayList<String> aliases = new ArrayList<String>();
 	
 	//ArrayList<MetaParameter> known_metaparameters = new ArrayList<MetaParameter>();
-	private static Hashtable<String, ArrayList<MetaParameter>> known_metaparameters_hash = new Hashtable<String, ArrayList<MetaParameter>>();
+	private static Hashtable<Integer, ArrayList<MetaParameter>> known_metaparameters_hash = new Hashtable<Integer, ArrayList<MetaParameter>>();
 	
 //	private String primary_x_eav_tablename = "frame_x_eav";
 //	private String primary_x_eav_viewname = "frame_x_eav_view";
@@ -177,13 +174,8 @@ public class EAVDBServices extends Thread {
 			
 				// carry out the multi insert statement
 				query = query + SQL.conc_cols(value_strings);
-				
-				PreparedStatement ps = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-
-				//now update
-				ps.executeUpdate();		
-
-				ResultSet rs = ps.getGeneratedKeys();
+				stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+				ResultSet rs = stmt.getGeneratedKeys();
 								
 			    int _eav_id = -1;
 			    int cnt = 0;
@@ -195,7 +187,6 @@ public class EAVDBServices extends Thread {
 				
 			    
 			    rs.close();
-			    ps.close();
 			
 			}
 			
@@ -419,7 +410,7 @@ public class EAVDBServices extends Thread {
 	}
 
 	
-	private String get_metaparameter_value_string(int campaign_id, MetaParameter e) throws SQLException
+	public String get_metaparameter_value_string(int campaign_id, MetaParameter e) throws SQLException
 	{	
 		try {
 			get_metaparameter_attribute_and_unit_ids(e);
@@ -502,6 +493,87 @@ public class EAVDBServices extends Thread {
 //		}
 		
 	}
+
+
+	public String get_metaparameter_value_string_with_eav(int campaign_id, int spectrumId, int eav_id, MetaParameter e) throws SQLException
+	{
+		try {
+			get_metaparameter_attribute_and_unit_ids(e);
+		} catch (SQLException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+
+		String fieldname = e.getDefaultStorageField();
+		String value;
+
+		if(fieldname.equals("spatial_val"))
+		{
+			value = (String) e.getEAVValue();
+		}
+		else if(fieldname.equals("binary_val"))
+		{
+
+			String hex_str = "";
+
+			ByteArrayOutputStream baos_ = new ByteArrayOutputStream();
+			ObjectOutputStream out_;
+			try {
+				out_ = new ObjectOutputStream(baos_);
+				out_.writeObject((Serializable) e.getValue());
+				out_.flush();
+				out_.close();
+
+				hex_str = DatatypeConverter.printHexBinary(baos_.toByteArray());
+
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+
+			value = "x'" + hex_str + "'";
+
+		}
+		else
+		{
+			value = SQL.quote_value(e.getValue());
+		}
+
+		StringBuffer query = new StringBuffer("(");
+		query.append((eav_id > 0) ? Integer.valueOf(eav_id) : "null");
+		query.append(",");
+		query.append(campaign_id);
+		query.append(",");
+		query.append(Integer.valueOf(spectrumId));
+		query.append(",");
+		query.append(e.getAttributeId());
+		query.append(",");
+		query.append("int_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("double_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("string_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("binary_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("datetime_val".equals(fieldname) ? value : "null");
+		query.append(",");
+		query.append("taxonomy_id".equals(fieldname) ? value : "null");
+		query.append(",");
+		if(this.isSpatially_enabled())
+		{
+			query.append("spatial_val".equals(fieldname) ? value : "null");
+			query.append(",");
+		}
+		query.append(e.getUnitId().toString() + ")");
+
+		return query.toString();
+
+//		}
+
+	}
 	
 	public String get_primary_id_name(int metadata_level) {		
 		return this.eav_table_infos[metadata_level].primary_id_name;		
@@ -539,12 +611,12 @@ public class EAVDBServices extends Thread {
 	
 	synchronized public void clear_redundancy_list()
 	{
-		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
+//		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
 		
-		if(known_metaparameters != null)
-		{
-			known_metaparameters.clear();
-		}
+//		if(known_metaparameters_hash != null)
+//		{
+			known_metaparameters_hash.clear();
+//		}
 	}
 	
 	synchronized public int count_metaparameters(int metadata_level, ArrayList<Integer> primary_ids)
@@ -575,12 +647,13 @@ public class EAVDBServices extends Thread {
 		MetaParameter curr_mp = null;
 		boolean matches = false;
 		
-		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(this.databaseUserName);
+		ArrayList<MetaParameter> known_metaparameters = known_metaparameters_hash.get(mp.getAttributeId());
 		
 		if(known_metaparameters == null)
 		{
 			known_metaparameters = new ArrayList<MetaParameter>();
-			known_metaparameters_hash.put(databaseUserName, known_metaparameters);
+			known_metaparameters.add(mp);
+			known_metaparameters_hash.put(mp.getAttributeId(), known_metaparameters);
 		}
 		
 		// check if it is already contained in the list
@@ -591,8 +664,8 @@ public class EAVDBServices extends Thread {
 			curr_mp = li.next();
 			
 			// attribute must be matching
-			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
-			{
+//			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
+//			{
 		
 				boolean equalValues = (mp.getValue() == null && curr_mp.getValue() == null) || (mp.getValue() != null && mp.hasEqualValue(curr_mp)); // mp.getValue().equals(curr_mp.getValue())
 				if(mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
@@ -603,7 +676,7 @@ public class EAVDBServices extends Thread {
 				{
 					matches = mp.getUnitId().equals(curr_mp.getUnitId()) && equalValues;
 				}
-			}
+//			}
 
 		}
 		
@@ -923,24 +996,45 @@ public class EAVDBServices extends Thread {
 	
 	// this function expects that the eav_ids apply to each frame_id entry
 	synchronized public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> primary_ids, Integer[] eav_ids) throws SQLException
-	{			
+	{
 
 		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
 		ArrayList<String> value_strings = new ArrayList<String>();
-		
+
 		// build multi insert string
 		for (int primary_id : primary_ids) {
 			for (int eav_id : eav_ids) {
 				value_strings.add("(" + String.valueOf(primary_id) + ", " + String.valueOf(eav_id) +")");
-			}	
+			}
 		}
-		
+
 		// carry out the multi insert statement
 		query = query + SQL.conc_cols(value_strings);
 		Statement stmt = SQL.createStatement();
 		stmt.executeUpdate(query);
 		stmt.close();
-		
+
+	}
+
+	// this function expects that the eav_ids apply to each frame_id entry
+	synchronized public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> primary_ids, ArrayList<Integer> eav_ids) throws SQLException
+	{
+
+		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
+		ArrayList<String> value_strings = new ArrayList<String>();
+
+		// build multi insert string update_d.getMetadata().listIterator()
+
+		for(int i = 0; i < primary_ids.size(); i++){
+			value_strings.add("(" + String.valueOf(primary_ids.get(i)) + ", " + String.valueOf(eav_ids.get(i)) +")");
+		}
+
+		// carry out the multi insert statement
+		query = query + SQL.conc_cols(value_strings);
+		Statement stmt = SQL.createStatement();
+		stmt.executeUpdate(query);
+		stmt.close();
+
 	}
 	
 	// inserts links between spectra and eavs by using the redundancy index
@@ -1355,6 +1449,51 @@ public class EAVDBServices extends Thread {
 //			e.printStackTrace();
 //		}		
 	}
+
+
+	
+	
+	public synchronized ArrayList<int[]> get_eav_ids_per_primary_incl_null(int metadata_level, String primary_ids, boolean distinct, int attribute_id)
+	{
+
+
+		ArrayList<int[]> updateSpectra = new ArrayList<>();
+
+		String query = "SELECT sp1.spectrum_id, join1.eav_id, " + attribute_id + " AS 'attribute' FROM spectrum as sp1 " +
+			"LEFT OUTER JOIN( " +
+			"SELECT sxe.spectrum_id as 'sxe_spectrum_id', e.eav_id, e.attribute_id FROM spectrum_x_eav as sxe " +
+			"INNER JOIN eav as e " +
+			"ON sxe.eav_id = e.eav_id " +
+			"WHERE e.attribute_id =" + attribute_id +
+			") AS join1 " +
+			"ON join1.sxe_spectrum_id = sp1.spectrum_id " +
+			"WHERE sp1.spectrum_id IN (" + primary_ids + ") ";
+
+
+		ResultSet rs;
+		try {
+			Statement stmt = SQL.createStatement();
+			rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				int[] tmp = new int[3];
+				tmp[0] = rs.getInt(1);
+				tmp[1] = rs.getInt(2);
+				tmp[2] = rs.getInt(3);
+				updateSpectra.add(tmp);
+			}
+			rs.close();
+			stmt.close();
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		return updateSpectra;
+		
+		
+	}
 	
 	synchronized public SingularFrameEAVStructure get_eav_ids_(int metadata_level, ArrayList<Integer> primary_ids, ArrayList<Integer> attribute_ids)
 	{		
@@ -1717,7 +1856,7 @@ public class EAVDBServices extends Thread {
 	/**
 	 * Load a MetaParameter object from the database.
 	 * 
-	 * @param mp	the MetaParameter object to be loaded
+	 * @param eav_id	the MetaParameter object to be loaded
 	 * 
 	 * @throws SQLException	SQL error
 	 */
@@ -2366,11 +2505,76 @@ public class EAVDBServices extends Thread {
 	}
 
 
+	public void insertOrUpdateMetadataUsingHashMap(HashMap<Integer, MetaParameter> metadat, int campaignId, int attributeId) throws SQLException {
+		String query = "INSERT INTO eav_view (eav_id, campaign_id, spectrum_id, attribute_id, int_val, double_val, string_val, " +
+				"binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) VALUES ";
 
 
+		ArrayList<String> value_strings = new ArrayList<String>();
+		ArrayList<Integer> spectrumIds = new ArrayList<Integer>();
+		ArrayList<Integer> eav_ids = new ArrayList<Integer>();
+		int eav_id;
+		for(Integer i : metadat.keySet()){
+			spectrumIds.add(i);
+			eav_id = metadat.get(i).getEavId();
+			if(eav_id > 0){
+				eav_ids.add(eav_id);
+			}
+			value_strings.add(get_metaparameter_value_string_with_eav(campaignId, i, eav_id, metadat.get(i)));
+		}
 
-	
 
+		if(value_strings.size() > 0)
+		{
+
+			// carry out the multi insert statement
+			query = query + SQL.conc_cols(value_strings);
+			query = query +
+					"ON DUPLICATE KEY UPDATE " +
+					"int_val = VALUES(int_val), " +
+					"double_val = VALUES(double_val), " +
+					"string_val = VALUES(string_val), " +
+					"binary_val = VALUES(binary_val), " +
+					"datetime_val = VALUES(datetime_val), " +
+					"taxonomy_id = VALUES(taxonomy_id), " +
+					"spatial_val = VALUES(spatial_val), " +
+					"unit_id = VALUES(unit_id)";
+
+			PreparedStatement ps = SQL.prepareStatement(query);
+			ps.executeUpdate();
+
+			if(eav_ids.size() > 0 ){
+				query = "SELECT eav_id, spectrum_id FROM eav " +
+						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+						"AND attribute_id = " + attributeId +
+						" AND eav_id NOT IN (" +  SQL.conc_ids(eav_ids) + ")";
+			} else{
+				query = "SELECT eav_id, spectrum_id FROM eav " +
+						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+						" AND attribute_id = " + attributeId;
+			}
+
+
+			ps = SQL.prepareStatement(query);
+//			ps.executeQuery();
+			ResultSet rs = ps.executeQuery();
+
+//			int eav_id;
+			eav_ids.clear();
+			spectrumIds.clear();
+			while (rs.next()) {
+				eav_ids.add(rs.getInt(1));
+				spectrumIds.add(rs.getInt(2));
+			}
+
+			ps.close();
+
+		}
+
+		if(eav_ids.size() > 0) {
+			insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, spectrumIds, eav_ids);
+		}
+	}
 }
 
 

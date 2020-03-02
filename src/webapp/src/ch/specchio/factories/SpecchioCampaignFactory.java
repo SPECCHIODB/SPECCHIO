@@ -1543,12 +1543,13 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 */
 	public void updateCampaign(Campaign campaign) throws SPECCHIOFactoryException {
 		
+		String query = "";
 		try {
 			// create SQL-building objects
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			Statement stmt = SQL.createStatement();
 			PreparedStatement pstmt;
-			String query;
+			
 			
 			// set up attributes and values to set
 			ArrayList<String> attr_and_vals = new ArrayList<String>(6);
@@ -1601,7 +1602,9 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 		}
 		catch (SQLException ex) {
 			// database error
-			throw new SPECCHIOFactoryException(ex);
+			SPECCHIOFactoryException ex2 = new SPECCHIOFactoryException(ex);
+			ex2.setMessage(ex2.getMessage() + ": \n" + query);
+			throw new SPECCHIOFactoryException(ex2);
 		}
 		
 	}

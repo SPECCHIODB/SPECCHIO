@@ -12,6 +12,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.joda.time.DateTime;
+
 import au.ands.org.researchdata.RDACollectionDescriptor;
 import ch.specchio.eav_db.EAVDBServices;
 import ch.specchio.factories.MetadataFactory;
@@ -105,7 +107,7 @@ public class ANDSCollectionExport {
 		throws SPECCHIOFactoryException {
 
 		// create factories, using the same database connection for each
-		userFactory = new UserFactory(dbUser, dbPassword, _andsXMLFileLocation, is_admin);
+		userFactory = new UserFactory(dbUser, dbPassword, ds_name, is_admin);
 		metadataFactory = new MetadataFactory(userFactory);
 		
 		// initialise EAV services
@@ -214,7 +216,8 @@ public class ANDSCollectionExport {
 		// copy the data values into a sorted list
 		List<java.util.Date> fromToDates = new ArrayList<java.util.Date>();
 		for (MetaParameter mp : acquisitionTimes) {
-			fromToDates.add((java.util.Date)mp.getValue());
+			DateTime date = (DateTime) mp.getValue();
+			fromToDates.add(date.toDate());
 		}
 		java.util.Collections.sort(fromToDates);
 

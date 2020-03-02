@@ -1474,7 +1474,7 @@ public interface SPECCHIOClient {
 	 *
 	 * @return the identifier of the inserted or updated metadata
 	 */
-	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException;
+	public int updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException;
 
 
 	/**

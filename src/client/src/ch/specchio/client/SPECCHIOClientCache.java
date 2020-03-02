@@ -28,7 +28,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	private attribute[] attributes;
 	
 	/** cache of attributes by category */
-	private Hashtable<String, attribute[]> attributesByCategory;
+	private Hashtable<String, ArrayList<attribute>> attributesByCategory;
 	
 	/** index of attributes by id */
 	private Hashtable<Integer, attribute> attributesById;
@@ -65,7 +65,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 		// initialise caches
 		attributes = null;
-		attributesByCategory = new Hashtable<String, attribute[]>();
+		attributesByCategory = new Hashtable<String, ArrayList<attribute>>();
 		attributesById = null;
 		attributesByName = null;
 		metadataCategoriesForIdAccess = new Hashtable<String, CategoryTable>();
@@ -104,14 +104,27 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 				if (attr.cat_name != null && attr.cat_name.length() > 0) {
 					categories.add(attr.cat_name);
 				}
+				
+				ArrayList<attribute> attr_list = attributesByCategory.get(attr.cat_name);
+				
+				if(attr_list == null)
+				{
+					attr_list = new ArrayList<attribute>();
+					attributesByCategory.put(attr.cat_name, attr_list);
+				}
+				
+				attr_list.add(attr);
+
+				
+				
 			}
 			applicationDomainCategories = null; // ensure that they re-cached when required
 			if (pr != null) {
 				pr.set_progress(75);
 			}
-			for (String category : categories) {
-				attributesByCategory.put(category, realClient.getAttributesForCategory(category));
-			}
+//			for (String category : categories) {
+//				attributesByCategory.put(category, realClient.getAttributesForCategory(category));
+//			}
 		}
 		
 		// finished
@@ -403,10 +416,12 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	public attribute[] getAttributesForCategory(String category) throws SPECCHIOClientException {
 		
 		if (!attributesByCategory.containsKey(category)) {
-			attributesByCategory.put(category, realClient.getAttributesForCategory(category));
+			attributesByCategory.put(category, new ArrayList<attribute>(Arrays.asList(realClient.getAttributesForCategory(category))));
 		}
 		
-		return attributesByCategory.get(category);
+		ArrayList<attribute> tmp = attributesByCategory.get(category);
+		
+		return tmp.toArray(new attribute[tmp.size()]);
 		
 	}
 
@@ -2206,8 +2221,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 *
 	 * @return the identifier of the inserted or updated metadata
 	 */
-	public void updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException{
-		realClient.updateOrInsertEavMetadata(md, ids, campaignId);
+	public int updateOrInsertEavMetadata(ArrayList<Metadata> md, ArrayList<Integer> ids, int campaignId) throws SPECCHIOWebClientException{
+		return realClient.updateOrInsertEavMetadata(md, ids, campaignId);
 	}
 
 
