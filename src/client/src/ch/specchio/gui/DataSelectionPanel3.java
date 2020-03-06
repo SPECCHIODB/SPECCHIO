@@ -1,9 +1,12 @@
 package ch.specchio.gui;
 
 import ch.specchio.client.SPECCHIOClient;
+import ch.specchio.client.SPECCHIOClientException;
 import ch.specchio.metadata.MDE_Spectrum_Controller;
-import ch.specchio.types.ConflictTable;
-import ch.specchio.types.MetaParameter;
+import ch.specchio.queries.Query;
+import ch.specchio.queries.QueryCondition;
+import ch.specchio.queries.QueryConditionChangeInterface;
+import ch.specchio.query_builder.QueryController;
 import ch.specchio.types.spectral_node_object;
 import ch.specchio.types.spectrum_node;
 
@@ -18,40 +21,66 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener {
+public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener, QueryConditionChangeInterface {
     private SPECCHIOClient specchioClient;
     private Frame frameRef;
     private SpectralDataBrowser hierarchySelect;
     private ArrayList<Integer> selectedIds;
     private JTextArea textArea;
     private MDE_Spectrum_Controller mdeSpectrumController;
+    private QueryController queryController;
     private SpectrumMetadataCategoryList categoryList;
+    private SpectrumFilterPanel spectrumFilterPanel;
+    private Query query;
+    private ArrayList<Integer> idsMatchingQuery;
+    private JScrollPane filterScrollPane;
 
     public DataSelectionPanel3(SPECCHIOClient specchioClient, Frame frameReference){
         this.specchioClient = specchioClient;
         this.frameRef = frameReference;
+
         // SPECTRUM CONTROLLER
         mdeSpectrumController = new MDE_Spectrum_Controller(specchioClient);
         mdeSpectrumController.set_hierarchy_ids(new ArrayList<>(0));
+
         // CATEGORY LIST
         categoryList = new SpectrumMetadataCategoryList(mdeSpectrumController.getFormFactory());
-        categoryList.getFormDescriptor();
-         // DEFINE LAYOUT
+
+        // QUERY CONTROLLER
+        queryController = new QueryController(this.specchioClient, "TEST", categoryList.getFormDescriptor());
+        queryController.addChangeListener(this);
+
+        // QUERY
+        // create a query object and initialise the matching ids to an empty list
+        query = new Query("spectrum");
+        query.addColumn("spectrum_id");
+
+
+
+        // DEFINE LAYOUT
         setLayout(new BorderLayout());
         initComp();
     }
 
+
     private void initComp() {
-        // COMPONENTS
+        // COMPONENTS ---->
+
+        // SPECTRUM FILTER PANEL
+        spectrumFilterPanel = new SpectrumFilterPanel(frameRef, mdeSpectrumController, queryController);
+        // ADD A SCROLL PANE FOR THE FILTERPANEL
+        filterScrollPane = new JScrollPane(spectrumFilterPanel);
 
         // HIERARCHY TREE-SELECTION
         hierarchySelect = new SpectralDataBrowser(specchioClient, true);
         hierarchySelect.build_tree();
         hierarchySelect.tree.addTreeSelectionListener(this);
         hierarchySelect.tree.setDragEnabled(true);
+        query.setOrderBy(hierarchySelect.get_order_by_field());
 
         // TEXT PANEL
         textArea = new JTextArea();
@@ -60,48 +89,99 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         textArea.setWrapStyleWord(true);
 
         // TRANSFER HANDLERS
-        FileTransferHandler transferHandler = new FileTransferHandler(textArea);
-        textArea.setTransferHandler(transferHandler);
+//        FileTransferHandler transferHandler = new FileTransferHandler(textArea);
+        FileTransferHandler transferHandler = new FileTransferHandler(this);
+        spectrumFilterPanel.setTransferHandler(transferHandler);
         hierarchySelect.tree.setTransferHandler(transferHandler);
 
 
         // ARRAYLIST FOR SELECTED SPECTRUM IDS
         selectedIds = new ArrayList<>();
+        // ARRAYLIST FOR MATCHING SPECTRUM IDS
+        idsMatchingQuery = new ArrayList<Integer>();
 
         // ADD TO LAYOUT
         add(hierarchySelect, BorderLayout.NORTH);
-        add(new JScrollPane(textArea), BorderLayout.CENTER);
+//        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        add(new JScrollPane(categoryList), BorderLayout.WEST);
+        add(filterScrollPane, BorderLayout.CENTER);
 
     }
 
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-        selectedIds = hierarchySelect.get_selected_spectrum_ids();
-        System.out.println("NUMBER OF SELECTED SPECTRA = " + selectedIds.size());
+//        updateQueryBuilder();
+    }
+
+    public void updateQueryBuilder(ArrayList<Integer> droppedIds) {
+        try{
+//            selectedIds = hierarchySelect.get_selected_spectrum_ids();
+//            idsMatchingQuery = selectedIds;
+            mdeSpectrumController.set_spectrum_ids(droppedIds);
+            mdeSpectrumController.clear_changed_field_lists();
+            spectrumFilterPanel.updateForm(mdeSpectrumController.getForm());
+
+        } catch (SPECCHIOClientException ex){
+            ErrorDialog error = new ErrorDialog(this.frameRef, "Error", ex.getUserMessage(), ex);
+            error.setVisible(true);
+        }
+    }
+
+
+    @Override
+    public void changed(Object source) {
+        QueryController qc = (QueryController) source;
+
+        ArrayList<QueryCondition> conds = qc.getListOfConditions();
+
+        ListIterator<QueryCondition> li = conds.listIterator();
+
+        query.remove_all_conditions();
+
+        while(li.hasNext())
+        {
+            QueryCondition cond = li.next();
+
+            query.add_condition(cond);
+        }
+
+        try{
+            query.setQueryType(Query.SELECT_QUERY);
+            idsMatchingQuery = specchioClient.getSpectrumIdsMatchingQuery(query);
+            System.out.println("NUMBER OF MATCHING SPECTRA = " + idsMatchingQuery.size());
+        } catch (SPECCHIOClientException ex){
+            System.out.println(ex);
+        }
+
+    }
+
+    public void getMatchingSpectra(){
+        query.setQueryType(Query.SELECT_QUERY);
+        idsMatchingQuery = specchioClient.getSpectrumIdsMatchingQuery(query);
     }
 }
 
 class FileTransferHandler extends TransferHandler {
-    JTextArea textArea;
+    DataSelectionPanel3 dataSelectionPanel;
     DataFlavor localFileFlavor = new DataFlavor(ArrayList.class, "An ArrayList Object");
    // String localFileType = localFileFlavor.
 
-    public FileTransferHandler(JTextArea ta) {
-        textArea = ta;
+    public FileTransferHandler(DataSelectionPanel3 dataSelectionPanel) {
+        this.dataSelectionPanel = dataSelectionPanel;
 
     }
 
     public boolean importData(JComponent c, Transferable t) {
         if (!canImport(c, t.getTransferDataFlavors()))
             return false;
+        else if (c instanceof JTree){
+            return false;
+        }
 
         try {
             ArrayList<Integer> myIds = (ArrayList<Integer>) t.getTransferData(localFileFlavor);
 
-            textArea.setText("");
-            for (int j = 0; j < myIds.size(); j++) {
-                textArea.append(myIds.get(j).toString() + " ");
-            }
+            this.dataSelectionPanel.updateQueryBuilder(myIds);
 
             return true;
         } catch (UnsupportedFlavorException ufe) {
