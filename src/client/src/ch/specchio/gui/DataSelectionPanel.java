@@ -1,20 +1,29 @@
 package ch.specchio.gui;
 
 import ch.specchio.client.SPECCHIOClient;
-import ch.specchio.types.Campaign;
+import ch.specchio.client.SPECCHIOClientException;
+import ch.specchio.metadata.MDE_Spectrum_Controller;
+import ch.specchio.queries.Query;
+import ch.specchio.queries.QueryCondition;
+import ch.specchio.queries.QueryConditionChangeInterface;
+import ch.specchio.queries.QueryConditionObject;
+import ch.specchio.query_builder.QueryController;
+import ch.specchio.query_builder.QueryField;
+import ch.specchio.types.*;
+import javafx.collections.ListChangeListener;
 import org.w3c.dom.ranges.Range;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.*;
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
-public class DataSelectionPanel extends JPanel implements ActionListener, TreeSelectionListener, ChangeListener, MouseMotionListener, MouseListener {
+public class DataSelectionPanel extends JPanel implements ActionListener, TreeSelectionListener, ListSelectionListener, ChangeListener, MouseMotionListener, MouseListener, QueryConditionChangeInterface {
     private SpectralDataBrowser hierarchySelect;
     private JCheckBox show_only_my_data;
     private JTabbedPane data_selection_tabs;
@@ -23,27 +32,49 @@ public class DataSelectionPanel extends JPanel implements ActionListener, TreeSe
     private Campaign selectedCampaign;
     private boolean wasMoved;
     private boolean wasDragged;
+    private SpectrumMetadataPanel spMePa;
+    private SPECCHIOClient specchioClient;
+    private Frame parentFrame;
+    private MDE_Spectrum_Controller specCtrl;
+    private SpectrumMetadataCategoryList category_list;
+    private QueryController qc;
+    private SpectrumQueryPanel query_condition_panel;
+    private JScrollPane scroll_pane;
+    private Query query;
+    private ArrayList<QueryConditionChangeInterface> change_listeners = new ArrayList<QueryConditionChangeInterface>();
 
-    public DataSelectionPanel(){
-//        Dimension dim = getPreferredSize();
-//        dim.width = 250;
-//        setPreferredSize(dim);
 
+    public DataSelectionPanel(SPECCHIOClient specchioClient, Frame frameReference){
         setLayout(new BorderLayout());
 
-        SPECCHIOClient specchioClient = SPECCHIOApplication.getInstance().getClient();
+        this.specchioClient = specchioClient;
+        this.parentFrame = frameReference;
+        this.specCtrl = new MDE_Spectrum_Controller(specchioClient);
 
         hierarchySelect = new SpectralDataBrowser(specchioClient, true);
         data_selection_tabs = new JTabbedPane();
         setupHierarchyBrowser();
 
-        dataPanel = new DataPanel();
+        category_list = new SpectrumMetadataCategoryList(specCtrl.getFormFactory());
+        category_list.addListSelectionListener(this);
+
+        qc = new QueryController(specchioClient, "Standard", category_list.getFormDescriptor());
+        qc.addChangeListener(this);
+        query_condition_panel = new SpectrumQueryPanel(parentFrame, qc);
+        scroll_pane = new JScrollPane(query_condition_panel);
+        scroll_pane.getVerticalScrollBar().setUnitIncrement(10);
+        query = new Query("spectrum");
+        query.addColumn("spectrum_id");
+        query.setOrderBy(hierarchySelect.get_order_by_field());
+
+
         selectedIds = new ArrayList<>();
         wasMoved = false;
         wasDragged = false;
 
+        data_selection_tabs.addTab("Query conditions", scroll_pane);
         add(hierarchySelect, BorderLayout.NORTH);
-        add(dataPanel, BorderLayout.CENTER);
+//        add(scroll_pane, BorderLayout.CENTER);
 
     }
 
@@ -69,6 +100,8 @@ public class DataSelectionPanel extends JPanel implements ActionListener, TreeSe
         data_selection_tabs.addTab("Browser", sdb_panel);
     }
 
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
 
@@ -76,11 +109,13 @@ public class DataSelectionPanel extends JPanel implements ActionListener, TreeSe
 
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-       selectedIds = hierarchySelect.get_selected_spectrum_ids();
-       selectedCampaign = hierarchySelect.get_selected_campaign();
-//       for(int i : ids){
-//           System.out.println(i);
-//       }
+        selectedIds = hierarchySelect.get_selected_spectrum_ids();
+        selectedCampaign = hierarchySelect.get_selected_campaign();
+        System.out.println("Number of selected spectra = " + selectedIds.size());
+        specCtrl.set_spectrum_ids(selectedIds);
+
+//       ConflictTable conflictTable = specchioClient.getEavMetadataConflicts(MetaParameter.SPECTRUM_LEVEL, selectedIds);
+
     }
 
     @Override
@@ -137,4 +172,25 @@ public class DataSelectionPanel extends JPanel implements ActionListener, TreeSe
     public void mouseExited(MouseEvent e) {
 
     }
+
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        data_selection_tabs.remove(scroll_pane);
+
+        qc.updateForm(category_list.getFormDescriptor());
+        query_condition_panel.update();
+
+        scroll_pane = new JScrollPane(query_condition_panel);
+        scroll_pane.getVerticalScrollBar().setUnitIncrement(10);
+        data_selection_tabs.addTab("Query conditions", scroll_pane);
+
+
+    }
+
+    @Override
+    public void changed(Object source) {
+        // TODO write changelistener for DataSelectionPanel
+    }
+
 }
