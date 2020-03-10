@@ -292,8 +292,17 @@ public interface SPECCHIOClient {
 	 * @return an array list of category information
 	 */
 	public ArrayList<Category> getCategoriesInfo() throws SPECCHIOClientException;
-	
-	
+
+	/**
+	 * Get the ids and names of all metadata categories used by a set of given spectra.
+	 * @param spectrumIds	list of spectrum ids for which to search used categories
+	 *
+	 * @return an array list of category information
+	 */
+	public ArrayList<Category> getNonNullCategories(ArrayList<Integer> spectrumIds);
+
+	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds);
+
 	/**
 	 * Export a campaign.
 	 * 

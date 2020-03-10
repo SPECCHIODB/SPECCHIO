@@ -594,7 +594,17 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	public ArrayList<Category> getCategoriesInfo() throws SPECCHIOClientException {
 		
 		return (ArrayList<Category>) getList(Category.class, "metadata", "categories_info");
-	}	
+	}
+
+	public ArrayList<Category> getNonNullCategories(ArrayList<Integer> spectrumIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
+		return (ArrayList<Category>) postForList(Category.class, "metadata", "non_null_categories", mds);
+	}
+
+	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
+		return (ArrayList<attribute>) postForList(attribute.class, "metadata", "non_null_attributes", mds);
+	}
 	
 	
 	/**

@@ -7,6 +7,8 @@ import ch.specchio.queries.Query;
 import ch.specchio.queries.QueryCondition;
 import ch.specchio.queries.QueryConditionChangeInterface;
 import ch.specchio.query_builder.QueryController;
+import ch.specchio.types.Category;
+import ch.specchio.types.attribute;
 import ch.specchio.types.spectral_node_object;
 import ch.specchio.types.spectrum_node;
 
@@ -117,6 +119,20 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         try{
 //            selectedIds = hierarchySelect.get_selected_spectrum_ids();
 //            idsMatchingQuery = selectedIds;
+            for(Category cat : specchioClient.getNonNullCategories(droppedIds)){
+                System.out.println(cat.name);
+            }
+
+            for(attribute attr : specchioClient.getNonNullAttributes(droppedIds)){
+                System.out.println("---------------------------");
+                System.out.println(attr.getName());
+                System.out.println(attr.getMIN_INT_VAL());
+                System.out.println(attr.getMAX_INT_VAL());
+                System.out.println(attr.getMIN_DOUBLE_VAL());
+                System.out.println(attr.getMAX_DOUBLE_VAL());
+                System.out.println(attr.getMIN_DATETIME_VAL());
+                System.out.println(attr.getMAX_DATETIME_VAL());
+            }
             mdeSpectrumController.set_spectrum_ids(droppedIds);
             mdeSpectrumController.clear_changed_field_lists();
             spectrumFilterPanel.updateForm(mdeSpectrumController.getForm());

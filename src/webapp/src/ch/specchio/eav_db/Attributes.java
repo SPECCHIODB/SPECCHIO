@@ -3,6 +3,7 @@ package ch.specchio.eav_db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -460,6 +461,76 @@ public class Attributes {
 	public ArrayList<Category> getCategories()
 	{
 		return categories;
+	}
+
+	public ArrayList<Category> getNonNullCategories(ArrayList<Integer> spectrumIds, SQL_StatementBuilder sqlStatementBuilder) throws SQLException {
+		ArrayList<Category> nonNullCats = new ArrayList<>();
+		String query = "SELECT DISTINCT(cat.category_id), cat.name FROM category AS cat " +
+		"INNER JOIN ( " +
+				"SELECT attr.category_id FROM attribute AS attr " +
+				"INNER JOIN ( " +
+					"SELECT eIn.attribute_id FROM eav AS eIn " +
+					"INNER JOIN spectrum_x_eav AS sxe " +
+					"ON eIn.eav_id = sxe.eav_id " +
+					"WHERE sxe.spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+				") AS j1 " +
+				"ON attr.attribute_id = j1.attribute_id " +
+		") AS j2 " +
+		"ON j2.category_id = cat.category_id " +
+		"ORDER BY cat.name";
+		PreparedStatement stmt = sqlStatementBuilder.prepareStatement(query);
+
+		ResultSet rs = stmt.executeQuery(query);
+
+		while (rs.next())
+		{
+			nonNullCats.add(new Category(rs.getInt(1), rs.getString(2)));
+		}
+
+		rs.close();
+		stmt.close();
+		return nonNullCats;
+	}
+
+	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds, SQL_StatementBuilder sqlStatementBuilder) throws SQLException {
+
+		ArrayList<attribute> nonNullAttrs = new ArrayList<>();
+//		String query = " SELECT DISTINCT(eIn.attribute_id) FROM eav AS eIn " +
+//			"INNER JOIN spectrum_x_eav AS sxe " +
+//			"ON eIn.eav_id = sxe.eav_id " +
+//			"WHERE sxe.spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") ";
+
+		String query = "SELECT attr.name, attr.default_storage_field, j1.* FROM attribute AS attr " +
+				"INNER JOIN (" +
+				"SELECT eIn.attribute_id, MIN(eIn.int_val), MAX(eIn.int_val), MIN(eIn.double_val), " +
+				"MAX(eIn.double_val), MIN(eIn.datetime_val), MAX(eIn.datetime_val) FROM eav AS eIn " +
+				"INNER JOIN spectrum_x_eav AS sxe " +
+				"ON eIn.eav_id = sxe.eav_id " +
+				"WHERE sxe.spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+				"GROUP BY eIn.attribute_id " +
+				") AS j1 " +
+				"ON j1.attribute_id = attr.attribute_id " +
+				"WHERE default_storage_field NOT IN ('taxonomy_id', 'spatial_val')";
+
+		PreparedStatement stmt = sqlStatementBuilder.prepareStatement(query);
+
+		ResultSet rs = stmt.executeQuery(query);
+
+		while (rs.next())
+		{
+			attribute attr = find_in_list(rs.getInt(3));
+			attr.setMIN_INT_VAL(rs.getString(4));
+			attr.setMAX_INT_VAL(rs.getString(5));
+			attr.setMIN_DOUBLE_VAL(rs.getString(6));
+			attr.setMAX_DOUBLE_VAL(rs.getString(7));
+			attr.setMIN_DATETIME_VAL(rs.getString(8));
+			attr.setMAX_DATETIME_VAL(rs.getString(9));
+			nonNullAttrs.add(attr);
+		}
+
+		rs.close();
+		stmt.close();
+		return nonNullAttrs;
 	}
 	
 	
