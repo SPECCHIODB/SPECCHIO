@@ -38,6 +38,8 @@ import ch.specchio.types.SpectrumFactorTable;
 
 import org.joda.time.DateTime;
 
+import javax.xml.transform.Result;
+
 
 /**
  * Class for manipulating spectra stored in the database.
@@ -214,7 +216,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		int currHier = mds.getCurrent_hierarchy_id();
 		ArrayList<Integer> newSpectra = new ArrayList<>();
 		ArrayList<Integer> copyId = new ArrayList<>();
-		try {//VALUES('val_1', (SELECT  val_2 FROM table_2 WHERE val_2 = something))
+		try {
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			String conc_ids = SQL.conc_ids(spectra);
 			String sql = "INSERT INTO spectrum_view ("
@@ -226,36 +228,31 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					+ "file_format_id, instrument_id, calibration_id, "
 					+ "measurement_unit_id, measurement "
 					+ " FROM " + (this.Is_admin()?"spectrum":"spectrum_view") + " WHERE spectrum_id IN ( " + conc_ids + " )";
-//					+ " FROM spectrum WHERE spectrum_id IN (" + conc_ids + ")";
 
-			PreparedStatement statement = SQL.prepareStatement(sql);
-			int rowNr = statement.executeUpdate();
 
-			if(rowNr > 0){
-				//ResultSet rs = statement.executeQuery("SELECT * FROM spectrum ORDER BY spectrum_id DESC LIMIT " + rowNr);
-//				ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID()")
-//				ResultSet rs = statement.excuteQuery("SELECT LAST_INSERT_ID() ROW_COUNT()-1)
-				ResultSet rs = statement.executeQuery("SELECT spectrum_id FROM spectrum WHERE hierarchy_level_id = " + currHier + " ORDER BY spectrum_id DESC LIMIT " + rowNr);
-				while(rs.next()){
+			PreparedStatement statement = SQL.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+			ResultSet rs = statement.getGeneratedKeys();
+			while(rs.next()){
 					copyId.add(rs.getInt(1));
-				}
-				rs.close();
+			}
+			rs.close();
 
-				// copy all eav references at spectrum level without inherited eav data
-				for(int i = 0; i < spectra.size(); i++) {
-					ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectra.get(i), false); // false = no inheritance
-					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copyId.get(i), eav_ids);
+			// copy all eav references at spectrum level without inherited eav data
+			for(int i = 0; i < spectra.size(); i++) {
+				ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectra.get(i), false); // false = no inheritance
+				getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copyId.get(i), eav_ids);
 //
 //				// exchange hierarchy id
 //					String new_conc_ids = SQL.conc_ids(copyId);
-					sql = "update " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copyId.get(i);
-					statement.executeUpdate(sql);
+				sql = "update " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copyId.get(i);
+				statement.executeUpdate(sql);
 
-				}
-				// update the aggregated info in the upper hierarchies
-				SpectralFileFactory sf_factory = new SpectralFileFactory(this);
-				sf_factory.insertHierarchySpectrumReferences(trgtHier, copyId, 0, statement);
 			}
+			// update the aggregated info in the upper hierarchies
+			SpectralFileFactory sf_factory = new SpectralFileFactory(this);
+			sf_factory.insertHierarchySpectrumReferences(trgtHier, copyId, 0, statement);
+
 
 		}
 			catch (SQLClientInfoException e) {
