@@ -120,10 +120,13 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
     public void updateQueryBuilder(ArrayList<Integer> droppedIds) {
         try{
+            mdeSpectrumController.set_spectrum_ids(droppedIds);
+            categoryList = new SpectrumMetadataCategoryList(mdeSpectrumController.getFormFactory());
+            queryController = new QueryController(this.specchioClient, "TEST", categoryList.getFormDescriptor());
+            queryController.addChangeListener(this);
             availableCategories = specchioClient.getNonNullCategories(droppedIds);
             availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
-//            spectrumFilterPanel = new SpectrumFilterPanel(frameRef, mdeSpectrumController, queryController, availableCategories, availableAttributes);
-            spectrumFilterPanel.updateCategories(availableCategories, availableAttributes);
+            spectrumFilterPanel.updateCategories(availableCategories, availableAttributes, queryController);
 
         } catch (SPECCHIOClientException ex){
             ErrorDialog error = new ErrorDialog(this.frameRef, "Error", ex.getUserMessage(), ex);

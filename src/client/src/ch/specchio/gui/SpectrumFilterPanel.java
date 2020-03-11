@@ -60,7 +60,8 @@ public class SpectrumFilterPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
-    public void updateCategories(ArrayList<Category> newCategories, ArrayList<attribute> newAttributes){
+    public void updateCategories(ArrayList<Category> newCategories, ArrayList<attribute> newAttributes, QueryController newQueryController){
+        this.queryController = newQueryController;
         this.availableCats = newCategories;
         this.availableAttr = newAttributes;
         for(attribute att : availableAttr){
@@ -839,8 +840,7 @@ public class SpectrumFilterPanel extends JPanel {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-//            fireConditionChanged(getField(0), rangeSlider.getLowValue());
-//            fireConditionChanged(getField(1), rangeSlider.getHighValue());
+
         }
 
         @Override
