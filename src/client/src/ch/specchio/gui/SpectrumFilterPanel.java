@@ -60,8 +60,7 @@ public class SpectrumFilterPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
-    public void updateCategories(ArrayList<Category> newCategories, ArrayList<attribute> newAttributes, QueryController newQueryController){
-        this.queryController = newQueryController;
+    public void updateCategories(ArrayList<Category> newCategories, ArrayList<attribute> newAttributes){
         this.availableCats = newCategories;
         this.availableAttr = newAttributes;
         for(attribute att : availableAttr){

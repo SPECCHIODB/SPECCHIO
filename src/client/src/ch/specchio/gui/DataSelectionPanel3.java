@@ -120,13 +120,9 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
     public void updateQueryBuilder(ArrayList<Integer> droppedIds) {
         try{
-            mdeSpectrumController.set_spectrum_ids(droppedIds);
-            categoryList = new SpectrumMetadataCategoryList(mdeSpectrumController.getFormFactory());
-            queryController = new QueryController(this.specchioClient, "TEST", categoryList.getFormDescriptor());
-            queryController.addChangeListener(this);
             availableCategories = specchioClient.getNonNullCategories(droppedIds);
             availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
-            spectrumFilterPanel.updateCategories(availableCategories, availableAttributes, queryController);
+            spectrumFilterPanel.updateCategories(availableCategories, availableAttributes);
 
         } catch (SPECCHIOClientException ex){
             ErrorDialog error = new ErrorDialog(this.frameRef, "Error", ex.getUserMessage(), ex);
@@ -154,6 +150,7 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
         try{
             query.setQueryType(Query.SELECT_QUERY);
+//            QueryCondition spectraCond = new QueryCondition();
             idsMatchingQuery = specchioClient.getSpectrumIdsMatchingQuery(query);
             System.out.println("NUMBER OF MATCHING SPECTRA = " + idsMatchingQuery.size());
         } catch (SPECCHIOClientException ex){
