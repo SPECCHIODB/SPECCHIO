@@ -16,13 +16,12 @@ import org.w3c.dom.ranges.Range;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -77,6 +76,10 @@ public class SpectrumFilterPanel extends JPanel {
 
     private void fireConditionChanged(QueryField queryFieldfield, Object value) {
         queryController.ConditionChange(queryFieldfield, value);
+    }
+
+    private void fireConditionChanged(QueryField queryFieldfieldLower, Object valueLower, QueryField queryFieldfieldHigher, Object valueHigher) {
+        queryController.ConditionChange(queryFieldfieldLower, valueLower, queryFieldfieldHigher, valueHigher);
     }
     /**
      * Set the query form to be displayed by the panel.
@@ -652,7 +655,7 @@ public class SpectrumFilterPanel extends JPanel {
     /**
      * Base class for number-valued fields.
      */
-    private abstract class SpectrumNumericEavQueryComponent extends SpectrumFilterPanel.SpectrumEavQueryComponent implements DocumentListener {
+    private abstract class SpectrumNumericEavQueryComponent extends SpectrumFilterPanel.SpectrumEavQueryComponent implements DocumentListener, ChangeListener, MouseListener {
 
         /** serialisation version identifier */
         private static final long serialVersionUID = 1L;
@@ -666,6 +669,8 @@ public class SpectrumFilterPanel extends JPanel {
         /** name for the "owner" property */
         private static final String OWNER = "owner";
 
+        private RangeSlider rangeSlider;
+
 
         /**
          * Constructor.
@@ -677,20 +682,23 @@ public class SpectrumFilterPanel extends JPanel {
         public SpectrumNumericEavQueryComponent(SpectrumFilterPanel.SpectrumQueryCategoryContainer container, EAVQueryField lower, EAVQueryField upper) {
 
             super(container, lower, upper);
-            RangeSlider rangeSlider = null;
+            rangeSlider = null;
             try {
                 attribute thisAttribute = attributeMap.get(lower.getLabel());
                 String valueIndicator = thisAttribute.getDefaultStorageField();
                 int minVal = Integer.MIN_VALUE;
                 int maxVal = Integer.MAX_VALUE;
+                int val;
                 switch (valueIndicator) {
                     case "int_val":
-                        minVal = Integer.valueOf(thisAttribute.getMIN_INT_VAL());
+                        val = Integer.valueOf(thisAttribute.getMIN_INT_VAL());
+                        minVal = (val != -999) ? val : 0;
                         maxVal = Integer.valueOf(thisAttribute.getMAX_INT_VAL());
                         break;
                     case "double_val":
-                        minVal = (int) Math.floor(Double.valueOf(thisAttribute.getMIN_DOUBLE_VAL()));
-                        maxVal = (int) Math.floor(Double.valueOf(thisAttribute.getMAX_DOUBLE_VAL()));
+                        val = (int) Math.floor(Double.valueOf(thisAttribute.getMIN_DOUBLE_VAL()));
+                        minVal = (val != -999) ? val : 0;
+                        maxVal = (int) Math.ceil(Double.valueOf(thisAttribute.getMAX_DOUBLE_VAL()));
                         break;
                     default:
                         break;
@@ -699,12 +707,16 @@ public class SpectrumFilterPanel extends JPanel {
                     rangeSlider = new RangeSlider(minVal, maxVal, minVal, maxVal);
                     rangeSlider.setPaintTicks(true);
                     rangeSlider.setPaintLabels(true);
-                    double range = maxVal - minVal;
-                    double log = Math.log10(range);
-                    double divisor = Math.pow(10, Math.round(log-1));
-                    double result = Math.round(range / divisor);
-                    int tickSpacing = (int) Math.round(range / result);
-                    rangeSlider.setMajorTickSpacing(tickSpacing);
+                    NiceScale niceScale = new NiceScale(minVal, maxVal);
+
+//                    double range = maxVal - minVal;
+//                    int exponent = (int) Math.log10(range);
+//                    double magnitude = Math.pow(10, exponent);
+//                    double tickNumber = magnitude / 10;
+//                    int tickSpacing = (int) Math.round(tickNumber);
+                    rangeSlider.setMajorTickSpacing((int)niceScale.getTickSpacing());
+                    rangeSlider.addChangeListener(this);
+                    rangeSlider.addMouseListener(this);
                     getControlPanel().add(rangeSlider);
                 }
 
@@ -825,7 +837,38 @@ public class SpectrumFilterPanel extends JPanel {
 
         }
 
+        @Override
+        public void stateChanged(ChangeEvent e) {
+//            fireConditionChanged(getField(0), rangeSlider.getLowValue());
+//            fireConditionChanged(getField(1), rangeSlider.getHighValue());
+        }
 
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if(e.getSource() instanceof RangeSlider){
+                fireConditionChanged(getField(0), rangeSlider.getLowValue(), getField(1), rangeSlider.getHighValue());
+            }
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
     }
 
 

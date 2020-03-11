@@ -44,6 +44,22 @@ public class QueryController {
 		informChangeListeners();
 		
 	}
+
+	public void ConditionChange(QueryField fieldLower, Object new_valueLower, QueryField fieldHigher, Object new_valueHigher)
+	{
+
+		String string_valueLow = (new_valueLower != null)? new_valueLower.toString() : "";
+		String string_valueHigh = (new_valueHigher != null)? new_valueHigher.toString() : "";
+
+		System.out.println("Change:" + fieldLower.getLabel() + ", value = " + string_valueLow);
+		System.out.println("Change:" + fieldHigher.getLabel() + ", value = " + string_valueHigh);
+
+		fieldLower.set_value(string_valueLow);
+		fieldHigher.set_value(string_valueHigh);
+
+		informChangeListeners();
+
+	}
 	
 	private void informChangeListeners()
 	{
