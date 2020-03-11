@@ -40,6 +40,9 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
     private Query query;
     private ArrayList<Integer> idsMatchingQuery;
     private JScrollPane filterScrollPane;
+    private ArrayList<Category> availableCategories;
+    private ArrayList<attribute> availableAttributes;
+    private FileTransferHandler fileTransferHandler;
 
     public DataSelectionPanel3(SPECCHIOClient specchioClient, Frame frameReference){
         this.specchioClient = specchioClient;
@@ -62,7 +65,6 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         query.addColumn("spectrum_id");
 
 
-
         // DEFINE LAYOUT
         setLayout(new BorderLayout());
         initComp();
@@ -71,7 +73,6 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
     private void initComp() {
         // COMPONENTS ---->
-
         // SPECTRUM FILTER PANEL
         spectrumFilterPanel = new SpectrumFilterPanel(frameRef, mdeSpectrumController, queryController);
         // ADD A SCROLL PANE FOR THE FILTERPANEL
@@ -91,20 +92,22 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         textArea.setWrapStyleWord(true);
 
         // TRANSFER HANDLERS
-//        FileTransferHandler transferHandler = new FileTransferHandler(textArea);
-        FileTransferHandler transferHandler = new FileTransferHandler(this);
-        spectrumFilterPanel.setTransferHandler(transferHandler);
-        hierarchySelect.tree.setTransferHandler(transferHandler);
+        fileTransferHandler = new FileTransferHandler(this);
+        spectrumFilterPanel.setTransferHandler(fileTransferHandler);
+        hierarchySelect.tree.setTransferHandler(fileTransferHandler);
 
 
         // ARRAYLIST FOR SELECTED SPECTRUM IDS
         selectedIds = new ArrayList<>();
         // ARRAYLIST FOR MATCHING SPECTRUM IDS
         idsMatchingQuery = new ArrayList<Integer>();
+        // ARRAYLIST FOR MATCHING CATEGORIES
+        availableCategories = new ArrayList<>();
+        // ARRAYLIST FOR MATCHING ATTRIBUTES
+        availableAttributes = new ArrayList<>();
 
         // ADD TO LAYOUT
         add(hierarchySelect, BorderLayout.NORTH);
-//        add(new JScrollPane(textArea), BorderLayout.CENTER);
         add(new JScrollPane(categoryList), BorderLayout.WEST);
         add(filterScrollPane, BorderLayout.CENTER);
 
@@ -117,25 +120,10 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
     public void updateQueryBuilder(ArrayList<Integer> droppedIds) {
         try{
-//            selectedIds = hierarchySelect.get_selected_spectrum_ids();
-//            idsMatchingQuery = selectedIds;
-            for(Category cat : specchioClient.getNonNullCategories(droppedIds)){
-                System.out.println(cat.name);
-            }
-
-            for(attribute attr : specchioClient.getNonNullAttributes(droppedIds)){
-                System.out.println("---------------------------");
-                System.out.println(attr.getName());
-                System.out.println(attr.getMIN_INT_VAL());
-                System.out.println(attr.getMAX_INT_VAL());
-                System.out.println(attr.getMIN_DOUBLE_VAL());
-                System.out.println(attr.getMAX_DOUBLE_VAL());
-                System.out.println(attr.getMIN_DATETIME_VAL());
-                System.out.println(attr.getMAX_DATETIME_VAL());
-            }
-            mdeSpectrumController.set_spectrum_ids(droppedIds);
-            mdeSpectrumController.clear_changed_field_lists();
-            spectrumFilterPanel.updateForm(mdeSpectrumController.getForm());
+            availableCategories = specchioClient.getNonNullCategories(droppedIds);
+            availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
+//            spectrumFilterPanel = new SpectrumFilterPanel(frameRef, mdeSpectrumController, queryController, availableCategories, availableAttributes);
+            spectrumFilterPanel.updateCategories(availableCategories, availableAttributes);
 
         } catch (SPECCHIOClientException ex){
             ErrorDialog error = new ErrorDialog(this.frameRef, "Error", ex.getUserMessage(), ex);
