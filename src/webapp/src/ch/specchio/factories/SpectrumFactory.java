@@ -231,7 +231,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 
 			PreparedStatement statement = SQL.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
+			statement.execute();
 			ResultSet rs = statement.getGeneratedKeys();
 			while(rs.next()){
 					copyId.add(rs.getInt(1));
