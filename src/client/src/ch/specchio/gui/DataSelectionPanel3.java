@@ -56,7 +56,7 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         categoryList = new SpectrumMetadataCategoryList(mdeSpectrumController.getFormFactory());
 
         // QUERY CONTROLLER
-        queryController = new QueryController(this.specchioClient, "TEST", categoryList.getFormDescriptor());
+        queryController = new QueryController(this.specchioClient, "Standard", categoryList.getFormDescriptor());
         queryController.addChangeListener(this);
 
         // QUERY
@@ -79,7 +79,7 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         filterScrollPane = new JScrollPane(spectrumFilterPanel);
 
         // HIERARCHY TREE-SELECTION
-        hierarchySelect = new SpectralDataBrowser(specchioClient, true);
+        hierarchySelect = new SpectralDataBrowser(specchioClient, false);
         hierarchySelect.build_tree();
         hierarchySelect.tree.addTreeSelectionListener(this);
         hierarchySelect.tree.setDragEnabled(true);
