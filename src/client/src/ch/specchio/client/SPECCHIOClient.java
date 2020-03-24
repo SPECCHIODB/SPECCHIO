@@ -303,6 +303,9 @@ public interface SPECCHIOClient {
 
 	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds);
 
+	public void createFilterCollection(ArrayList<Integer> spectrumIds);
+
+
 	/**
 	 * Export a campaign.
 	 * 

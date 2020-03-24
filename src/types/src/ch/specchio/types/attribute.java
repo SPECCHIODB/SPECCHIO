@@ -1,5 +1,10 @@
 package ch.specchio.types;
 
+import com.googlecode.cqengine.attribute.Attribute;
+import com.googlecode.cqengine.attribute.SimpleNullableAttribute;
+import com.googlecode.cqengine.query.option.QueryOptions;
+import org.joda.time.DateTime;
+
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name="attribute")
@@ -31,6 +36,14 @@ public class attribute {
 	@XmlElement public int cardinality;
 	@XmlElement public boolean is_boolean_value = false;
 	@XmlElement public String blob_data_type = "";
+
+	// FIELDS FOR THE COLLECTION CQ ENGINE
+	public int spectrumId;
+	public int int_val;
+	public double double_val;
+	public String string_val;
+	public String binary_val;
+	public DateTime dt_val;
 
 	public String getName()
 	{
@@ -94,5 +107,35 @@ public class attribute {
 
 	public void setMAX_DATETIME_VAL(String MAX_DATETIME_VAL) {
 		this.MAX_DATETIME_VAL = MAX_DATETIME_VAL;
+	}
+
+	public static final Attribute<attribute, Integer> SPECTRUM_ID = new SimpleNullableAttribute<attribute, Integer>("spectrumId") {
+		public Integer getValue(attribute attr, QueryOptions queryOptions) { return attr.spectrumId; }
+	};
+
+	public static final Attribute<attribute, Integer> INT_VALUE = new SimpleNullableAttribute<attribute, Integer>("integerMin") {
+		public Integer getValue(attribute attr, QueryOptions queryOptions) { return attr.int_val; }
+	};
+
+
+	public static final Attribute<attribute, Double> DOUBLE_VALUE = new SimpleNullableAttribute<attribute, Double>("doubleMin") {
+		public Double getValue(attribute attr, QueryOptions queryOptions) { return attr.double_val; }
+	};
+
+
+	public static final Attribute<attribute, String> NAME = new SimpleNullableAttribute<attribute, String>("attributeName") {
+		public String getValue(attribute attr, QueryOptions queryOptions) { return attr.name; }
+	};
+
+	public static final Attribute<attribute, String> BINARY_VALUE = new SimpleNullableAttribute<attribute, String>("doubleMin") {
+		public String getValue(attribute attr, QueryOptions queryOptions) { return attr.string_val; }
+	};
+
+	public static final Attribute<attribute, DateTime> DT_VALUE = new SimpleNullableAttribute<attribute, DateTime>("dtMin") {
+		public DateTime getValue(attribute attr, QueryOptions queryOptions) { return attr.dt_val; }
+	};
+
+	public int getSpectrumId() {
+		return spectrumId;
 	}
 }

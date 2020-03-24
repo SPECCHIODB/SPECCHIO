@@ -23,6 +23,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'lib')
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.12'
+    compile group: 'com.googlecode.cqengine', name: 'cqengine', version: '3.4.0'
+
 }
 
 // configuration for javadoc

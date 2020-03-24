@@ -165,6 +165,24 @@ public class MetadataService extends SPECCHIOService {
 
 	}
 
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all attributes for which the given spectra contain data, includes max and min values
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("create_filterCollection")
+	@Consumes(MediaType.APPLICATION_XML)
+	public void createFilterCollection(MetadataSelectionDescriptor mds) throws SQLException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.getAttributes().createFilterCollection(mds.getIds(), factory.getStatementBuilder());
+		factory.dispose();
+
+	}
+
 
 	/**
 	 * Get a hash table mapping identifiers to names.
