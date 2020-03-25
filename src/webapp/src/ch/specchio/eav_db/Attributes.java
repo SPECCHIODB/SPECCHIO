@@ -4,23 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.*;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.ListIterator;
-
 import ch.specchio.types.*;
-
-import com.googlecode.cqengine.*;
-import com.googlecode.cqengine.index.navigable.NavigableIndex;
-import com.googlecode.cqengine.query.Query;
-import com.googlecode.cqengine.query.QueryFactory;
-import org.joda.time.DateTime;
-
-import static com.googlecode.cqengine.query.QueryFactory.*;
-
-import javax.xml.transform.Result;
 
 
 public class Attributes {
@@ -30,9 +16,6 @@ public class Attributes {
 	ArrayList<attribute> attributes;
 	ArrayList<Units> units;
 	ArrayList<Category> categories;
-
-	// CREATE THE COLLECTION
-	ConcurrentIndexedCollection<attribute> cqEngine_attributes;
 
 	private boolean lists_are_filled = false;
 	
@@ -547,78 +530,94 @@ public class Attributes {
 		return nonNullAttrs;
 	}
 
-	public ArrayList<attribute> createFilterCollection(ArrayList<Integer> spectrumIds, SQL_StatementBuilder sqlStatementBuilder) throws SQLException {
+	public void createFilterCollection(ArrayList<Integer> spectrumIds, ArrayList<attribute> nonNullAtt, SQL_StatementBuilder sqlStatementBuilder) throws SQLException {
 
-		ArrayList<attribute> nonNullAtt = getNonNullAttributes(spectrumIds, sqlStatementBuilder);
-		HashMap<Integer, SpectrumAndAttributes>
+		ArrayList<String> tableNames = new ArrayList<>();
+
 		String query = null;
+		ArrayList<String> tempTableStmts = new ArrayList<>();
 		for(attribute at : nonNullAtt){
-
-			query = "SELECT spectrum_id, " + at.default_storage_field + " FROM filter_spectrum_view " +
+			String name = at.name.replaceAll(" ", "_").toLowerCase();
+			tableNames.add(name);
+			query = "CREATE TEMPORARY TABLE IF NOT EXISTS " + name + " " +
+					"SELECT spectrum_id, " + at.default_storage_field + " AS " + name + " " +
+					"FROM filter_spectrum_view " +
 					"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
 					"AND attribute_id = " + at.getId();
-			PreparedStatement preparedStatement = sqlStatementBuilder.prepareStatement(query);
-			ResultSet rs = preparedStatement.executeQuery();
-			while(rs.next()){
-
-			}
+			tempTableStmts.add(query);
+//			Statement stmt = sqlStatementBuilder.createStatement();
+//			stmt.executeUpdate(query);
 		}
+
 		// SETUP THE QUERY FOR THE CURRENT IDS
-		String query = "SELECT * FROM filter_spectrum_view " +
-				"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
-				"ORDER BY spectrum_id ASC";
+		String table1 = nonNullAtt.get(0).name + ".*";
+		StringBuilder builder = new StringBuilder();
+		for(String tabName : tableNames) {
+			builder.append(", ");
+			builder.append(tabName);
+			builder.append(".*");
+		}
+
+		String tables =  builder.toString();
+		builder = new StringBuilder();
+		for(String tabName : tableNames){
+			builder.append(" INNER JOIN " + tabName + "ON " + table1 + ".spectrum_id = " + tabName + ".spectrum_id ");
+		}
+		String joins = builder.toString();
+
+
+		query = "CREATE TEMPORARY TABLE IF NOT EXISTS filterTable " +
+				"SELECT " + table1 + tables + " " +
+				"FROM " + table1 +
+				joins;
+
+
 		PreparedStatement preparedStatement = sqlStatementBuilder.prepareStatement(query);
 		ResultSet rs = preparedStatement.executeQuery();
-//		cqEngine_attributes = new ConcurrentIndexedCollection<attribute>();
-//		// CREATE AN INDEX
-//		cqEngine_attributes.addIndex(NavigableIndex.onAttribute(attribute.SPECTRUM_ID));
-//		cqEngine_attributes.addIndex(NavigableIndex.onAttribute(attribute.INT_VALUE));
-//		cqEngine_attributes.addIndex(NavigableIndex.onAttribute(attribute.DOUBLE_VALUE));
-//		cqEngine_attributes.addIndex(NavigableIndex.onAttribute(attribute.NAME));
 
-		while(rs.next()){
-			attribute newAttr = new attribute();
-			newAttr.spectrumId =  rs.getInt(1);
-			newAttr.id = rs.getInt(3);
-			newAttr.name = rs.getString(4);
-			newAttr.int_val = rs.getInt(5);
-			newAttr.double_val = rs.getDouble(6);
-//			newAttr.string_val = rs.getString(6);
-//			newAttr.binary_val = rs.getString(7);
-// 			DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-//			newAttr.dt_val = DateTime.parse(rs.getString(8), fmt);
-			cqEngine_attributes.add(newAttr);
-		}
-// and(contains(Car.DESCRIPTION, "flat tyre"), equal(Car.FEATURES, "spare tyre"));
-		ArrayList<attribute> results = new ArrayList<>();
-		Query<attribute> query1 = and(equal(attribute.NAME, "Irradiance Instability"), between(attribute.DOUBLE_VALUE, 0.0, 0.1));
-		Iterator<attribute> matching = cqEngine_attributes.retrieve(query1).iterator();
-		while(matching.hasNext()){
-			results.add(matching.next());
-		}
-		results.size();
-
-		results.clear();
-		Query<attribute> query2 = and(and(equal(attribute.NAME, "Irradiance Instability"), between(attribute.DOUBLE_VALUE, 0.0, 0.1)), and(equal(attribute.NAME, "PCB Temperature"), between(attribute.DOUBLE_VALUE, 12.0, 13.0)));
-		Iterator<attribute> matching2 = cqEngine_attributes.retrieve(query2).iterator();
-		while(matching2.hasNext()){
-			attribute thisAttr = matching.next();
-			int specId = thisAttr.spectrumId;
-			if(results.contains(specId)){
-				System.out.println("ALREADY PRESENT");
-			} else{
-				results.add(specId);
-			}
-		}
-		results.size();
-
-
-
-		System.out.println(cqEngine_attributes.getIndexes());
-
-//		equal(Car.DOORS, 4)
-		// CREATE A QUERY
-//		Query<attribute> spectrumQuery = null;
+//		while(rs.next()){
+//			attribute newAttr = new attribute();
+//			newAttr.spectrumId =  rs.getInt(1);
+//			newAttr.id = rs.getInt(3);
+//			newAttr.name = rs.getString(4);
+//			newAttr.int_val = rs.getInt(5);
+//			newAttr.double_val = rs.getDouble(6);
+////			newAttr.string_val = rs.getString(6);
+////			newAttr.binary_val = rs.getString(7);
+//// 			DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+////			newAttr.dt_val = DateTime.parse(rs.getString(8), fmt);
+//			cqEngine_attributes.add(newAttr);
+//		}
+//// and(contains(Car.DESCRIPTION, "flat tyre"), equal(Car.FEATURES, "spare tyre"));
+//		ArrayList<attribute> results = new ArrayList<>();
+//		Query<attribute> query1 = and(equal(attribute.NAME, "Irradiance Instability"), between(attribute.DOUBLE_VALUE, 0.0, 0.1));
+//		Iterator<attribute> matching = cqEngine_attributes.retrieve(query1).iterator();
+//		while(matching.hasNext()){
+//			results.add(matching.next());
+//		}
+//		results.size();
+//
+//		results.clear();
+//		Query<attribute> query2 = and(and(equal(attribute.NAME, "Irradiance Instability"), between(attribute.DOUBLE_VALUE, 0.0, 0.1)), and(equal(attribute.NAME, "PCB Temperature"), between(attribute.DOUBLE_VALUE, 12.0, 13.0)));
+//		Iterator<attribute> matching2 = cqEngine_attributes.retrieve(query2).iterator();
+//		while(matching2.hasNext()){
+//			attribute thisAttr = matching.next();
+//			int specId = thisAttr.spectrumId;
+//			if(results.contains(specId)){
+//				System.out.println("ALREADY PRESENT");
+//			} else{
+//				results.add(specId);
+//			}
+//		}
+//		results.size();
+//
+//
+//
+//		System.out.println(cqEngine_attributes.getIndexes());
+//
+////		equal(Car.DOORS, 4)
+//		// CREATE A QUERY
+////		Query<attribute> spectrumQuery = null;
 
 	}
 	

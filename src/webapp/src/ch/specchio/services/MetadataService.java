@@ -178,7 +178,10 @@ public class MetadataService extends SPECCHIOService {
 	public void createFilterCollection(MetadataSelectionDescriptor mds) throws SQLException {
 
 		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		factory.getAttributes().createFilterCollection(mds.getIds(), factory.getStatementBuilder());
+		List<attribute> attrs = factory.getAttributes().getNonNullAttributes(mds.getIds(), factory.getStatementBuilder());
+		ArrayList<attribute> attributes = new ArrayList<>(attrs);
+		SpectrumFactory specfactory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.getAttributes().createFilterCollection(mds.getIds(), attributes, specfactory.getStatementBuilder());
 		factory.dispose();
 
 	}
