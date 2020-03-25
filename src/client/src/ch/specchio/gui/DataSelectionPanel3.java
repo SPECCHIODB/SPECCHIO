@@ -12,9 +12,6 @@ import ch.specchio.types.Category;
 import ch.specchio.types.attribute;
 import ch.specchio.types.spectral_node_object;
 import ch.specchio.types.spectrum_node;
-import com.googlecode.cqengine.ConcurrentIndexedCollection;
-import com.googlecode.cqengine.IndexedCollection;
-import com.googlecode.cqengine.index.navigable.NavigableIndex;
 
 
 import javax.swing.*;
@@ -28,7 +25,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.*;
 import java.util.*;
 
-import static com.googlecode.cqengine.query.QueryFactory.*;
 
 public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener, QueryConditionChangeInterface {
     private SPECCHIOClient specchioClient;
@@ -48,10 +44,6 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
     private FileTransferHandler fileTransferHandler;
     private ArrayList<Integer> originalIds;
     private Boolean nothingSelected;
-    private ConcurrentIndexedCollection<attribute> attributeFilteringList;
-    private ConcurrentIndexedCollection<attribute> tmpAttributeFilteringList;
-    private ConcurrentIndexedCollection<attribute> backupAttributeFilteringList;
-    private HashMap<Integer, ConcurrentIndexedCollection<attribute>> filterArchive;
 
     public DataSelectionPanel3(SPECCHIOClient specchioClient, Frame frameReference){
         this.specchioClient = specchioClient;
@@ -120,12 +112,6 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         // ARRAYLIST FOR MATCHING ATTRIBUTES
         availableAttributes = new ArrayList<>();
 
-        // FILTERING CONTAINER
-        attributeFilteringList = new ConcurrentIndexedCollection<attribute>();
-        tmpAttributeFilteringList = new ConcurrentIndexedCollection<attribute>();
-        backupAttributeFilteringList = new ConcurrentIndexedCollection<attribute>();
-        // HASHMAP AS FILTERING ARCHIVE
-        filterArchive = new HashMap<>();
 
         // ADD TO LAYOUT
         add(hierarchySelect, BorderLayout.NORTH);
@@ -141,35 +127,9 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
 
     public void updateQueryBuilder(ArrayList<Integer> droppedIds) {
         try{
-//            availableCategories = specchioClient.getNonNullCategories(droppedIds);
-//            availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
-            filterArchive.clear();
-            ArrayList<attribute> matchingAttributes = specchioClient.createFilterCollection(droppedIds);
-
-//            cqEngine_attributes = new ConcurrentIndexedCollection<attribute>();
-            // CREATE AN INDEX
-            attributeFilteringList.addIndex(NavigableIndex.onAttribute(attribute.SPECTRUM_ID));
-            attributeFilteringList.addIndex(NavigableIndex.onAttribute(attribute.INT_VALUE));
-            attributeFilteringList.addIndex(NavigableIndex.onAttribute(attribute.DOUBLE_VALUE));
-            attributeFilteringList.addIndex(NavigableIndex.onAttribute(attribute.NAME));
-            for(attribute a : matchingAttributes){
-                attributeFilteringList.add(a);
-            }
-
-            backupAttributeFilteringList =  attributeFilteringList;
-            filterArchive.put(0, backupAttributeFilteringList);
-
-            ArrayList<attribute> results = new ArrayList<>();
-            com.googlecode.cqengine.query.Query<attribute> query1 = and(equal(attribute.NAME, "Irradiance Instability"), between(attribute.DOUBLE_VALUE, 0.0, 0.1));
-            Iterator<attribute> matching = cqEngine_attributes.retrieve(query1).iterator();
-            while(matching.hasNext()){
-                results.add(matching.next());
-            }
-            IndexedCollection<attribute> filterStep = new ConcurrentIndexedCollection<attribute>();
-            for(attribute a : results){
-                filterStep.add(a);
-            }
-
+            availableCategories = specchioClient.getNonNullCategories(droppedIds);
+            availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
+//            specchioClient.createFilterCollection(droppedIds);
 
             selectedIds = droppedIds;
             spectrumFilterPanel.updateCategories(availableCategories, availableAttributes);
