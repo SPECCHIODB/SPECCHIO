@@ -518,8 +518,8 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getNonNullAttributes(spectrumIds);
 	}
 
-	public void createFilterCollection(ArrayList<Integer> spectrumIds){
-		realClient.createFilterCollection(spectrumIds);
+	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes){
+		return realClient.findMatchingSpectra(spectrumIds, queryAttributes);
 	}
 	
 	

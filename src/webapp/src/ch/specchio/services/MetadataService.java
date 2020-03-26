@@ -173,17 +173,17 @@ public class MetadataService extends SPECCHIOService {
 	 * @throws SPECCHIOFactoryException	could not connect to the database
 	 */
 	@POST
-	@Path("create_filterCollection")
+	@Path("findMatchingSpectra")
 	@Consumes(MediaType.APPLICATION_XML)
-	public void createFilterCollection(MetadataSelectionDescriptor mds) throws SQLException {
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] findMatchingSpectra(MetadataSelectionDescriptor mds) throws SQLException {
 
 		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		List<attribute> attrs = factory.getAttributes().getNonNullAttributes(mds.getIds(), factory.getStatementBuilder());
-		ArrayList<attribute> attributes = new ArrayList<>(attrs);
-		SpectrumFactory specfactory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		factory.getAttributes().createFilterCollection(mds.getIds(), attributes, specfactory.getStatementBuilder());
+		ArrayList<Integer> foundSpectra = factory.getAttributes().findMatchingSpectra(mds.getIds(), mds.getQueryAttributes(), factory.getStatementBuilder());
 		factory.dispose();
 
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(foundSpectra);
 	}
 
 

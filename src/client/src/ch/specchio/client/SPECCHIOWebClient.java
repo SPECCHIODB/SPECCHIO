@@ -606,9 +606,10 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return (ArrayList<attribute>) postForList(attribute.class, "metadata", "non_null_attributes", mds);
 	}
 
-	public void createFilterCollection(ArrayList<Integer> spectrumIds){
+	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes){
 		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
-		postForObject(MetadataSelectionDescriptor.class, "metadata", "create_filterCollection", mds);
+		mds.setQueryAttributes(queryAttributes);
+		return (ArrayList<Integer>) postForList(Integer.class, "metadata", "findMatchingSpectra", mds);
 	}
 	
 	

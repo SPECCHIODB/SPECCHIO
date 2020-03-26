@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import javax.xml.bind.annotation.*;
 
-
 /**
  * This class describes selection to spectrum metadata, for use with the metadata services.
  */
@@ -21,6 +20,7 @@ public class MetadataSelectionDescriptor {
 	private int level = MetaParameter.SPECTRUM_LEVEL; // default value
 	private int target_hierarchy_id;
 	private  int current_hierarchy_id;
+	private ArrayList<QueryAttribute> queryAttributes;
 	
 	/**
 	 * Default Constructor.
@@ -130,6 +130,13 @@ public class MetadataSelectionDescriptor {
 	public void setDistinct(Boolean distinct) {
 		this.distinct = distinct;
 	}
-	
 
+	@XmlElement(name="queryattribute")
+	public ArrayList<QueryAttribute> getQueryAttributes() {
+		return queryAttributes;
+	}
+
+	public void setQueryAttributes(ArrayList<QueryAttribute> queryAttributes) {
+		this.queryAttributes = queryAttributes;
+	}
 }

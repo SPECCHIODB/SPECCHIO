@@ -303,7 +303,7 @@ public interface SPECCHIOClient {
 
 	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds);
 
-	public void createFilterCollection(ArrayList<Integer> spectrumIds);
+	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes);
 
 
 	/**
