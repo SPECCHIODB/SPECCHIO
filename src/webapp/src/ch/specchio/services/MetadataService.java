@@ -1,10 +1,12 @@
 package ch.specchio.services;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.*;
 
 import javax.ws.rs.*;
@@ -184,6 +186,24 @@ public class MetadataService extends SPECCHIOService {
 
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		return adapter.marshalArray(foundSpectra);
+	}
+
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all attributes for which the given spectra contain data, includes max and min values
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("create_filter_collection")
+	@Consumes(MediaType.APPLICATION_XML)
+	public void createFilterCollection(MetadataSelectionDescriptor mds) throws SQLException, IllegalAccessException, ParseException, InstantiationException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.getAttributes().createFilterCollection(mds.getIds(), mds.getAttribute_ids(), factory.getStatementBuilder());
+		factory.dispose();
+
 	}
 
 

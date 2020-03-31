@@ -94,6 +94,7 @@ dependencies {
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.11'
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.2.11'
     compile group: 'com.jidesoft', name: 'jide-oss', version: '3.6.17'
+    compile group: 'com.googlecode.cqengine', name: 'cqengine', version: '3.4.0'
     
 
     // Types

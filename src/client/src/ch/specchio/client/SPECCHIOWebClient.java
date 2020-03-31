@@ -611,7 +611,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		mds.setQueryAttributes(queryAttributes);
 		return (ArrayList<Integer>) postForList(Integer.class, "metadata", "findMatchingSpectra", mds);
 	}
-	
+
+	public void createFilterCollection(ArrayList<Integer> spectrumIds, ArrayList<Integer> attributeIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, attributeIds);
+		postForList(Integer.class, "metadata", "create_filter_collection", mds);
+	}
 	
 	/**
 	 * Get a campaign descriptor.

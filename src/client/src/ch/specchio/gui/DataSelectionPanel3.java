@@ -126,39 +126,44 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
         try{
             availableCategories = specchioClient.getNonNullCategories(droppedIds);
             availableAttributes = specchioClient.getNonNullAttributes(droppedIds);
-
-            ArrayList<QueryAttribute> queryAttributes = new ArrayList<>();
-            for(attribute at : availableAttributes){
-                String minVal = null;
-                String maxVal = null;
-                switch(at.default_storage_field){
-                    case("int_val"):
-                        minVal = at.getMIN_INT_VAL();
-                        maxVal = at.getMAX_INT_VAL();
-                        break;
-                    case("double_val"):
-                        minVal = at.getMIN_DOUBLE_VAL();
-                        maxVal = at.getMAX_DOUBLE_VAL();
-                        break;
-//                    case("string_val"):
-//                        minVal = at.getMIN_STRING_VAL();
-//                        maxVal = at.getMAX_STRING_VAL();
-//                        break;
-//                    case("binary_val"):
-//                        minVal = at.getMIN_BINARY_VAL();
-//                        maxVal = at.getMAX_BINARY_VAL();
-//                        break;
-                    case("datetime_val"):
-                        minVal = at.getMIN_DATETIME_VAL();
-                        maxVal = at.getMAX_DATETIME_VAL();
-                        break;
-                    default:
-                        minVal = "NULL";
-                        maxVal = "NULL";
-                }
-                queryAttributes.add(new QueryAttribute(at.name, at.getId(), at.getDefaultStorageField(), minVal, maxVal));
+            ArrayList<Integer> attributeIds = new ArrayList<>();
+            for(attribute attri : availableAttributes){
+                attributeIds.add(attri.getId());
             }
-            specchioClient.findMatchingSpectra(droppedIds, queryAttributes);
+
+//            ArrayList<QueryAttribute> queryAttributes = new ArrayList<>();
+//            for(attribute at : availableAttributes){
+//                String minVal = null;
+//                String maxVal = null;
+//                switch(at.default_storage_field){
+//                    case("int_val"):
+//                        minVal = at.getMIN_INT_VAL();
+//                        maxVal = at.getMAX_INT_VAL();
+//                        break;
+//                    case("double_val"):
+//                        minVal = at.getMIN_DOUBLE_VAL();
+//                        maxVal = at.getMAX_DOUBLE_VAL();
+//                        break;
+////                    case("string_val"):
+////                        minVal = at.getMIN_STRING_VAL();
+////                        maxVal = at.getMAX_STRING_VAL();
+////                        break;
+////                    case("binary_val"):
+////                        minVal = at.getMIN_BINARY_VAL();
+////                        maxVal = at.getMAX_BINARY_VAL();
+////                        break;
+//                    case("datetime_val"):
+//                        minVal = at.getMIN_DATETIME_VAL();
+//                        maxVal = at.getMAX_DATETIME_VAL();
+//                        break;
+//                    default:
+//                        minVal = "NULL";
+//                        maxVal = "NULL";
+//                }
+//                queryAttributes.add(new QueryAttribute(at.name, at.getId(), at.getDefaultStorageField(), minVal, maxVal));
+//            }
+//            specchioClient.findMatchingSpectra(droppedIds, queryAttributes);
+            specchioClient.createFilterCollection(droppedIds, attributeIds);
 
             selectedIds = droppedIds;
             spectrumFilterPanel.updateCategories(availableCategories, availableAttributes);

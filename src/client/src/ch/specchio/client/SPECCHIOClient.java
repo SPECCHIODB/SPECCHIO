@@ -305,6 +305,7 @@ public interface SPECCHIOClient {
 
 	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes);
 
+	public void createFilterCollection(ArrayList<Integer> specturmIds, ArrayList<Integer> attributeIds);
 
 	/**
 	 * Export a campaign.
