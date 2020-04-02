@@ -197,14 +197,14 @@ private JMenuItem dbConfigmenuItem;
       menuBar.add(menu);
 
       // Data Visualizations
-	   menu = new JMenu("Visual Analysis Toolbox");
+//	   menu = new JMenu("Visual Analysis Toolbox");
 
-	   menuItem = new JMenuItem(this.fluoSpecchioVis);
-	   menuItem.addActionListener(this);
-	   menu.add(menuItem);
-	   user_menu_items.put(fluoSpecchioVis, menuItem);
+//	   menuItem = new JMenuItem(this.fluoSpecchioVis);
+//	   menuItem.addActionListener(this);
+//	   menu.add(menuItem);
+//	   user_menu_items.put(fluoSpecchioVis, menuItem);
 
-	   menuBar.add(menu);
+//	   menuBar.add(menu);
       
       // Data Maintenance 
       menu = new JMenu("Data Maintenance");
@@ -713,19 +713,19 @@ private JMenuItem dbConfigmenuItem;
          
       }
 
-      if(fluoSpecchioVis.equals(e.getActionCommand())){
-      	try{
-      		InfoVis vis = new InfoVis();
-		}
-      	catch (SPECCHIOClientException ex){
-      		JOptionPane.showMessageDialog(
-					SPECCHIOApplication.getInstance().get_frame(),
-					ex.getMessage(),
-					"Error",
-					JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
-			);
-		}
-	  }
+//      if(fluoSpecchioVis.equals(e.getActionCommand())){
+//      	try{
+//      		InfoVis vis = new InfoVis();
+//		}
+//      	catch (SPECCHIOClientException ex){
+//      		JOptionPane.showMessageDialog(
+//					SPECCHIOApplication.getInstance().get_frame(),
+//					ex.getMessage(),
+//					"Error",
+//					JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
+//			);
+//		}
+//	  }
       
       if(load_sensor.equals(e.getActionCommand()))
       {
