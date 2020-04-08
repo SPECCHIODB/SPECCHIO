@@ -93,10 +93,10 @@ public class EAVDBServices extends Thread {
 		while(li.hasNext())
 		{
 			MetaParameter e =  li.next();
+			MetaParameter e2;
+			e2 = this.reduce_redundancy(e);
 
-			e = this.reduce_redundancy(e);
-
-			if(e.getEavId() == 0)
+			if(!e.equals(e2))
 			{					
 
 				value_strings.add(get_metaparameter_value_string(campaign_id, e));			
@@ -659,25 +659,24 @@ public class EAVDBServices extends Thread {
 		// check if it is already contained in the list
 		ListIterator<MetaParameter> li = known_metaparameters.listIterator();
 		
-		while(li.hasNext() && matches == false)
-		{
+		while(li.hasNext() && matches == false) {
 			curr_mp = li.next();
-			
-			// attribute must be matching
+			if (! curr_mp.getAttributeName().equals("File Name")) {
+
+				// attribute must be matching
 //			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
 //			{
-		
+
 				boolean equalValues = (mp.getValue() == null && curr_mp.getValue() == null) || (mp.getValue() != null && mp.hasEqualValue(curr_mp)); // mp.getValue().equals(curr_mp.getValue())
-				if(mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
+				if (mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
 				{
 					matches = equalValues;
-				}
-				else
-				{
+				} else {
 					matches = mp.getUnitId().equals(curr_mp.getUnitId()) && equalValues;
 				}
 //			}
 
+			}
 		}
 		
 		if(matches)
