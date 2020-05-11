@@ -213,11 +213,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 	public ArrayList<Integer> copySpectra(MetadataSelectionDescriptor mds) throws SPECCHIOFactoryException {
 		ArrayList<Integer> spectra = mds.getIds();
 		int trgtHier = mds.getTarget_hierarchy_id();
-		int currHier = mds.getCurrent_hierarchy_id();
-		ArrayList<Integer> newSpectra = new ArrayList<>();
+
 		ArrayList<Integer> copyId = new ArrayList<>();
 		try {
-			SQL_StatementBuilder SQL = getStatementBuilder();
+			SQL_StatementBuilder SQL = new SQL_StatementBuilder(getConnection());
 			String conc_ids = SQL.conc_ids(spectra);
 			String sql = "INSERT INTO spectrum_view ("
 					+ " hierarchy_level_id, sensor_id, campaign_id, "
@@ -239,17 +238,21 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			rs.close();
 
 			// copy all eav references at spectrum level without inherited eav data
+//			SQL = new SQL_StatementBuilder(getConnection());
+			PreparedStatement stmt = SQL.prepareStatement("UPDATE " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id =  ?");
 			for(int i = 0; i < spectra.size(); i++) {
 				ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(MetaParameter.SPECTRUM_LEVEL, spectra.get(i), false); // false = no inheritance
 				getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, copyId.get(i), eav_ids);
-//
-//				// exchange hierarchy id
-//					String new_conc_ids = SQL.conc_ids(copyId);
-				sql = "update " + (this.Is_admin() ? "spectrum" : "spectrum_view") + " set hierarchy_level_id = " + trgtHier + " where spectrum_id = " + copyId.get(i);
-				statement.executeUpdate(sql);
-
+				stmt.setInt(1, copyId.get(i));
+				stmt.addBatch();
 			}
+
+			stmt.executeBatch();
+
 			// update the aggregated info in the upper hierarchies
+//			SQL = new SQL_StatementBuilder(getConnection());
+			sql = " ";
+			statement = SQL.prepareStatement(sql);
 			SpectralFileFactory sf_factory = new SpectralFileFactory(this);
 			sf_factory.insertHierarchySpectrumReferences(trgtHier, copyId, 0, statement);
 
