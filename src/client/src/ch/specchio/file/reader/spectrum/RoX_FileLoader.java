@@ -70,30 +70,56 @@ public class RoX_FileLoader extends JB_FileLoader {
 				// check if this a metadata line
 				if(r.get(3).equals("auto_mode"))
 				{
+					if(r.get(12).equals("mainboard_humidity=")) { // this is the "old" formatting
+						spectrum_number = r.get(0);
+						date = r.get(1);
+						time = r.get(2);
+						IT_WR = r.get(5);
+						IT_VEG = r.get(7);
+						mainboard_temp = r.get(11);
+						mainboard_humidity = r.get(13);
+	//					box_rel_hum = r.get(15);
+	//					rel_hum = r.get(17);
+						instrument_name = r.get(14);
+						String[] name_parts = instrument_name.split(" ");
+						String[] tmp = name_parts[2].split("-");
+						instrument_number = tmp[1];
+						gps_time  = r.get(16);
+
+						// remove decimal point from time string if existing
+						gps_time = gps_time.replace(".", "");
+
+						gps_date = r.get(18);
+						lat = r.get(20);
+						lon = r.get(22);
+					}
+					else if(r.get(12).equals("chamber_temp[C]=")) { // this is the new formatting
+						spectrum_number = r.get(0);
+						date = r.get(1);
+						time = r.get(2);
+						IT_WR = r.get(5);
+						IT_VEG = r.get(7);
+						mainboard_temp = r.get(11);
+						mainboard_humidity = r.get(15);
+						//					box_rel_hum = r.get(15);
+						//					rel_hum = r.get(17);
+						instrument_name = r.get(18);
+						String[] name_parts = instrument_name.split(" ");
+						String[] tmp = name_parts[2].split("-");
+						instrument_number = tmp[1];
+						gps_time  = r.get(20);
+
+						// remove decimal point from time string if existing
+						gps_time = gps_time.replace(".", "");
+
+						gps_date = r.get(22);
+						lat = r.get(24);
+						lon = r.get(26);
+					} else{ // this leaves room for other formatting
+
+					}
 
 
-					spectrum_number = r.get(0);
-					date = r.get(1);
-					time = r.get(2);	
-					IT_WR = r.get(5);	
-					IT_VEG = r.get(7);
-					mainboard_temp = r.get(11);
-					mainboard_humidity = r.get(13);
-//					box_rel_hum = r.get(15);
-//					rel_hum = r.get(17);
-					instrument_name = r.get(14);
-					String[] name_parts = instrument_name.split(" ");
-					String[] tmp = name_parts[2].split("-");
-					instrument_number = tmp[1];					
-					gps_time  = r.get(16);
-					
-					// remove decimal point from time string if existing
-					gps_time = gps_time.replace(".", "");		
-					
-					gps_date = r.get(18);
-					lat = r.get(20);
-					lon = r.get(22);
-					//voltage = r.get(i);
 
 
 					
