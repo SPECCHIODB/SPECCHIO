@@ -244,24 +244,15 @@ public class SPECCHIOFactory {
 		this.sql = new SQL_StatementBuilder(conn);
 		
 		// set up EAV services
-		
-		this.eav = EAVDBServices_Hash.get(getDatabaseUserName());
-		
-		
-		if(this.eav == null)
-		{
-			this.eav = new EAVDBServices(getStatementBuilder(), getAttributes(), getDatabaseUserName());
-			this.eav.set_primary_x_eav_tablename(MetaParameter.SPECTRUM_LEVEL, "spectrum_x_eav", "spectrum_x_eav_view", "spectrum_id", "spectrum");
-			this.eav.set_primary_x_eav_tablename(MetaParameter.HIERARCHY_LEVEL, "hierarchy_x_eav", "hierarchy_x_eav_view", "hierarchy_level_id", "hierarchy_level");
-			
-	
-			String table_name = (is_admin)? "eav" : "eav_view";
-			this.eav.set_eav_view_name(table_name);			
-			this.eav.setSPECCHIOFactory(this);	
-			
-			EAVDBServices_Hash.put(getDatabaseUserName(), eav);
-		}
-		this.eav.SQL = this.sql;
+		this.eav = new EAVDBServices(getStatementBuilder(), getAttributes(), getDatabaseUserName());
+		this.eav.set_primary_x_eav_tablename(MetaParameter.SPECTRUM_LEVEL, "spectrum_x_eav", "spectrum_x_eav_view", "spectrum_id", "spectrum");
+		this.eav.set_primary_x_eav_tablename(MetaParameter.HIERARCHY_LEVEL, "hierarchy_x_eav", "hierarchy_x_eav_view", "hierarchy_level_id", "hierarchy_level");
+
+
+		String table_name = (is_admin)? "eav" : "eav_view";
+		this.eav.set_eav_view_name(table_name);
+		this.eav.setSPECCHIOFactory(this);
+
 	}
 	
 	
@@ -269,7 +260,7 @@ public class SPECCHIOFactory {
 	 * Dispose of the factory.
 	 */
 	public void dispose() {
-		
+
 		try {
 			// release the database connection
 			if (this.my_conn) {
@@ -279,7 +270,7 @@ public class SPECCHIOFactory {
 		catch (SQLException ex) {
 			// don't know what might cause this
 		}
-		
+
 	}
 	
 	
@@ -366,7 +357,7 @@ public class SPECCHIOFactory {
 	 */
 	public EAVDBServices getEavServices() {
 		
-		return EAVDBServices_Hash.get(getDatabaseUserName());
+		return eav;
 		
 	}
 	

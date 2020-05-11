@@ -955,6 +955,7 @@ public class MetadataService extends SPECCHIOService {
 			}
 			factory.getEavServices().insertOrUpdateMetadataUsingHashMap(metadat, campaignId, attr_id);
 		}
+		factory.dispose();
 		return new XmlInteger(1);
 	}
 
