@@ -44,6 +44,11 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 	private ArrayList<Float> wvls_broadrange      = new ArrayList<Float>();
 	private ArrayList<Float> up_coef_broadrange   = new ArrayList<Float>();
 	private ArrayList<Float> dw_coef_broadrange   = new ArrayList<Float>();
+	private ArrayList<Float> nl_coefs_fluorescence = new ArrayList<>();
+	private ArrayList<Float> nl_coefs_broadrange = new ArrayList<>();
+	private ArrayList<Float> autonulling_coefs_broadrange = new ArrayList<>();
+	private ArrayList<Float> autonulling_coefs_fluorescence = new ArrayList<>();
+
 	
 
 	public JB_FileLoader(String file_format_name, SPECCHIOClient specchio_client,
@@ -171,6 +176,17 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 					up_coef_broadrange.add(Float.valueOf(r.get(4)));
 					dw_coef_broadrange.add(Float.valueOf(r.get(5)));
 					i++;
+
+					if(this.campaignDataLoader.is_nl_cal_corr()){
+						if(10 <= r.getRecordNumber() && r.getRecordNumber() <= 17){
+							nl_coefs_fluorescence.add(Float.valueOf(r.get(6).replace("\"", "")));
+						} else if(19 <= r.getRecordNumber() && r.getRecordNumber() <= 26){
+							nl_coefs_broadrange.add(Float.valueOf(r.get(6).replace("\"", "")));
+						} else if(r.getRecordNumber() == 28){ // Since at the time of writing the situation with these autonulling factors is unclear, added the option of arrays, and put the same value into both - UNCLEAN SOLUTION!!
+							autonulling_coefs_fluorescence.add(Float.valueOf(r.get(6).replace("\"", "")));
+							autonulling_coefs_broadrange.add(Float.valueOf(r.get(6).replace("\"", "")));
+						}
+					}
 					
 					if(r.getRecordNumber()==4)
 					{
@@ -184,7 +200,7 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 				if (is_fluoresence_sensor)
 				{
 					spec_file.addWvls(new Float[wvls_fluorescence.size()]);
-					spec_file.setWvls(0, wvls_fluorescence.toArray(spec_file.getWvls(0)));						
+					spec_file.setWvls(0, wvls_fluorescence.toArray(spec_file.getWvls(0)));
 				}
 				else
 				{
@@ -192,9 +208,10 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 					spec_file.setWvls(0, wvls_broadrange.toArray(spec_file.getWvls(0)));					
 				}
 
+
 				csvParser.close();
 				
-			}				
+			}
 			else
 				cal_file_not_found = true;
 			
@@ -372,7 +389,15 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 	public ArrayList<Float> getDw_coef_broadrange() {
 		return dw_coef_broadrange;
 	}
-	
+
+	public ArrayList<Float> getNl_coefs_fluorescence(){return nl_coefs_fluorescence;}
+
+	public ArrayList<Float> getNl_coefs_broadrange(){return nl_coefs_broadrange;}
+
+	public ArrayList<Float> getAutonulling_coefs_fluorescence(){return autonulling_coefs_fluorescence;}
+
+	public ArrayList<Float> getAutonulling_coefs_broadrange(){return autonulling_coefs_broadrange;}
+
 	public boolean is_fluoresence_sensor() {
 		return is_fluoresence_sensor;
 	}
