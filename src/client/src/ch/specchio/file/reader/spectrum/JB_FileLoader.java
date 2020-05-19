@@ -183,7 +183,7 @@ public abstract class JB_FileLoader extends SpectralFileLoader {
 						} else if(19 <= r.getRecordNumber() && r.getRecordNumber() <= 26){
 							nl_coefs_broadrange.add(Float.valueOf(r.get(6).replace("\"", "")));
 						} else if(r.getRecordNumber() == 28){ // Since at the time of writing the situation with these autonulling factors is unclear, added the option of arrays, and put the same value into both - UNCLEAN SOLUTION!!
-							autonulling_coefs_fluorescence.add(Float.valueOf(r.get(6).replace("\"", "")));
+							autonulling_coefs_fluorescence.add(Float.valueOf("1"));
 							autonulling_coefs_broadrange.add(Float.valueOf(r.get(6).replace("\"", "")));
 						}
 					}
