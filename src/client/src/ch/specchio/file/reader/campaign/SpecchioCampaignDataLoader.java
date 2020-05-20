@@ -189,7 +189,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				if(f.getName().matches("CAL_.*_JB.*\\.csv"))
 				{
 					setFlox_rox_cal_file(f); // Here we store the reference to the calibration file, later used in each individual loader
-					if(f.getName().matches(".*_NL_.*")){
+					if(f.getName().matches(".*_NL.*")){
 						is_nl_cal_corr = true;
 					}
 				}
