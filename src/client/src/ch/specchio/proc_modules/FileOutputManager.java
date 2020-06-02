@@ -204,7 +204,7 @@ public class FileOutputManager extends Thread {
 		pr.set_operation("Initialising");
 		
 		// initialise variables
-		SpectrumWriterFactory writerFactory = new SpectrumWriterFactory();
+		SpectrumWriterFactory writerFactory = new SpectrumWriterFactory(this.specchio_client);
 		
 		// write spaces one at a time
 		int count = 0;
