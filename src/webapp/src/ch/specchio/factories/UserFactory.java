@@ -655,9 +655,6 @@ public class UserFactory extends SPECCHIOFactory {
 				"GRANT SELECT, INSERT, UPDATE(" + SQL.conc_cols(TableNames.SPECTRUM_VIEW_COLS) + ") ON " +
 				spectrumView + " TO " + userString
 			);
-//			stmt.executeUpdate(
-//				"GRANT SELECT (is_reference) ON " + spectrumView + " TO " + userString
-//			);
 			
 			// grant privileges on the user tables
 			for (String table : TableNames.USER_TABLES) {
@@ -675,6 +672,71 @@ public class UserFactory extends SPECCHIOFactory {
 		}
 		
 	}
+	
+	
+	/**
+	 * Grant read only user rights to a user.
+	 * 
+	 * @param user	the user
+	 * 
+	 * @throws SPECCHIOFactoryException database error
+	 */
+	private void grantReadOnlyUserRights(User user) throws SPECCHIOFactoryException {
+		
+		try {
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			Statement stmt = SQL.createStatement();
+			String query;
+			
+			// build a quoted string that identifies the user
+			String userString = SQL.quote_string(user.getUsername()) + "@" + SQL.quote_string(getDatabaseUserHost());
+		  	
+			// grant privileges on views
+			for (String view : TableNames.VIEWS) {
+				query = "GRANT SELECT" +
+						" ON " + SQL.prefix(getDatabaseName(), view) +
+						" TO " + userString;
+				stmt.executeUpdate(query);
+			}
+			
+			// grant privileges on tables
+			for (String table : TableNames.TABLES) {
+				query = "GRANT SELECT ON " + SQL.prefix(getDatabaseName(), table) + " TO " + userString;
+				stmt.executeUpdate(query);
+			}
+			
+			// allow creation and manipulation of temporary tables
+			query = "GRANT SELECT, DELETE, INSERT, UPDATE, CREATE TEMPORARY TABLES ON " +
+					SQL.prefix(getTempDatabaseName(), "*") +
+					" TO " + userString;
+			stmt.executeUpdate(query);
+			
+			// special grants for the spectrum table
+			String spectrumView = SQL.prefix(getDatabaseName(), "spectrum_view");
+			stmt.executeUpdate(
+				"GRANT SELECT(" + SQL.conc_cols(TableNames.SPECTRUM_VIEW_COLS) + ") ON " +
+				spectrumView + " TO " + userString
+			);
+//			stmt.executeUpdate(
+//				"GRANT SELECT (is_reference) ON " + spectrumView + " TO " + userString
+//			);
+			
+			// grant privileges on the user tables
+			for (String table : TableNames.USER_TABLES) {
+				query = "GRANT SELECT ON " + SQL.prefix(getDatabaseName(), table) + " TO " + userString;
+				stmt.executeUpdate(query);
+			}
+			
+			// flush privileges
+			stmt.executeUpdate("FLUSH PRIVILEGES");
+			stmt.close();
+		}
+		catch (SQLException ex) {
+			// database error
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+	}	
 	
 	
 	/**
@@ -927,7 +989,12 @@ public class UserFactory extends SPECCHIOFactory {
 			// grant rights
 			if (user.isInRole(UserRoles.ADMIN)) {
 				grantAdminRights(user);
-			} else {
+			}
+			else if (user.isInRole(UserRoles.READ_ONLY_USER))
+			{
+				this.grantReadOnlyUserRights(user);
+			}
+			else {
 				grantUserRights(user);
 			}
 			

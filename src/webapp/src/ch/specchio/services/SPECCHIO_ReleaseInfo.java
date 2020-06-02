@@ -27,6 +27,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 
+
+
+
+
+
 /**
  * A simple application which uses the generated JReleaseInfo file as
  * argument. It creates a table with the properties in the JReleaseInfo
@@ -391,3 +396,28 @@ public class SPECCHIO_ReleaseInfo {
     */
    public static final String getHome() { return BuildConfig.WEB; }
 }
+
+
+/** DO NOT EDIT. GENERATED CODE */
+class BuildConfig
+{
+   private BuildConfig () { /*. no instance */ }
+
+   public static final String VERSION = "3.3.0";
+
+   public static final String NAME = "webapp";
+
+   public static final String DESCRIPTION = "'SPECCHIO Spectral Information System'";
+
+   public static final String COPYRIGHT = "'Creative Commons Attribution-ShareAlike 3.0 Unported'";
+
+   public static final String MAIL = "'admin@specchio.ch'";
+
+   public static final String COMPANY = "''";
+
+   public static final String WEB = "'https://specchio.ch'";
+
+   public static final java.util.Date BUILD_DATE = new java.util.Date(1555102643774L);
+
+}
+

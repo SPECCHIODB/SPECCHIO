@@ -7,6 +7,10 @@
     <group-name>user</group-name> 
   </security-role-mapping>
   <security-role-mapping> 
+    <role-name>read_only_user</role-name> 
+    <group-name>read_only_user</group-name> 
+  </security-role-mapping>  
+  <security-role-mapping> 
     <role-name>admin</role-name> 
     <group-name>admin</group-name> 
   </security-role-mapping>

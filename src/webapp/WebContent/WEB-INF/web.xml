@@ -32,6 +32,10 @@
     	<param-name>SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION</param-name>
     	<param-value>jdbc/specchio_classified</param-value>
     </init-param>    
+    <init-param>
+    	<param-name>CREATE_READ_ONLY_USERS_BY_DEFAULT</param-name>
+    	<param-value>disabled</param-value>
+    </init-param>        
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
@@ -58,6 +62,7 @@
     <auth-constraint>
       <role-name>admin</role-name>
       <role-name>user</role-name>
+      <role-name>read_only_user</role-name>
     </auth-constraint>
   </security-constraint>
 </web-app>
