@@ -416,8 +416,8 @@ public class SpectralBrowserFactory extends SPECCHIOFactory {
 					query = "select spectrum_id from spectrum where " +
 							"campaign_id = " + node.getId();
 				} else if (node instanceof hierarchy_node) {
-					query = "select hxs.spectrum_id from hierarchy_level_x_spectrum hxs, spectrum s where " +
-							"hxs.hierarchy_level_id = " + node.getId() + " and hxs.spectrum_id = s.spectrum_id";
+					query = "select hxs.spectrum_id from hierarchy_level_x_spectrum hxs where " +
+							"hxs.hierarchy_level_id = " + node.getId();
 				}
 				
 				// build a list of ids from the database
