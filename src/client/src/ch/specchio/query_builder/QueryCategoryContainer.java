@@ -27,7 +27,8 @@ public class QueryCategoryContainer {
 		for (attribute attr : attrs)
 		{
 			
-			EAVQueryField eav_qc = new EAVQueryField(attr.getName(), attr.default_storage_field);	
+			EAVQueryField eav_qc = new EAVQueryField(attr.getName(), attr.default_storage_field);
+
 			this.fields.add(eav_qc);
 			
 			// automatically add a further condition for the higher value and set the operations for both
