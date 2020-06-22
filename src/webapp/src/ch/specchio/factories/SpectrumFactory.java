@@ -1884,15 +1884,12 @@ public class SpectrumFactory extends SPECCHIOFactory {
 				
 				
 				table_name = (is_admin)? "spectrum_x_eav" : "spectrum_x_eav_view";
-				cmd = "delete from "+table_name+" where " +
-						"eav_id in (" + getStatementBuilder().conc_ids(eav_ids) + ")";	
-				stmt.executeUpdate(cmd); 		
+				String colName = "eav_id";
+				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
+
 				
 				table_name = (is_admin)? "eav" : "eav_view";
-				cmd = "delete from "+table_name+" where " +
-						"eav_id in (" + getStatementBuilder().conc_ids(eav_ids) + ")";	
-				stmt.executeUpdate(cmd); 
-				
+				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
 
 				// EAV
 				// remove entries from eav x table
@@ -1905,12 +1902,9 @@ public class SpectrumFactory extends SPECCHIOFactory {
 				}			
 				rs.close();	
 				
-				
 				table_name = (is_admin)? "spectrum_x_eav" : "spectrum_x_eav_view";
-				cmd = "delete from "+table_name+" where " +
-						"spectrum_id in (" + ids + ")";	
-				stmt.executeUpdate(cmd); 	
-				
+				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
+
 				// remove eav's that are no longer referenced
 				table_name = (is_admin)? "eav" : "eav_view";
 				
@@ -1925,12 +1919,9 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					int cnt = rs.getInt(2);
 					if(cnt == 0) eav_ids_to_delete.add(rs.getInt(1));	
 				}			
-				rs.close();	
-				
-				
-				cmd = "delete from "+table_name+" where " +
-						"eav_id in (" + getStatementBuilder().conc_ids(eav_ids_to_delete) + ")";	
-				stmt.executeUpdate(cmd); 						
+				rs.close();
+
+				chunked_deletion(stmt, eav_ids_to_delete, table_name, colName, 1000);
 
 //				String spectrum_x_eav_table_or_view = table_name;
 
@@ -1942,15 +1933,17 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 				// remove entries from hierarchy_level_x_spectrum
 				table_name = (is_admin)? "hierarchy_level_x_spectrum" : "hierarchy_level_x_spectrum_view";
+				colName = "spectrum_id";
+				chunked_deletion(stmt, spectrum_ids, table_name, colName, 1000);
 				cmd = "delete from "+table_name+" where " +
 						"spectrum_id in (" + ids + ")";		
 				stmt.executeUpdate(cmd); 				
 
 				// remove spectrum itself
 				table_name = (is_admin)? "spectrum" : "spectrum_view";
-				cmd = "delete from "+table_name+" where spectrum_id in (" + ids + ")";	
-				stmt.executeUpdate(cmd);
-
+				chunked_deletion(stmt, spectrum_ids, table_name, colName, 1000);
+//				cmd = "delete from "+table_name+" where spectrum_id in (" + ids + ")";
+//				stmt.executeUpdate(cmd);
 				stmt.close();
 			}
 		}
@@ -1960,7 +1953,26 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		}
 					
 	}	
-	
+
+	private void chunked_deletion(Statement stmt, ArrayList<Integer> ids, String table_name, String colName, int batchsize) throws SQLException {
+		stmt = getStatementBuilder().createStatement();
+		stmt.getConnection().setAutoCommit(true);
+		int batches = (int) (ids.size() / batchsize) + 1;
+
+		for(int i = 0; i < batches; i++){
+			ArrayList<Integer> sublist;
+			if(i < batches - 1){
+				sublist = new ArrayList<Integer> (ids.subList(i*batchsize, (i*batchsize + batchsize)));
+			} else{
+				sublist = new ArrayList<Integer> (ids.subList(i*batchsize, ids.size()));
+			}
+
+			String delete_ids = getStatementBuilder().conc_ids(sublist);
+			String cmd = "DELETE FROM " + table_name + " WHERE " + colName + " IN (" + delete_ids + ")";
+			stmt.executeUpdate(cmd);
+		}
+		stmt.getConnection().setAutoCommit(false);
+	}
 	
 	/**
 	 * Update a metadata field for a given list of spectra.

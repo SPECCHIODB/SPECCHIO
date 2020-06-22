@@ -1314,7 +1314,12 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 	 * @throws SPECCHIOFactoryException	the sub-hierarchy could not be remove
 	 */
 	public void removeHierarchyNode(int hierarchy_id, boolean is_admin) throws SPECCHIOFactoryException {
-		
+//		The process of removing a hierarchy node consists of five steps:
+//		1. Remove the spectra directly linked to this hierarchy.
+//		2. Find sub-hierarchies and recursively delete them (e.g. including the steps 1 --> 3).
+//		3. Delete the eav data related to the current hierarchy.
+//		4. Find out if there are eav_ids no longer shared by other spectra (the expensive part).
+//		5. Remove the hierarchy itself.
 		try {
 			
 			Statement stmt = getStatementBuilder().createStatement();
