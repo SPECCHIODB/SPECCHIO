@@ -1,6 +1,7 @@
 package ch.specchio.services;
 
 import java.io.IOException;
+import java.security.Principal;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.Cookie;
@@ -120,6 +121,16 @@ public class SPECCHIOService {
 		if (user_account_creation_restriction != null) {
 			capabilities.setCapability("SCHEMA_WITH_USER_ACCOUNT_CREATION_RESTRICTION", user_account_creation_restriction);
 		}	
+		
+		// enable or disable default read only user creation
+		String read_only_user_accounts = config.getInitParameter(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT);
+		if (read_only_user_accounts != null && read_only_user_accounts.equalsIgnoreCase("enabled")) {
+			capabilities.setCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT, read_only_user_accounts);
+		}
+		else
+		{
+			capabilities.setCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT, "disabled");		
+		}
 		
 		
 		// set database capabilities
@@ -248,6 +259,7 @@ public class SPECCHIOService {
 	 */
 	public boolean isAdmin() {
 		
+		Principal name = security.getUserPrincipal();
 		return security.isUserInRole(UserRoles.ADMIN);		
 	}	
 	

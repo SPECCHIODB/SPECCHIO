@@ -34,6 +34,9 @@ public class Capabilities {
 	/** capability name for the server build number */
 	public static final String SERVER_BUILD_NUMBER = "server_build_number";
 	
+	/** capability name for the read only user switch */
+	public static final String CREATE_READ_ONLY_USERS_BY_DEFAULT = "CREATE_READ_ONLY_USERS_BY_DEFAULT";
+	
 	
 	/**
 	 * Default constructor. Constructs an empty capabilities object.

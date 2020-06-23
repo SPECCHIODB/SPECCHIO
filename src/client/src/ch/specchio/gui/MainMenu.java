@@ -33,6 +33,7 @@ import ch.specchio.constants.UserRoles;
 import ch.specchio.metadata.MetaDataFromTabModel;
 import ch.specchio.queries.Query;
 import ch.specchio.types.Campaign;
+import ch.specchio.types.Capabilities;
 import ch.specchio.types.Category;
 import ch.specchio.types.Institute;
 import ch.specchio.types.MetaParameter;
@@ -768,20 +769,47 @@ private JMenuItem dbConfigmenuItem;
          container.add(picLabel);
          
          JButton button = new JButton();
+         
+         //  create text
+         String text = "<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" +
+                 "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
+                 "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
+                		 + "<br><br>" +
+                		 "(c) 2006-2019 by Remote Sensing Laboratories (RSL)<br>" +
+                		 "Dept. of Geography, " +
+                		 "University of Zurich (CH)<br>" +
+                		 "(c) 2013-2014 by University of Wollongong (AU)<br><br>" +
+                		 " For more information visit: " +
+                		 "<FONT color=\"#000099\"><U>www.specchio.ch</U></FONT>" +
+                		 " or <br>" +
+                		 "refer to the user guide.";
+         
+         // add server details if available
+         SPECCHIOClient specchio_client = SPECCHIOApplication.getInstance().getClient();
+         
+         if(specchio_client != null)
+         {
+        	 text = text  + "<br><br>" + "Server Settings" +  "<br>" + "-------------" + "<br><br>";
+        	 
+        	 
+             String create_read_only_users;
+             if(specchio_client.getCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT) != null)
+             {
+            	 create_read_only_users = specchio_client.getCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT);
+
+            	 text = text  + Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT + ": " + create_read_only_users  + "<br>";
+             }
+             
+        	 
+         }
+
+
+
+
+
+         text = text + " </HTML>";
         
-         button.setText("<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" +
-         "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
-         "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
-        		 + "<br><br>" +
-        		 "(c) 2006-2019 by Remote Sensing Laboratories (RSL)<br>" +
-        		 "Dept. of Geography, " +
-        		 "University of Zurich (CH)<br>" +
-        		 "(c) 2013-2014 by University of Wollongong (AU)<br><br>" +
-        		 " For more information visit: " +
-        		 "<FONT color=\"#000099\"><U>www.specchio.ch</U></FONT>" +
-        		 " or <br>" +
-        		 "refer to the user guide." +
-        		 " </HTML>");
+         button.setText(text);
          button.setHorizontalAlignment(SwingConstants.LEFT);
          button.setBorderPainted(false);
          button.setOpaque(false);
