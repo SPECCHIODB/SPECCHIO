@@ -445,9 +445,9 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			return; // catch empty list
 
 		try {
-			
+
 			SQL_StatementBuilder SQL = getStatementBuilder();
-		
+
 			ArrayList<String> value_strings = new ArrayList<String>();
 			String query = "insert into hierarchy_level_x_spectrum_view (hierarchy_level_id, spectrum_id) values ";
 //			Statement stmt = getStatementBuilder().createStatement();

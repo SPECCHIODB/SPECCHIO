@@ -594,8 +594,28 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	public ArrayList<Category> getCategoriesInfo() throws SPECCHIOClientException {
 		
 		return (ArrayList<Category>) getList(Category.class, "metadata", "categories_info");
-	}	
-	
+	}
+
+	public ArrayList<Category> getNonNullCategories(ArrayList<Integer> spectrumIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
+		return (ArrayList<Category>) postForList(Category.class, "metadata", "non_null_categories", mds);
+	}
+
+	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
+		return (ArrayList<attribute>) postForList(attribute.class, "metadata", "non_null_attributes", mds);
+	}
+
+	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, "");
+		mds.setQueryAttributes(queryAttributes);
+		return (ArrayList<Integer>) postForList(Integer.class, "metadata", "findMatchingSpectra", mds);
+	}
+
+	public void createFilterCollection(ArrayList<Integer> spectrumIds, ArrayList<Integer> attributeIds){
+		MetadataSelectionDescriptor mds = new MetadataSelectionDescriptor(spectrumIds, attributeIds);
+		postForList(Integer.class, "metadata", "create_filter_collection", mds);
+	}
 	
 	/**
 	 * Get a campaign descriptor.

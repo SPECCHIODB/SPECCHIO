@@ -41,7 +41,8 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	private int root_hierarchy_id = 0;
 	private boolean load_existing_hierarchy = false;
 	private boolean simple_delta_loading = true;
-	
+	private boolean is_nl_cal_corr = false;
+
 	ArrayList<String> file_errors = new ArrayList<String>();
 	private int successful_file_counter;
 	private int parsed_file_counter;
@@ -187,7 +188,10 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				// FloX/RoX specific identification of cal files (for the RoX example this used to be cal.csv)
 				if(f.getName().matches("CAL_.*_JB.*\\.csv"))
 				{
-					setFlox_rox_cal_file(f);
+					setFlox_rox_cal_file(f); // Here we store the reference to the calibration file, later used in each individual loader
+					if(f.getName().matches(".*_NL.*")){
+						is_nl_cal_corr = true;
+					}
 				}
 				
 			}
@@ -209,7 +213,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			// create a new entry in the database for this directory
 			hierarchy_id = insert_hierarchy(curr_dir.getName(), parent_id);
 
-			load_directory(hierarchy_id, curr_dir, parent_garbage_flag);
+			load_directory(hierarchy_id, curr_dir, parent_garbage_flag);  // recursive call
 		}
 		
 		
@@ -281,7 +285,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				// iterate over the files
 				ListIterator<File> file_li = files.listIterator();
 
-				while(file_li.hasNext()) {
+				while(file_li.hasNext()) { // For each data file create a loader
 					File file = file_li.next();
 
 					ArrayList<File> this_file = new ArrayList<File>(); // overkill ... change to single object later ...
@@ -290,7 +294,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 
 
-					sfl = get_spectral_file_loader(this_file);
+					sfl = get_spectral_file_loader(this_file); //
 
 					if (sfl != null) {
 
@@ -395,7 +399,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				{
 
 					// check existence of all spectral files
-					SpectralFiles sfs = new SpectralFiles();
+					SpectralFiles sfs = new SpectralFiles(); // Container class for spectral files
 
 					ArrayList<SpectralFile> spectral_light_file_list = new ArrayList<SpectralFile>();
 
@@ -404,7 +408,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 					while(sf_li.hasNext()) {
 						spec_file = sf_li.next();		
-						SpectralFile light_clone = new SpectralFile(spec_file);
+						SpectralFile light_clone = new SpectralFile(spec_file); // special constructor to create a lightweigth clone for checking the file existance
 						light_clone.setHierarchyId(parent_id);
 						light_clone.setCampaignId(campaign.getId());
 						light_clone.setCampaignType(campaign.getType());	
@@ -419,7 +423,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 					boolean[] exists_array = specchio_client.spectralFilesExist(sfs);
 
 
-					// insert spectral files
+					// INSERT SPECTRAL FILES
 
 					sf_li = spectral_file_list.listIterator();
 
@@ -756,13 +760,17 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		if(loader.is_fluoresence_sensor())
 		{
 			if(!loader.getDw_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_fluorescence(), instr, "dw_coef", "Downwelling channel - radiometric gain");
-			if(!loader.getUp_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_fluorescence(), instr, "up_coef", "Upwelling channel - radiometric gain");			
+			if(!loader.getUp_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_fluorescence(), instr, "up_coef", "Upwelling channel - radiometric gain");
+			if(!loader.getNl_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_fluorescence(), instr, "nl_coefs", "Non-Linearity Coefficients");
+			if(!loader.getAutonulling_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_fluorescence(), instr, "autonulling_coefs", "Autonulling Coefficients");
 		}
 		else
 		{
 			if(!loader.getDw_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_broadrange(), instr, "dw_coef", "Downwelling channel - radiometric gain");
 			if(!loader.getUp_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_broadrange(), instr, "up_coef", "Upwelling channel - radiometric gain");
-		}		
+			if(!loader.getNl_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_broadrange(), instr, "nl_coefs", "Non-Linearity Coefficients");
+			if(!loader.getAutonulling_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_broadrange(), instr, "autonulling_coefs", "Autonulling Coefficients");
+		}
 		
 	}
 	
@@ -784,11 +792,13 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		double[] doubleArray = new double[coeffs.size()];
 		for (int i = 0; i < coeffs.size(); i++) {
 		    doubleArray[i] = coeffs.get(i);  // no casting needed
-		}	
+		}
+
 				
 		c.setFactors(doubleArray);								
 		specchio_client.insertInstrumentCalibration(c);			
 	}
+
 
 	public int insert_hierarchy(String name, Integer parent_id) throws SPECCHIOClientException {
 		
@@ -1085,6 +1095,10 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	public void setFlox_rox_cal_file(File flox_rox_cal_file) {
 		this.flox_rox_cal_file = flox_rox_cal_file;
 	}	
+
+	public boolean is_nl_cal_corr(){
+		return this.is_nl_cal_corr;
+	}
 
 
 }

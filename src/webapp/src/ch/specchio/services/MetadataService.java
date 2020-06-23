@@ -1,9 +1,12 @@
 package ch.specchio.services;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.*;
 
 import javax.ws.rs.*;
@@ -11,10 +14,12 @@ import javax.ws.rs.core.*;
 import javax.annotation.security.*;
 
 import ch.specchio.constants.UserRoles;
+import ch.specchio.eav_db.EAVDBServices;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.factories.MetadataFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.factories.SpectralFileFactory;
+import ch.specchio.factories.SpectrumFactory;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.jaxb.XmlString;
@@ -118,9 +123,90 @@ public class MetadataService extends SPECCHIOService {
 		
 		return categories.toArray(new Category[0]);
 		
-	}	
-	
-	
+	}
+
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all categories for which the given spectra contain attributes
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("non_null_categories")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public Category[] nonNullCategories(MetadataSelectionDescriptor mds) throws SQLException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Category> categories = factory.getAttributes().getNonNullCategories(mds.getIds(),  factory.getStatementBuilder());
+		factory.dispose();
+
+		return categories.toArray(new Category[0]);
+
+	}
+
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all attributes for which the given spectra contain data, includes max and min values
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("non_null_attributes")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public attribute[] nonNullAttributes(MetadataSelectionDescriptor mds) throws SQLException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<attribute> attributes = factory.getAttributes().getNonNullAttributes(mds.getIds(), factory.getStatementBuilder());
+		factory.dispose();
+
+		return attributes.toArray(new attribute[0]);
+
+	}
+
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all attributes for which the given spectra contain data, includes max and min values
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("findMatchingSpectra")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] findMatchingSpectra(MetadataSelectionDescriptor mds) throws SQLException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<Integer> foundSpectra = factory.getAttributes().findMatchingSpectra(mds.getIds(), mds.getQueryAttributes(), factory.getStatementBuilder());
+		factory.dispose();
+
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(foundSpectra);
+	}
+
+	/**
+	 * Get the list of all known categories.
+	 *
+	 * @return an array of all attributes for which the given spectra contain data, includes max and min values
+	 *
+	 * @throws SPECCHIOFactoryException	could not connect to the database
+	 */
+	@POST
+	@Path("create_filter_collection")
+	@Consumes(MediaType.APPLICATION_XML)
+	public void createFilterCollection(MetadataSelectionDescriptor mds) throws SQLException, IllegalAccessException, ParseException, InstantiationException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+
+		MetadataFactory factory = new MetadataFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.getAttributes().createFilterCollection(mds.getIds(), mds.getAttribute_ids(), factory.getStatementBuilder());
+		factory.dispose();
+
+	}
+
+
 	/**
 	 * Get a hash table mapping identifiers to names.
 	 * 
@@ -869,6 +955,7 @@ public class MetadataService extends SPECCHIOService {
 			}
 			factory.getEavServices().insertOrUpdateMetadataUsingHashMap(metadat, campaignId, attr_id);
 		}
+		factory.dispose();
 		return new XmlInteger(1);
 	}
 

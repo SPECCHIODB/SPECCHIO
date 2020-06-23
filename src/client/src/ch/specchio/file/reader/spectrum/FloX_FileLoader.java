@@ -81,29 +81,40 @@ public class FloX_FileLoader extends JB_FileLoader {
 				// check if this a metadata line
 				if(r.get(3).equals("auto_mode"))
 				{
-
-					
+					// NOT EVERY FLOXBOX HAS THE SAME METADATA FORMAT
 					spectrum_number = r.get(0);
 					date = r.get(1);
 					time = r.get(2);	
 					IT_WR = r.get(5);	
 					IT_VEG = r.get(7);	
 					QEpro_Frame = r.get(11);	
-					QEpro_CCD =  r.get(13);	
-					mainboard_temp = r.get(15);	
-					
-					chamber_temp = r.get(17);
-					mainboard_humidity= r.get(19);
-					chamber_humidity= r.get(21);
+					QEpro_CCD =  r.get(13);
+
+					if(r.get(14).equals("mainboard_temp[C]=")){ // LAEGERN, and others
+						mainboard_temp = r.get(15);
+						chamber_temp = r.get(17);
+						mainboard_humidity= r.get(19);
+						chamber_humidity= r.get(21);
+
+	//					outside_temp = r.get(13);
+	//					box_rel_hum = r.get(15);
+	//					rel_hum = r.get(17);
+					}
+					else if(r.get(14).equals("chamber_temp[C]=")){ // OENSINGEN
+						chamber_temp = r.get(15);
+						chamber_humidity= r.get(17);
+						mainboard_temp = r.get(19);
+						mainboard_humidity= r.get(21);
+
+					}else{
+						System.out.println("Metadata format in file unknown. Can't parse");
+					}
+
 					instrument_name = r.get(22);
 					String[] name_parts = instrument_name.split(" ");
 					String[] tmp = name_parts[2].split("-");
-					instrument_number = tmp[1];				
-					
-//					outside_temp = r.get(13);
-//					box_rel_hum = r.get(15);
-//					rel_hum = r.get(17);
-					
+					instrument_number = tmp[1];
+
 					gps_time  = r.get(24); // typically of the formnat: 020142.
 					
 					// remove decimal point from time string if existing
@@ -112,7 +123,7 @@ public class FloX_FileLoader extends JB_FileLoader {
 					gps_date = r.get(26);
 					lat = r.get(28);
 					lon = r.get(30);					
-						
+
 
 					
 				}

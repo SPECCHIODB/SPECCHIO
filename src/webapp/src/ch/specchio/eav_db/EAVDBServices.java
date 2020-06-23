@@ -6,11 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
@@ -51,7 +47,9 @@ public class EAVDBServices extends Thread {
 	public SPECCHIOFactory specchioFactory;
 	
 	public EAVDBServices(SQL_StatementBuilder SQL, Attributes ATR, String databaseUserName) 
-	{				
+	{
+
+
 		this.SQL = SQL;
 		this.ATR = ATR;
 		this.databaseUserName = databaseUserName;
@@ -93,10 +91,10 @@ public class EAVDBServices extends Thread {
 		while(li.hasNext())
 		{
 			MetaParameter e =  li.next();
+			MetaParameter e2;
+			e2 = this.reduce_redundancy(e);
 
-			e = this.reduce_redundancy(e);
-
-			if(e.getEavId() == 0)
+			if(!e.equals(e2))
 			{					
 
 				value_strings.add(get_metaparameter_value_string(campaign_id, e));			
@@ -659,25 +657,24 @@ public class EAVDBServices extends Thread {
 		// check if it is already contained in the list
 		ListIterator<MetaParameter> li = known_metaparameters.listIterator();
 		
-		while(li.hasNext() && matches == false)
-		{
+		while(li.hasNext() && matches == false) {
 			curr_mp = li.next();
-			
-			// attribute must be matching
+			if (! curr_mp.getAttributeName().equals("File Name")) {
+
+				// attribute must be matching
 //			if(mp.getAttributeId().equals(curr_mp.getAttributeId()))
 //			{
-		
+
 				boolean equalValues = (mp.getValue() == null && curr_mp.getValue() == null) || (mp.getValue() != null && mp.hasEqualValue(curr_mp)); // mp.getValue().equals(curr_mp.getValue())
-				if(mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
+				if (mp.getUnitId() == 0) // catches the case where the unit was not set by the user or program (it is later enforced as RAW during insert)
 				{
 					matches = equalValues;
-				}
-				else
-				{
+				} else {
 					matches = mp.getUnitId().equals(curr_mp.getUnitId()) && equalValues;
 				}
 //			}
 
+			}
 		}
 		
 		if(matches)
@@ -1032,8 +1029,13 @@ public class EAVDBServices extends Thread {
 		// carry out the multi insert statement
 		query = query + SQL.conc_cols(value_strings);
 		Statement stmt = SQL.createStatement();
-		stmt.executeUpdate(query);
-		stmt.close();
+		try{
+			stmt.executeUpdate(query);
+			stmt.close();
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
 
 	}
 	
@@ -2526,48 +2528,54 @@ public class EAVDBServices extends Thread {
 
 		if(value_strings.size() > 0)
 		{
+			try {
+				// carry out the multi insert statement
+				query = query + SQL.conc_cols(value_strings);
+				query = query +
+						"ON DUPLICATE KEY UPDATE " +
+						"int_val = VALUES(int_val), " +
+						"double_val = VALUES(double_val), " +
+						"string_val = VALUES(string_val), " +
+						"binary_val = VALUES(binary_val), " +
+						"datetime_val = VALUES(datetime_val), " +
+						"taxonomy_id = VALUES(taxonomy_id), " +
+						"spatial_val = VALUES(spatial_val), " +
+						"unit_id = VALUES(unit_id)";
 
-			// carry out the multi insert statement
-			query = query + SQL.conc_cols(value_strings);
-			query = query +
-					"ON DUPLICATE KEY UPDATE " +
-					"int_val = VALUES(int_val), " +
-					"double_val = VALUES(double_val), " +
-					"string_val = VALUES(string_val), " +
-					"binary_val = VALUES(binary_val), " +
-					"datetime_val = VALUES(datetime_val), " +
-					"taxonomy_id = VALUES(taxonomy_id), " +
-					"spatial_val = VALUES(spatial_val), " +
-					"unit_id = VALUES(unit_id)";
+				PreparedStatement ps = SQL.prepareStatement(query);
+				ps.executeUpdate();
 
-			PreparedStatement ps = SQL.prepareStatement(query);
-			ps.executeUpdate();
 
-			if(eav_ids.size() > 0 ){
-				query = "SELECT eav_id, spectrum_id FROM eav " +
-						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
-						"AND attribute_id = " + attributeId +
-						" AND eav_id NOT IN (" +  SQL.conc_ids(eav_ids) + ")";
-			} else{
-				query = "SELECT eav_id, spectrum_id FROM eav " +
-						"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
-						" AND attribute_id = " + attributeId;
+
+				if(eav_ids.size() > 0 ){
+					query = "SELECT eav_id, spectrum_id FROM eav " +
+							"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+							"AND attribute_id = " + attributeId +
+							" AND eav_id NOT IN (" +  SQL.conc_ids(eav_ids) + ")";
+				} else{
+					query = "SELECT eav_id, spectrum_id FROM eav " +
+							"WHERE spectrum_id IN (" + SQL.conc_ids(spectrumIds) + ") " +
+							" AND attribute_id = " + attributeId;
+				}
+
+
+				ps = SQL.prepareStatement(query);
+
+				ResultSet rs = ps.executeQuery();
+
+				eav_ids.clear();
+				spectrumIds.clear();
+				while (rs.next()) {
+					eav_ids.add(rs.getInt(1));
+					spectrumIds.add(rs.getInt(2));
+				}
+
+				ps.close();
+			} catch (SQLClientInfoException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-
-
-			ps = SQL.prepareStatement(query);
-//			ps.executeQuery();
-			ResultSet rs = ps.executeQuery();
-
-//			int eav_id;
-			eav_ids.clear();
-			spectrumIds.clear();
-			while (rs.next()) {
-				eav_ids.add(rs.getInt(1));
-				spectrumIds.add(rs.getInt(2));
-			}
-
-			ps.close();
 
 		}
 

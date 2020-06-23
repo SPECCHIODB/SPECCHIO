@@ -266,7 +266,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 		// get a reference to the application's client object
 		this.specchio_client = SPECCHIOApplication.getInstance().getClient();
 		
-		// create a query object and initalise the matching ids to an empty list
+		// create a query object and initialise the matching ids to an empty list
 		query = new Query("spectrum");
 		query.addColumn("spectrum_id");
 		ids_matching_query = new ArrayList<Integer>();

@@ -509,6 +509,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getCategoriesInfo();
 		
 	}
+
+	public ArrayList<Category> getNonNullCategories(ArrayList<Integer> spectrumIds){
+		return realClient.getNonNullCategories(spectrumIds);
+	}
+
+	public ArrayList<attribute> getNonNullAttributes(ArrayList<Integer> spectrumIds){
+		return realClient.getNonNullAttributes(spectrumIds);
+	}
+
+	public ArrayList<Integer> findMatchingSpectra(ArrayList<Integer> spectrumIds, ArrayList<QueryAttribute> queryAttributes){
+		return realClient.findMatchingSpectra(spectrumIds, queryAttributes);
+	}
+
+	public void createFilterCollection(ArrayList<Integer> spectrumIds, ArrayList<Integer> attributeIds){
+		realClient.createFilterCollection(spectrumIds, attributeIds);
+	}
 	
 	
 	/**

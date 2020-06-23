@@ -929,6 +929,7 @@ public class SpaceFactory extends SPECCHIOFactory {
             {
 
                 Blob measurement = rs.getBlob(1);
+                int nElements = (int) measurement.length() / 4;
                 curr_id = rs.getInt(2);
 
                 if(curr_id != space.getSpectrumIds().get(cnt))
@@ -952,15 +953,17 @@ public class SpaceFactory extends SPECCHIOFactory {
 							}
 						}
 				}
-                double[] vector = new double[space.getDimensionality()];
+                double[] vector = new double[nElements];
+//				ArrayList<Double> vectorArr = new ArrayList<>();
 
-                for(int i = 0; i < space.getDimensionality(); i++)
+                for(int i = 0; i < nElements; i++)
                 {
                     try {
                         Float f = dis.readFloat();
 
 //							vectors[cnt][i]=f;
                         vector[i] = f.doubleValue();
+//						vectorArr.add(f.doubleValue());
                     } catch (IOException e) {
                         // don't know what would cause this
                         e.printStackTrace();
@@ -975,6 +978,11 @@ public class SpaceFactory extends SPECCHIOFactory {
                     // don't know what would cause this
                     e.printStackTrace();
                 }
+//                double[] vector = new double[vectorArr.size()];
+//
+//                for(int i=0;i<vectorArr.size();i++){
+//                	vector[i] = vectorArr.get(i);
+//				}
 
                 space.addVector(vector);
 
