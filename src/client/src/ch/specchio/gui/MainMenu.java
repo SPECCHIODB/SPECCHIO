@@ -800,7 +800,7 @@ private JMenuItem dbConfigmenuItem;
                  "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
                  "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
                 		 + "<br><br>" +
-                		 "(c) 2006-2019 by Remote Sensing Laboratories (RSL)<br>" +
+                		 "(c) 2006-2020 by Remote Sensing Laboratories (RSL)<br>" +
                 		 "Dept. of Geography, " +
                 		 "University of Zurich (CH)<br>" +
                 		 "(c) 2013-2014 by University of Wollongong (AU)<br><br>" +
