@@ -817,7 +817,7 @@ private JMenuItem dbConfigmenuItem;
         	 text = text  + "<br><br>" + "Server Settings" +  "<br>" + "-------------" + "<br><br>";
         	 
         	 
-             String create_read_only_users;
+             String create_read_only_users, max_object_size;
              if(specchio_client.getCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT) != null)
              {
             	 create_read_only_users = specchio_client.getCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT);
@@ -825,6 +825,13 @@ private JMenuItem dbConfigmenuItem;
             	 text = text  + Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT + ": " + create_read_only_users  + "<br>";
              }
              
+             
+             if(specchio_client.getCapability(Capabilities.MAX_OBJECT_SIZE) != null)
+             {
+            	 max_object_size = specchio_client.getCapability(Capabilities.MAX_OBJECT_SIZE);
+
+            	 text = text  + Capabilities.MAX_OBJECT_SIZE + ": " + max_object_size  + " [bytes]<br>";
+             }
         	 
          }
 
