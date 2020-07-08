@@ -59,5 +59,10 @@ public class SPECCHIOPreferencesStore {
 		
 	}	
 	
+	public Preferences getPreferences()
+	{
+		return this.specchioConfigurationPreferences;
+	}
+	
 
 }
