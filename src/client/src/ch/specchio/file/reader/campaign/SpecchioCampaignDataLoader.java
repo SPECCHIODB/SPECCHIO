@@ -11,11 +11,13 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.prefs.BackingStoreException;
 
 import org.joda.time.DateTime;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
+import ch.specchio.client.SPECCHIOPreferencesStore;
 import ch.specchio.file.reader.spectrum.*;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.Space;
@@ -46,6 +48,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	ArrayList<String> file_errors = new ArrayList<String>();
 	private int successful_file_counter;
 	private int parsed_file_counter;
+	protected SPECCHIOPreferencesStore prefs;
 	
 
 
@@ -57,11 +60,23 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	public SpecchioCampaignDataLoader(CampaignDataLoaderListener listener, SPECCHIOClient specchio_client) {
 		super(listener);		
 		this.specchio_client = specchio_client;
+		try {
+			this.prefs = new SPECCHIOPreferencesStore();
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 	
 	public SpecchioCampaignDataLoader(SPECCHIOClient specchio_client) {
 		super(null);		
 		this.specchio_client = specchio_client;
+		try {
+			this.prefs = new SPECCHIOPreferencesStore();
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}	
 
 	// the actual code for loading a campaign
@@ -340,7 +355,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 									// concatenate all errors into one message
 									StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
 
-									for (SpecchioMessage error : spec_file.getFileErrors()) {
+									for (SpecchioMessage error : spec_file.getFileErrors(!this.prefs.getBooleanPreference("VERBOSE_LEVEL_INFO"))) {
 
 										buf.append("\n\t");
 
@@ -464,26 +479,32 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 							if(insert_result.getSpectrumIds().size() > 0) successful_file_counter++;
 
-							insert_result.addErrors(spec_file.getFileErrors()); // compile into one list of errors							
+							insert_result.addErrors(spec_file.getFileErrors(!this.prefs.getBooleanPreference("VERBOSE_LEVEL_INFO"))); // compile into one list of errors							
 							//				if(insert_result.getErrors().size() == 0) successful_file_counter++;
 
 							// check on file errors
 							if(insert_result.getErrors().size() > 0)
 							{
-								// concatenate all errors into one message
-								StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
-
-								for (SpecchioMessage error : insert_result.get_nonredudant_errors()) {
-
-									buf.append("\n\t");
-
-									buf.append(error.toString());
+								ArrayList<SpecchioMessage> messages = insert_result.get_nonredudant_errors(!this.prefs.getBooleanPreference("VERBOSE_LEVEL_INFO"));
+								
+								if(messages.size() > 0)
+								{
+									
+									// concatenate all errors into one message
+									StringBuffer buf = new StringBuffer("Issues found in " + spec_file.getFilename() + ":");
+	
+									for (SpecchioMessage error : messages) {
+	
+										buf.append("\n\t");
+	
+										buf.append(error.toString());
+									}
+	
+									buf.append("\n");
+	
+									// add the message to the list of all errors
+									this.file_errors.add(buf.toString());
 								}
-
-								buf.append("\n");
-
-								// add the message to the list of all errors
-								this.file_errors.add(buf.toString());
 
 							}	
 
