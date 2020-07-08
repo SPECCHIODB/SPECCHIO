@@ -164,13 +164,13 @@ public class UserFactory extends SPECCHIOFactory {
 	private String generatePassword(int length, int strength) {
 		
 		// set up the characters to choose from
-		String numbers = "123456789";
-		String special = "@#$%_";
-		String uppercase_consonants = "YBDGHJLMNPQRSTVWXZ";
-		String uppercase_vowels = "AEIU";
+		String numbers = "0123456789";
+		String special = "@#$%_+-";
+		String uppercase_consonants = "BCDFGHJKLMNPQRSTVXZWY";
+		String uppercase_vowels = "AEIOU";
 		String all_uppercase = uppercase_consonants + uppercase_vowels;
-		StringBuffer vowels = new StringBuffer("aeiuy");
-		StringBuffer consonants = new StringBuffer("bdghjmnpqrstvz");
+		StringBuffer vowels = new StringBuffer("aeiou");
+		StringBuffer consonants = new StringBuffer("bcdfghjklmnpqrstvxzwy");
 		if (strength >= 1) {
 			consonants.append(uppercase_consonants);
 			vowels.append(uppercase_vowels);
