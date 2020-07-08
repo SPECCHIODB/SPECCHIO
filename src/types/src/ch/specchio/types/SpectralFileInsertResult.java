@@ -60,15 +60,26 @@ public class SpectralFileInsertResult {
 	
 	public ArrayList<SpecchioMessage> get_nonredudant_errors()
 	{
+		return get_nonredudant_errors(false);
+	}
+	
+	
+	public ArrayList<SpecchioMessage> get_nonredudant_errors(boolean only_warnings_and_errors)
+	{
 		ArrayList<SpecchioMessage> nonred_errors = new ArrayList<SpecchioMessage>();
 		
 		ArrayList<String> msgs = new ArrayList<String>();
 		
 		for (SpecchioMessage error : errors)
 		{
-			if (!msgs.contains(error.getMessage())) {
-				nonred_errors.add(error);	
-				msgs.add(error.getMessage());
+			// add message if verbose level is INFO, or if it is a warning or error
+			if(only_warnings_and_errors == false || (only_warnings_and_errors && !error.getType().equals(SpecchioMessage.INFO)))
+			{
+			
+				if (!msgs.contains(error.getMessage())) {
+					nonred_errors.add(error);	
+					msgs.add(error.getMessage());
+				}
 			}
 		}
 		

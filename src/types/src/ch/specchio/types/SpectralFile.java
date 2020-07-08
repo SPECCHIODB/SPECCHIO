@@ -364,7 +364,24 @@ public class SpectralFile {
 	
 	@XmlElement(name="file_errors")
 	public ArrayList<SpecchioMessage> getFileErrors() { return this.file_errors; }
+	
+	public ArrayList<SpecchioMessage> getFileErrors(boolean only_warnings_and_errors) { 
+		
+		ArrayList<SpecchioMessage> warnings_and_errors = new ArrayList<SpecchioMessage>();
+		for (SpecchioMessage msg : file_errors) {
+		  if (!msg.getType().equals(SpecchioMessage.INFO))
+			  warnings_and_errors.add(msg);
+		}
+		
+		return warnings_and_errors; 
+		
+	}
+	
 	public void setFileErrors(ArrayList<SpecchioMessage> file_errors) { this.file_errors = file_errors; }
+	
+
+		
+	
 	
 	@XmlElement(name="file_format_name")
 	public String getFileFormatName() { return this.file_format_name; }
