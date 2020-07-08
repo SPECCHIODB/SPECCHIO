@@ -23,6 +23,8 @@ public class Preferences extends JFrame implements ActionListener {
 	SPECCHIOClient specchio_client;
 	private JCheckBox asd_unit_folder;
 	private JCheckBox asd_DN_folder;
+	private JCheckBox asd_WR_DC;
+	private JCheckBox file_loading_verbose_level;
 	private JCheckBox db_config_file_creation_and_editing;
 	private JTextField input_directory, output_directory, flox_cal_file, rox_cal_file;
 	
@@ -49,6 +51,18 @@ public class Preferences extends JFrame implements ActionListener {
 			asd_DN_folder.addActionListener((ActionListener) this);
 			asd_DN_folder.setSelected(prefs.getBooleanPreference("CREATE_DN_FOLDER_FOR_ASD_FILES"));
 			asd_DN_folder.setToolTipText("DN data will be added in addition to the regular spectra.");
+			
+			asd_WR_DC = new JCheckBox("Insert WR and DC delta time for new ASD binary files");			
+			asd_WR_DC.setActionCommand("asd_WR_DC_time");
+			asd_WR_DC.addActionListener((ActionListener) this);
+			asd_WR_DC.setSelected(prefs.getBooleanPreference("INSERT_WR_DC_FOR_ASD_FILES"));
+			asd_WR_DC.setToolTipText("Delta time since last WR and DC will be inserted for new ASD Files; this is experimental and delta times may not be absolute due to UTC time zone problems.");			
+			
+			file_loading_verbose_level = new JCheckBox("File loading verbose level: include INFO messages");			
+			file_loading_verbose_level.setActionCommand("VERBOSE_LEVEL_INFO");
+			file_loading_verbose_level.addActionListener((ActionListener) this);
+			file_loading_verbose_level.setSelected(prefs.getBooleanPreference("VERBOSE_LEVEL_INFO"));
+			file_loading_verbose_level.setToolTipText("Show also info messages for each inserted file; this includes loading times per file.");			
 			
 			
 			db_config_file_creation_and_editing = new JCheckBox("Enable editing of db_config file");
@@ -103,6 +117,12 @@ public class Preferences extends JFrame implements ActionListener {
 			
 			constraints.gridy = 2;	
 			l.insertComponent(asd_DN_folder, constraints);
+			
+			constraints.gridy++;	
+			l.insertComponent(asd_WR_DC, constraints);
+			
+			constraints.gridy++;	
+			l.insertComponent(file_loading_verbose_level, constraints);						
 						
 			constraints.gridy++;	
 			l.insertComponent(db_config_file_creation_and_editing, constraints);
@@ -173,7 +193,32 @@ public class Preferences extends JFrame implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		}	
+		
+		if(e.getActionCommand().equals("asd_WR_DC_time"))
+		{
+			
+			try {
+				prefs.setBooleanPreference(this.asd_WR_DC.isSelected(), "INSERT_WR_DC_FOR_ASD_FILES");				
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}		
+		
+		
+		if(e.getActionCommand().equals("VERBOSE_LEVEL_INFO"))
+		{
+			
+			try {
+				prefs.setBooleanPreference(this.file_loading_verbose_level.isSelected(), "VERBOSE_LEVEL_INFO");				
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}						
 		
 		if(e.getActionCommand().equals("db_config_file_creation_and_editing"))
 		{
