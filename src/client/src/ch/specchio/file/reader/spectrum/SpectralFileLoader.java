@@ -11,11 +11,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.prefs.BackingStoreException;
 
 import org.joda.time.DateTime;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
+import ch.specchio.client.SPECCHIOPreferencesStore;
 import ch.specchio.file.reader.campaign.SpecchioCampaignDataLoader;
 import ch.specchio.gui.SPECCHIOApplication;
 import ch.specchio.types.MetaParameterFormatException;
@@ -38,6 +40,8 @@ public abstract class SpectralFileLoader {
 	protected SpecchioCampaignDataLoader campaignDataLoader;
 	private DateTime calibration_date; // calibration date of the instrument loaded by this loader
 	
+	protected SPECCHIOPreferencesStore prefs;
+	
 	public SpectralFileLoader(String file_format_name, SPECCHIOClient specchio_client, SpecchioCampaignDataLoader campaignDataLoader)
 	{
 		this.file_format_name = file_format_name;
@@ -46,7 +50,11 @@ public abstract class SpectralFileLoader {
 			this.specchio_client = specchio_client;
 			attributes_name_hash = specchio_client.getAttributesNameHash();
 			this.campaignDataLoader = campaignDataLoader;
+			this.prefs = new SPECCHIOPreferencesStore();		
 		} catch (SPECCHIOClientException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BackingStoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

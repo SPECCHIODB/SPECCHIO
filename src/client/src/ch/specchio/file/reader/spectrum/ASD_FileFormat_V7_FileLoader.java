@@ -11,6 +11,7 @@ import java.util.prefs.BackingStoreException;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Seconds;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOPreferencesStore;
@@ -19,6 +20,7 @@ import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.Metadata;
 import ch.specchio.types.SpectralFile;
+import ch.specchio.types.attribute;
 import ch.specchio.types.spatial_pos;
 
 public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
@@ -309,15 +311,8 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 		
 
 		data_in.close();
-		
-		try {
-			SPECCHIOPreferencesStore prefs = new SPECCHIOPreferencesStore();			
-			spec_file.setCreate_DN_folder_for_asd_files(prefs.getBooleanPreference("CREATE_DN_FOLDER_FOR_ASD_FILES"));
-			
-		} catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+						
+		spec_file.setCreate_DN_folder_for_asd_files(prefs.getBooleanPreference("CREATE_DN_FOLDER_FOR_ASD_FILES"));				
 
 		return spec_file;
 	}
@@ -398,18 +393,18 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 		// -> getting the delta time appears not possible, due to this timestamp being in UTC and the recording time being in local time!!!!!
 		long dc_time = this.read_long(in);		
 		
-		if(dc_time > 0)
+		if(dc_time > 0 && prefs.getBooleanPreference("INSERT_WR_DC_FOR_ASD_FILES"))
 		{
-//			DateTime dt_dc_tmp = new DateTime(dc_time * 1000); // applying the UTC time zone here leads to a time shift
-//
-//			// trick to force UTC
-//			DateTime dt_dc = new DateTime(dt_dc_tmp.getYear(), dt_dc_tmp.getMonthOfYear(), dt_dc_tmp.getDayOfMonth(), dt_dc_tmp.getHourOfDay(), dt_dc_tmp.getMinuteOfHour(), dt_dc_tmp.getSecondOfMinute(), DateTimeZone.UTC); 
-//
-//			Seconds seconds = Seconds.secondsBetween(dt_dc, this.capture_date);
-//
-//			mp = MetaParameter.newInstance(attributes_name_hash.get("Time since last DC"));
-//			mp.setValue(seconds.getSeconds());
-//			smd.add_entry(mp);			
+			DateTime dt_dc_tmp = new DateTime(dc_time * 1000); // applying the UTC time zone here leads to a time shift
+
+			// trick to force UTC
+			DateTime dt_dc = new DateTime(dt_dc_tmp.getYear(), dt_dc_tmp.getMonthOfYear(), dt_dc_tmp.getDayOfMonth(), dt_dc_tmp.getHourOfDay(), dt_dc_tmp.getMinuteOfHour(), dt_dc_tmp.getSecondOfMinute(), DateTimeZone.UTC); 
+
+			Seconds seconds = Seconds.secondsBetween(dt_dc, this.capture_date);
+
+			mp = MetaParameter.newInstance(attributes_name_hash.get("Time since last DC"));
+			mp.setValue(seconds.getSeconds());
+			smd.add_entry(mp);			
 		}
 
 		// read data type
@@ -417,7 +412,22 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 		//
 
 		long ref_time = this.read_long(in);
-		DateTime dt_wr = new DateTime(ref_time * 1000, DateTimeZone.UTC);
+		if(ref_time > 0 && prefs.getBooleanPreference("INSERT_WR_DC_FOR_ASD_FILES"))
+		{		
+			DateTime dt_wr = new DateTime(ref_time * 1000, DateTimeZone.UTC);
+			
+			Seconds seconds = Seconds.secondsBetween(dt_wr, this.capture_date);
+			
+			attribute attr = attributes_name_hash.get("Time since last WR");
+			
+			if (attr != null)
+			{
+				mp = MetaParameter.newInstance(attr);
+				mp.setValue(seconds.getSeconds());
+				smd.add_entry(mp);			
+			}
+		
+		}
 
 		// skip till data format of spectrum
 		//skip(in, 8);
