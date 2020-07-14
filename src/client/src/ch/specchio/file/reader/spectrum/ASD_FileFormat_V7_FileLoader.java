@@ -401,6 +401,13 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 			DateTime dt_dc = new DateTime(dt_dc_tmp.getYear(), dt_dc_tmp.getMonthOfYear(), dt_dc_tmp.getDayOfMonth(), dt_dc_tmp.getHourOfDay(), dt_dc_tmp.getMinuteOfHour(), dt_dc_tmp.getSecondOfMinute(), DateTimeZone.UTC); 
 
 			Seconds seconds = Seconds.secondsBetween(dt_dc, this.capture_date);
+			
+			if(seconds.getSeconds() < 0)
+			{
+				dt_dc = dt_dc.minusSeconds(9*3600);
+				seconds = Seconds.secondsBetween(dt_dc, this.capture_date);
+				
+			}
 
 			mp = MetaParameter.newInstance(attributes_name_hash.get("Time since last DC"));
 			mp.setValue(seconds.getSeconds());
@@ -417,6 +424,13 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 			DateTime dt_wr = new DateTime(ref_time * 1000, DateTimeZone.UTC);
 			
 			Seconds seconds = Seconds.secondsBetween(dt_wr, this.capture_date);
+			
+			if(seconds.getSeconds() < 0)
+			{
+				dt_wr = dt_wr.minusSeconds(7*3600);
+				seconds = Seconds.secondsBetween(dt_wr, this.capture_date);
+				
+			}			
 			
 			attribute attr = attributes_name_hash.get("Time since last WR");
 			
