@@ -35,6 +35,7 @@ import ch.specchio.types.Sensor;
 import ch.specchio.types.Spectrum;
 import ch.specchio.types.SpectrumDataLink;
 import ch.specchio.types.SpectrumFactorTable;
+import ch.specchio.types.TaxonomyNodeObject;
 
 import org.joda.time.DateTime;
 
@@ -633,6 +634,27 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			{
 				EAVQueryConditionObject co = (EAVQueryConditionObject)cond;
 				
+				if(co.getFieldName().equals("taxonomy_id"))
+				{
+					// check if this is a taxonomy node: if so, we need to search for all children under this node
+					MetadataFactory mdf = new MetadataFactory(this);
+					int taxonomy_id = Integer.valueOf((String) cond.getValue());
+					TaxonomyNodeObject parent_node = mdf.getTaxonomyObject(taxonomy_id);
+					ArrayList<TaxonomyNodeObject> children = mdf.getTaxonomyChildrenRecursively(parent_node);
+					
+					ArrayList<Integer> taxonomy_ids = new ArrayList<Integer>();
+					for(TaxonomyNodeObject c : children)
+					{
+						taxonomy_ids.add(c.getId());
+					}
+					
+					String values = "(" + this.getEavServices().SQL.conc_ids(taxonomy_ids) + ")";
+					co.setValue(values);
+					co.setOperator("in");
+					co.setQuoteValue(false);
+				}
+								
+				
 				
 				// get results at hierarchy level
 				getSpectraMatchingQuery(co, MetaParameter.HIERARCHY_LEVEL, stmt);
@@ -862,6 +884,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		}
 		else
 		{
+			
 			curr_cond = SB.prefix(eav_table_name, "attribute_id") + " = " + getAttributes().get_attribute_id(cond.getAttributeName()) +
 					" and " + SB.prefix(eav_table_name, cond.getFieldName()) + " " + cond.getOperator() + " " + 
 					((cond.QuoteValue())?SB.quote_string(cond.getStringValue()):cond.getStringValue()) +

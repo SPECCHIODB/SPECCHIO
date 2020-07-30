@@ -2062,6 +2062,53 @@ public class MetadataFactory extends SPECCHIOFactory {
 	}
 	
 	
+	/**
+	 * Get all children of a taxonomy node in a recursive manner
+	 * 
+	 * @param parent_node	node whose children are required
+	 * 
+	 * @return taxonomy node list
+	 * 
+	 * @throws SPECCHIOFactoryException	database error
+	 */	
+	public ArrayList<TaxonomyNodeObject> getTaxonomyChildrenRecursively(TaxonomyNodeObject parent_node) throws SPECCHIOFactoryException {
+		
+		ArrayList<TaxonomyNodeObject> children = new ArrayList<TaxonomyNodeObject>();
+		
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+			String query = "select taxonomy_id, name, code, description from taxonomy where " +
+					"attribute_id = " + parent_node.getAttribute_id() + " and " +
+					( (parent_node.getId() == 0) ? "parent_id is null" : "parent_id = " + parent_node.getId()) + " order by name";
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {	
+				int i = 1;
+				int taxonomy_id = rs.getInt(i++);
+				String name = rs.getString(i++);
+				String code = rs.getString(i++);
+				String description = rs.getString(i++);
+				
+				TaxonomyNodeObject child = new TaxonomyNodeObject(name, parent_node.getAttribute_id(), taxonomy_id, parent_node);
+				child.setCode(code);
+				child.setDescription(description);
+				children.add(child);
+				
+				ArrayList<TaxonomyNodeObject> sub_children = getTaxonomyChildrenRecursively(child);
+				
+				children.addAll(sub_children);
+						
+			}			
+			rs.close();
+			stmt.close();			
+		} catch (SQLException e) {
+			throw new SPECCHIOFactoryException(e);
+		}
+		
+		return children;
+		
+	}	
+	
+	
 	public Taxonomy getTaxonomy(int attribute_id) throws SPECCHIOFactoryException {
 		
 		Hashtable<Integer, String> tree_hash = new Hashtable<Integer, String>();		
