@@ -293,7 +293,7 @@ public class DatabaseConnectionDialog extends JFrame implements ActionListener
 
 	 				    // html content
 	 				    JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
-	 				            + "This Java version is currently not supporting the SPECCHIO certificates. <br> For more info on how to deal with this please see: <a href=\"https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020/\">a link</a>" //
+	 				            + "This Java version is currently not supporting the SPECCHIO certificates. <br> For more info on how to deal with this please see: <a href=\"https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020/\">SPECCHIO FAQ</a>" //
 	 				            + "</body></html>");
 
 	 				    // handle link events
