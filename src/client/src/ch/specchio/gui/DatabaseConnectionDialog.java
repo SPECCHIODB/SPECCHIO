@@ -1,6 +1,7 @@
 package ch.specchio.gui;
 
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.HeadlessException;
 import java.awt.Insets;
@@ -15,12 +16,15 @@ import java.util.ListIterator;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import ch.specchio.client.SPECCHIODatabaseDescriptor;
 import ch.specchio.client.SPECCHIOServerDescriptor;
@@ -277,21 +281,47 @@ public class DatabaseConnectionDialog extends JFrame implements ActionListener
 	    		if(SPECCHIOApplication.getJavaVersion() == 8 && SPECCHIOApplication.getJavaMinorVersion() >= 241)
 	    		{
 	 			   try {
-					JOptionPane.showMessageDialog(
-							   SPECCHIOApplication.getInstance().get_frame(),
-							   "This Java version is currently not supporting the SPECCHIO certificates.\n"
-									   + "For more info on how to deal with this please see: " + new URI("https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020"),
-									   "Info",
-									   JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon
-							   );
+	 				   
+	 				    // for copying style
+	 				    JLabel label = new JLabel();
+	 				    Font font = label.getFont();
+
+	 				    // create some css from the label's font
+	 				    StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+	 				    style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+	 				    style.append("font-size:" + font.getSize() + "pt;");
+
+	 				    // html content
+	 				    JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
+	 				            + "sThis Java version is currently not supporting the SPECCHIO certificates.\n For more info on how to deal with this please see: <a href=\"https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020/\">a link</a>" //
+	 				            + "</body></html>");
+
+	 				    // handle link events
+	 				    ep.addHyperlinkListener(new HyperlinkListener()
+	 				    {
+	 				        @Override
+	 				        public void hyperlinkUpdate(HyperlinkEvent e)
+	 				        {
+	 				            if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+									try {
+										SPECCHIOApplication.openInDesktop(new URI("https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020"));
+									} catch (URISyntaxException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+	 				        }
+
+	 				    });
+	 				    ep.setEditable(false);
+	 				    ep.setBackground(label.getBackground());	 				   
+	 				   
+	 				   JOptionPane.showMessageDialog(SPECCHIOApplication.getInstance().get_frame(), ep, "Info",
+							   JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
+	 				   
 				} catch (HeadlessException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}    			  
- 			
+					e.printStackTrace();			  
+				}
 	    			
 	    		}
 	    	}
