@@ -158,7 +158,7 @@ public class SPECCHIOApplication {
 
 	      frame.setVisible(true);
 
-	      System.out.println("Java version (major): " + getJavaVersion());
+	      System.out.println("Java version (major): " + getJavaVersion() + ", (minor) " + getJavaMinorVersion());
 	      
 
 	      if(getJavaVersion() != 8) {
@@ -248,7 +248,7 @@ public class SPECCHIOApplication {
 	   }   	
 	   
 	   // from: https://stackoverflow.com/questions/2591083/getting-java-version-at-runtime
-	   private static int getJavaVersion() {
+	   public static int getJavaVersion() {
 		    String version = System.getProperty("java.version");
 		    if(version.startsWith("1.")) {
 		        version = version.substring(2, 3);
@@ -257,6 +257,13 @@ public class SPECCHIOApplication {
 		        if(dot != -1) { version = version.substring(0, dot); }
 		    } return Integer.parseInt(version);
 		}	   
+	   
+	   public static int getJavaMinorVersion() {
+		    String version = System.getProperty("java.version");
+		    String[] tokens = version.split("_");
+
+		    return Integer.parseInt(tokens[1]);
+		}	   	   
 
 	   public void setClient(SPECCHIOClient client) {
 		   

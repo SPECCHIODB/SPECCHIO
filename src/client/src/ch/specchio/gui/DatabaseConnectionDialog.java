@@ -2,11 +2,14 @@ package ch.specchio.gui;
 
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -270,6 +273,27 @@ public class DatabaseConnectionDialog extends JFrame implements ActionListener
 	    				ex
 	    		);
 	    		error.setVisible(true);
+	    		
+	    		if(SPECCHIOApplication.getJavaVersion() == 8 && SPECCHIOApplication.getJavaMinorVersion() >= 241)
+	    		{
+	 			   try {
+					JOptionPane.showMessageDialog(
+							   SPECCHIOApplication.getInstance().get_frame(),
+							   "This Java version is currently not supporting the SPECCHIO certificates.\n"
+									   + "For more info on how to deal with this please see: " + new URI("https://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020"),
+									   "Info",
+									   JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon
+							   );
+				} catch (HeadlessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}    			  
+ 			
+	    			
+	    		}
 	    	}
 	    	
 	    	// close progress report
