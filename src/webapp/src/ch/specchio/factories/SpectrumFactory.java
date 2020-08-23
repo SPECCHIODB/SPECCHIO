@@ -1880,93 +1880,81 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			
 			if(spectrum_ids.size() > 0)
 			{
-
 				String ids = getStatementBuilder().conc_ids(spectrum_ids);
 
+				// FOR OLDER VERSION COMPATIBILITY
 				// remove datalinks: this is obsolete with newer databases
 				table_name = (is_admin)? "spectrum_datalink" : "spectrum_datalink_view";
-				cmd = "delete from "+table_name+" where " +
-						"spectrum_id in (" + ids + ") OR linked_spectrum_id in (" + ids + ")";	
+				cmd = "DELETE FROM " + table_name + " WHERE " +
+						"spectrum_id IN (" + ids + ") OR linked_spectrum_id IN (" + ids + ")";
 				try{
-				stmt.executeUpdate(cmd); 
+					stmt.executeUpdate(cmd);
 				} catch (SQLException ex)
 				{
 					// ignore the datalink error: newer databases do not have that table anymore!
 					// SQLException msg = ex;
 				}
-				
-				// get eav_ids of the datalinks: -> why is this actually needed and not part of the general EAV deletion?!?
-				String query = "select eav_id from eav where spectrum_id in (" + ids + ")"; // restricting by attribute id not needed as only data links have the spectrum_id field filled.
+
+				String query = "SELECT eav_id FROM eav WHERE spectrum_id IN (" + ids + ")"; // restricting by attribute id not needed as only data links have the spectrum_id field filled.
 				ArrayList<Integer> eav_ids = new ArrayList<Integer>();
-				
+
 				ResultSet rs = stmt.executeQuery(query);
 				while (rs.next()) {
-					eav_ids.add(rs.getInt(1));	
-				}			
-				rs.close();	
-				
-				
+					eav_ids.add(rs.getInt(1));
+				}
+				rs.close();
+
+
 				table_name = (is_admin)? "spectrum_x_eav" : "spectrum_x_eav_view";
 				String colName = "eav_id";
 				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
 
-				
+
 				table_name = (is_admin)? "eav" : "eav_view";
 				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
 
-				// EAV
-				// remove entries from eav x table
+
+				// 1. EAV
+				// Find eav_ids for the selected spectrum_ids
 				eav_ids.clear();
-				query = "select eav_id from spectrum_x_eav where spectrum_id in (" + ids + ")"; 
-				
+				query = "SELECT eav_id FROM spectrum_x_eav WHERE spectrum_id IN (" + ids + ")";
 				rs = stmt.executeQuery(query);
 				while (rs.next()) {
-					eav_ids.add(rs.getInt(1));	
-				}			
-				rs.close();	
-				
-				table_name = (is_admin)? "spectrum_x_eav" : "spectrum_x_eav_view";
-				chunked_deletion(stmt, eav_ids, table_name, colName, 1000);
-
-				// remove eav's that are no longer referenced
-				table_name = (is_admin)? "eav" : "eav_view";
-				
-				// get eav_ids that are no longer referenced by other spectra
-				ArrayList<Integer> eav_ids_to_delete = new ArrayList<Integer>();
-				query = "    select eav.eav_id, count(sxe.spectrum_id) from eav eav LEFT JOIN spectrum_x_eav sxe" + 
-						"     ON sxe.eav_id = eav.eav_id where eav.eav_id in (" + getStatementBuilder().conc_ids(eav_ids) + ")  group by eav_id;"; 
-				
-				rs = stmt.executeQuery(query);
-				while (rs.next()) {
-					
-					int cnt = rs.getInt(2);
-					if(cnt == 0) eav_ids_to_delete.add(rs.getInt(1));	
-				}			
+					eav_ids.add(rs.getInt(1));
+				}
 				rs.close();
 
+				// 2. Delete the eav_ids for the selected spectrum_ids
+				table_name = (is_admin)? "spectrum_x_eav" : "spectrum_x_eav_view";
+				colName = "spectrum_id";
+				chunked_deletion(stmt, spectrum_ids, table_name, colName, 1000);
+
+				// 3. From the set of eav_ids and the selected spectrum_ids find those eav_ids that are no longer shared
+				table_name = (is_admin)? "eav" : "eav_view";
+				ArrayList<Integer> eav_ids_to_delete = new ArrayList<Integer>();
+				query = "SELECT eav.eav_id, count(sxe.spectrum_id) FROM eav eav LEFT JOIN "+
+						"spectrum_x_eav sxe ON sxe.eav_id = eav.eav_id WHERE eav.eav_id IN (" +
+						getStatementBuilder().conc_ids(eav_ids) + ")  GROUP BY eav_id;";
+				rs = stmt.executeQuery(query);
+				while (rs.next()) {
+					int cnt = rs.getInt(2);
+					if(cnt == 0) eav_ids_to_delete.add(rs.getInt(1));
+				}
+				rs.close();
+
+				// 4. Delete the found eav_ids
+				colName = "eav_id";
 				chunked_deletion(stmt, eav_ids_to_delete, table_name, colName, 1000);
 
-//				String spectrum_x_eav_table_or_view = table_name;
-
-				// remove zombie eav: no longer appropriate due to metadata at hierarchy level
-//				table_name = (is_admin)? "eav" : "eav_view";
-//
-//				cmd = "delete from "+table_name+" where eav_id not in (select eav_id from " +spectrum_x_eav_table_or_view+");";
-//				stmt.executeUpdate(cmd);					
-
-				// remove entries from hierarchy_level_x_spectrum
+				// 5. Remove entries from hierarchy_level_x_spectrum
 				table_name = (is_admin)? "hierarchy_level_x_spectrum" : "hierarchy_level_x_spectrum_view";
 				colName = "spectrum_id";
 				chunked_deletion(stmt, spectrum_ids, table_name, colName, 1000);
-				cmd = "delete from "+table_name+" where " +
-						"spectrum_id in (" + ids + ")";		
-				stmt.executeUpdate(cmd); 				
 
-				// remove spectrum itself
+				// 6. Remove spectrum entries themselves
 				table_name = (is_admin)? "spectrum" : "spectrum_view";
 				chunked_deletion(stmt, spectrum_ids, table_name, colName, 1000);
-//				cmd = "delete from "+table_name+" where spectrum_id in (" + ids + ")";
-//				stmt.executeUpdate(cmd);
+
 				stmt.close();
 			}
 		}
