@@ -5,7 +5,7 @@
 		name="SPECCHIO (32-bit)"
 		workingDirectory="${INSTALL_PATH}"
 		target="java"
-		commandLine="&quot;-Dncsa.hdf.hdf5lib.H5.hdf5lib=${INSTALL_PATH}/win32/jhdf5.dll&quot; -jar specchio-client.jar"
+		commandLine="&quot;-Dncsa.hdf.hdf5lib.H5.hdf5lib=${INSTALL_PATH}/win32/jhdf5.dll&quot; &quot;-Djdk.security.allowNonCaAnchor=true&quot; -jar specchio-client.jar"
 		initialState="noShow"
 		programGroup="true"
 	/>
@@ -13,7 +13,7 @@
 		name="SPECCHIO (64-bit)"
 		workingDirectory="${INSTALL_PATH}"
 		target="java"
-		commandLine="&quot;-Dncsa.hdf.hdf5lib.H5.hdf5lib=${INSTALL_PATH}/win64/jhdf5.dll&quot; -jar specchio-client.jar"
+		commandLine="&quot;-Dncsa.hdf.hdf5lib.H5.hdf5lib=${INSTALL_PATH}/win64/jhdf5.dll&quot;  &quot;-Djdk.security.allowNonCaAnchor=true&quot; -jar specchio-client.jar"
 		initialState="noShow"
 		programGroup="true"
 	/>

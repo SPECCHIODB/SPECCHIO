@@ -10,4 +10,4 @@ fi
 
 # go!
 cd "$SPECCHIO_HOME"
-java -jar -Xdock:name="SPECCHIO V3" -Dncsa.hdf.hdf5lib.H5.hdf5lib="$SPECCHIO_HOME/macosx/libjhdf5.jnilib" specchio-client.jar
+java -jar -Xdock:name="SPECCHIO V3" -Dncsa.hdf.hdf5lib.H5.hdf5lib="$SPECCHIO_HOME/macosx/libjhdf5.jnilib" -Djdk.security.allowNonCaAnchor=true specchio-client.jar
