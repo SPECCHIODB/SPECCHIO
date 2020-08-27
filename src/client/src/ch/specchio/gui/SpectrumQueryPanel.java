@@ -516,8 +516,7 @@ public class SpectrumQueryPanel extends JPanel {
 			super(container, field);
 			
 			// build combobox
-			box = new JComboBox();
-			box.addActionListener(this);
+			box = new JComboBox();			
 			getControlPanel().add(box);
 			
 			// add a "nil" item for no selection
@@ -537,6 +536,7 @@ public class SpectrumQueryPanel extends JPanel {
 			
 			// start with "nil" selected
 			box.setSelectedItem(nil_item);
+			box.addActionListener(this);
 			
 		}
 		
