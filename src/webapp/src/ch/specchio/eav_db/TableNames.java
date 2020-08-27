@@ -70,6 +70,7 @@ public class TableNames {
 		"campaign_id",
 		"instrument_id",
 		"reference_id",
+		"calibration_id"
 	};
 	
 	
