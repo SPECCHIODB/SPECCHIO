@@ -2075,6 +2075,8 @@ public class MetadataFactory extends SPECCHIOFactory {
 		
 		ArrayList<TaxonomyNodeObject> children = new ArrayList<TaxonomyNodeObject>();
 		
+		children.add(parent_node);
+		
 		try {
 			Statement stmt = getStatementBuilder().createStatement();
 			String query = "select taxonomy_id, name, code, description from taxonomy where " +
