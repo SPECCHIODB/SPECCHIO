@@ -820,6 +820,50 @@ public class SPECCHIOFactory {
 			}
 		}
 		
+		if (version == 3.35) {	
+			
+			// new rights for existing users on new table and view
+
+
+			System.out.println("===================================");
+			System.out.println("Upgrading user rights for calibration_id in spectrum_view: ");
+			System.out.println("===================================");
+
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			Statement stmt;
+			try {
+				
+				// get users
+				UserFactory uf = new UserFactory(this);
+				User[] users = uf.getUsers();
+				
+				stmt = SQL.createStatement();		
+				
+				for(int i=0;i<users.length;i++)
+				{
+					User user = users[i];
+					
+					String username = user.getUsername();
+					
+					if (!username.equals("sdb_admin"))
+					{
+
+						String sql = "GRANT SELECT, INSERT, UPDATE (calibration_id) ON " + this.getDatabaseName() + ".spectrum_view  TO '" + username + "'@'localhost'";
+						stmt.execute(sql);
+
+					}
+					
+					stmt.execute("flush privileges");
+					
+				}
+
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+		
 		
 		// reload system table caches to pick up any new entries
 		this.reloadCaches();
