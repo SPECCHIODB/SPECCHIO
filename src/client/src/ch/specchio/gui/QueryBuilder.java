@@ -84,6 +84,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	boolean hierarchy_browser = false;
 	boolean mds_restrictions = false;
 	boolean is_admin;
+	boolean data_selected_in_previous_sdb_state = false;
 
 	JTabbedPane data_selection_tabs;
 	JTextArea SQL_query;
@@ -452,7 +453,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    menuItem = new JMenuItem("Test");
 	    menuItem.addActionListener(this);
 	    test_menu.add(menuItem);	    
-	    menuBar.add(test_menu);
+//	    menuBar.add(test_menu);
 	    
 	    
 	    this.setJMenuBar(menuBar);		
@@ -506,8 +507,10 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 		is_admin = specchio_client.isLoggedInWithRole(UserRoles.ADMIN);
 		
 		
-
-	    
+		if(hierarchy_browser && mds_restrictions)
+		{
+			data_selection_tabs.setSelectedIndex(1); // choose MDS panel to be focused on
+		}		
 		
 		add("East", query_panel);
 		add("Center", data_selection_tabs);
@@ -1027,31 +1030,83 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	{
 
 		try {
-			unsorted_spectrum_ids = sdb.get_selected_spectrum_ids();
+			
+			QueryConditionObject condition = getSDBQueryCondition();
+			
+			
+			
+//			unsorted_spectrum_ids = sdb.get_selected_spectrum_ids();
 		
 			
-			if(unsorted_spectrum_ids != null && unsorted_spectrum_ids.size() > 0)
+//			if(unsorted_spectrum_ids != null && unsorted_spectrum_ids.size() > 0)
+//			{
+//				query.remove_all_conditions();
+//					
+//				QueryConditionObject condition = new QueryConditionObject("spectrum", "spectrum_id");
+//				condition.setOperator("in");
+//				condition.setValue(unsorted_spectrum_ids);
+//				query.add_condition(condition);
+//				query.add_join("spectrum", condition);
+//				setButtonsEnabled(true);
+//				sorted_ids_ready = false;
+//				//changed(true);
+//				
+//				setQueryInfoFields(unsorted_spectrum_ids);
+//				
+//			}
+			if(condition != null)
 			{
+				
 				query.remove_all_conditions();
-					
-				QueryConditionObject condition = new QueryConditionObject("spectrum", "spectrum_id");
-				condition.setOperator("in");
-				condition.setValue(unsorted_spectrum_ids);
+				data_selected_in_previous_sdb_state = true;
+				
 				query.add_condition(condition);
 				query.add_join("spectrum", condition);
 				setButtonsEnabled(true);
-				sorted_ids_ready = false;
-				//changed(true);
 				
-				setQueryInfoFields(unsorted_spectrum_ids);
+				if(this.mds_restrictions && qc.getListOfConditions().size() > 0)
+				{
+					// allow combined conditions					
+					ArrayList<QueryCondition> conds = qc.getListOfConditions();					
+					ListIterator<QueryCondition> li = conds.listIterator();
+
+					
+					while(li.hasNext())
+					{
+						QueryCondition cond = li.next();						
+						query.add_condition(cond);
+					}					
+						
+					// run query with all conditions
+					changed(true);
+					
+				}
+				else 
+				{
+					sorted_ids_ready = false;
+					setQueryInfoFields(unsorted_spectrum_ids);
+				}
+				
 				
 			}
 			else
 			{
-				ids_matching_query.clear();
-				resulting_rows.setText("");
-				this.SQL_query.setText("");
-				setButtonsEnabled(false);
+				if(data_selected_in_previous_sdb_state)
+					query.remove_all_conditions();		
+				
+				if(this.mds_restrictions)
+				{
+					changed(qc); // ensure that query is re-built if there are MDS restrictions 
+					changed(true); // auto-run query when SDB selection changes
+				}
+				else
+				{
+					ids_matching_query.clear();
+					resulting_rows.setText("");
+					this.SQL_query.setText("");
+					setButtonsEnabled(false);
+				}
+				data_selected_in_previous_sdb_state = false;
 			}
 		}
   		catch (SPECCHIOClientException ex) {
@@ -1065,6 +1120,23 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    }
 		
 	}
+	
+	
+	public QueryConditionObject getSDBQueryCondition()
+	{
+		QueryConditionObject condition = null;
+		unsorted_spectrum_ids = sdb.get_selected_spectrum_ids();		
+		
+		if(unsorted_spectrum_ids != null && unsorted_spectrum_ids.size() > 0)
+		{
+			condition = new QueryConditionObject("spectrum", "spectrum_id");
+			condition.setOperator("in");
+			condition.setValue(unsorted_spectrum_ids);						
+		}
+		
+		return condition;
+	}
+	
 	
 	public ArrayList<Integer> get_ids_matching_query()
 	{
@@ -1121,6 +1193,17 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 			QueryCondition cond = li.next();
 			
 			query.add_condition(cond);
+		}
+		
+		if(hierarchy_browser)
+		{
+			QueryConditionObject condition = getSDBQueryCondition();
+			
+			if(condition != null)
+			{
+				query.add_condition(condition);
+			}			
+			
 		}
 
 		
