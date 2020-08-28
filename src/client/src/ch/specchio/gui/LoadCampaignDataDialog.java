@@ -364,19 +364,20 @@ public class LoadCampaignDataDialog extends JDialog implements ActionListener {
 		// get the complete campaign object from the server
 		if (c != null) {
 			campaign = specchioClient.getCampaign(c.getId());
+			
+			// update the path selection panel
+			pathPanel.setCampaign(campaign);
+			unavailablePathPanel.setCampaign(campaign);
+			
+			// update spectral databrowser
+			sdb.build_tree(c.getId());			
+			
 		} else {
 			campaign = null;
+			JOptionPane.showMessageDialog(this, "You must create a campaign before loading data", "Error", JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon);
+			
 		}
 		
-		// update the path selection panel
-		pathPanel.setCampaign(campaign);
-		unavailablePathPanel.setCampaign(campaign);
-		
-		// update spectral databrowser
-		sdb.build_tree(c.getId());
-		
-//		exist_h_loading_scroll_panel.revalidate();
-//		exist_h_loading_scroll_panel.repaint();
 		
 	}
 	
