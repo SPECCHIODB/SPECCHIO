@@ -24,6 +24,8 @@ public abstract class SpectralPlot extends JPanel
 	double wavelength;
 	int band;
 	int no_of_chunks;
+	
+	boolean plot_versus_wvl = true; // default behaviour is to plot versus wavelengths and not band numbers
 
 
 	int numcontourlevels = 13;
@@ -52,6 +54,13 @@ public abstract class SpectralPlot extends JPanel
 				wavelength = space.getAverageWavelengths()[0];
 			}
 		}		
+		
+		space.getMeasurementUnit();
+		if(space.getMeasurementUnit().getUnitNumber() == MeasurementUnit.Wavelength)
+		{
+			plot_versus_wvl = false;
+			space.setWvlsAreKnown(false); // forces plots versus bands label
+		}
 		
         plot = new Plot();    	
     	
@@ -91,7 +100,10 @@ public abstract class SpectralPlot extends JPanel
     		vector = space.getVector(ids.get(currentDataset));
     		
     		for ( int i = 0; i < vector.length; i++ ) {
-    			plot.addPoint(currentDataset,space.get_wvl_of_band(i), vector[i], true);
+    			if(plot_versus_wvl)
+    				plot.addPoint(currentDataset,space.get_wvl_of_band(i), vector[i], true);
+    			else
+    				plot.addPoint(currentDataset,i+1, vector[i], true);
     		}   
     	}
     	
@@ -133,7 +145,10 @@ public abstract class SpectralPlot extends JPanel
 		plot.clear(true);
 		
 		for ( int i = 0; i < vector.length; i++ ) {
-			plot.addPoint(currentDataset,space.get_wvl_of_band(i), vector[i], true);
+			if(plot_versus_wvl)
+				plot.addPoint(currentDataset,space.get_wvl_of_band(i), vector[i], true);
+			else
+				plot.addPoint(currentDataset,i+1, vector[i], true);			
 		}   
 		
 		wvl_indicator_dataset_no = 1;
