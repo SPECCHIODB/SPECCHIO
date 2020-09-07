@@ -794,7 +794,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    	  startOperation();
 	    	  VisualisationThread thread = new VisualisationThread(
 	    			  e.getActionCommand(),
-	    			  this.get_ids_matching_query_not_sorted(),
+	    			  this.get_ids_matching_query(),
     				  split_spaces_by_sensor.isSelected(),
     				  split_spaces_by_sensor_and_unit.isSelected(),
     				  sdb.get_order_by_field()
