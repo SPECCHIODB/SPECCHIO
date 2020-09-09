@@ -665,7 +665,16 @@ public class SpectrumFactory extends SPECCHIOFactory {
 				// fuse results
 				
 				delete_string = "delete from " + fused_collection_table;
-				stmt.executeUpdate(delete_string);					
+				stmt.executeUpdate(delete_string);		
+				
+				if(!(co.isCondition_handled_at_hierarchy_level() | co.isCondition_handled_at_spectrum_level()))
+				{
+					// this condition is not met at both storage levels: therefore the result of the query is naught
+					// there stop this query immediately
+					count_of_rows_in_target_table = 0;
+					break;
+				}
+				
 				
 				String queryString = "insert into " + fused_collection_table + "(spectrum_id) " +
 						"select * from " + SB.prefix(getTempDatabaseName(), "spectrum_id_hierarchy_collection");
@@ -1052,10 +1061,10 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			}		
 			rs.close();	
 			//				
-//			if(count_of_rows_in_target_table > 0)
-//			{								
-//				iteration_result_exists = true; // true for all further queries
-//			}		
+			if(count_of_rows_in_target_table > 0)
+			{								
+				cond.setCondition_handled_at_spectrum_level(true);
+			}		
 
 
 		}

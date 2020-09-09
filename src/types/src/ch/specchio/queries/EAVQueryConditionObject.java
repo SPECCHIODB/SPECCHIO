@@ -24,6 +24,7 @@ public class EAVQueryConditionObject extends QueryCondition {
 	protected boolean quote_value = true;
 	
 	protected boolean condition_handled_at_hierarchy_level = false;
+	protected boolean condition_handled_at_spectrum_level = false;
 	
 	private Integer integerValue = null;
 	private String stringValue = null;
@@ -180,6 +181,14 @@ public class EAVQueryConditionObject extends QueryCondition {
 	public void setCondition_handled_at_hierarchy_level(boolean condition_handled_at_hierarchy_level) {
 		this.condition_handled_at_hierarchy_level = condition_handled_at_hierarchy_level;
 	}
+	
+	public boolean isCondition_handled_at_spectrum_level() {
+		return condition_handled_at_spectrum_level;
+	}
+
+	public void setCondition_handled_at_spectrum_level(boolean condition_handled_at_hierarchy_level) {
+		this.condition_handled_at_spectrum_level = condition_handled_at_hierarchy_level;
+	}	
 	
 }
 
