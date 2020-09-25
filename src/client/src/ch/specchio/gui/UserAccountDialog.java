@@ -24,6 +24,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -647,7 +648,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 				userpasswordLabel = new JLabel("Password:");
 				add(userpasswordLabel, constraints);
 				constraints.gridx = 1;
-				userpasswordField = new JTextField(user.getPassword(), 30);
+				userpasswordField = new JPasswordField(user.getPassword(), 30);
 				userpasswordField.setMinimumSize(getPreferredSize());
 				add(userpasswordField, constraints);
 				constraints.gridy++;
