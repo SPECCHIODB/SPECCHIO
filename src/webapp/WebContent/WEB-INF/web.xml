@@ -35,7 +35,11 @@
     <init-param>
     	<param-name>CREATE_READ_ONLY_USERS_BY_DEFAULT</param-name>
     	<param-value>disabled</param-value>
-    </init-param>        
+    </init-param>    
+    <init-param>
+    	<param-name>PASSWORD_HASHING_ALGORITHM</param-name>
+    	<param-value>MD5</param-value>
+    </init-param>   
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>

@@ -37,6 +37,9 @@ public class Capabilities {
 	/** capability name for the read only user switch */
 	public static final String CREATE_READ_ONLY_USERS_BY_DEFAULT = "CREATE_READ_ONLY_USERS_BY_DEFAULT";
 	
+	/** capability name for hashing algorithm config */
+	public static final String PASSWORD_HASHING_ALGORITHM = "PASSWORD_HASHING_ALGORITHM";
+	
 	
 	/**
 	 * Default constructor. Constructs an empty capabilities object.

@@ -132,6 +132,15 @@ public class SPECCHIOService {
 			capabilities.setCapability(Capabilities.CREATE_READ_ONLY_USERS_BY_DEFAULT, "disabled");		
 		}
 		
+		// hashing algorithm config
+		String hashing_alg = config.getInitParameter(Capabilities.PASSWORD_HASHING_ALGORITHM);
+		if (hashing_alg != null) {
+			capabilities.setCapability(Capabilities.PASSWORD_HASHING_ALGORITHM, hashing_alg);
+		}
+		else
+		{
+			capabilities.setCapability(Capabilities.PASSWORD_HASHING_ALGORITHM, "MD5");		
+		}		
 		
 		// set database capabilities
 		SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName());
