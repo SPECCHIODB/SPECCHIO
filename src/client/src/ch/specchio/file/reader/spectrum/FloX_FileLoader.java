@@ -111,6 +111,7 @@ public class FloX_FileLoader extends JB_FileLoader {
 					}
 
 					instrument_name = r.get(22);
+					instrument_name = instrument_name.trim(); // this is required because some FloXes have leading whitespace!
 					String[] name_parts = instrument_name.split(" ");
 					String[] tmp = name_parts[2].split("-");
 					instrument_number = tmp[1];
