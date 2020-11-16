@@ -35,9 +35,9 @@ public class SPECCHIOWebClientException extends SPECCHIOClientException {
 		} else if (ex.getCause() instanceof UnknownHostException) {
 			userMessage = "Unknown server name. Please check that the server name is correct.";
 		} else if (ex.getCause() instanceof SSLHandshakeException) {
-			userMessage = "Could not validate the server's security certificate. Please check that the server's certificate has been correctly signed and installed.";
+			userMessage = "\nLikely, the solution to this problem is documented in the FAQ:\nhttps://specchio.ch/faq/#i-cannot-connect-to-the-database-due-to-a-certificate-error-13-feb-2020";
 		} else if (ex.getCause() instanceof SSLException) {
-			userMessage = "Could not find any trusted security certificates. Please check that the specchio.keystore file exists and is correct.";
+			userMessage = "Could not find any trusted security certificates.\nPlease check that the specchio.keystore file exists and is correct.";
 		} else {
 			userMessage = null;
 		}
