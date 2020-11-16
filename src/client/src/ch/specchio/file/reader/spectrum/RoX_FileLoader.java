@@ -81,6 +81,7 @@ public class RoX_FileLoader extends JB_FileLoader {
 	//					box_rel_hum = r.get(15);
 	//					rel_hum = r.get(17);
 						instrument_name = r.get(14);
+						instrument_name = instrument_name.trim(); // this is required because some FloXes have leading whitespace!
 						String[] name_parts = instrument_name.split(" ");
 						String[] tmp = name_parts[2].split("-");
 						instrument_number = tmp[1];
