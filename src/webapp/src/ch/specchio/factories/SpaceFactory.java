@@ -870,6 +870,8 @@ public class SpaceFactory extends SPECCHIOFactory {
             String table;
             String id_column;
             String order_by;
+            String conc_ids = SQL.conc_ids(space.getSpectrumIds());
+            
             if (space instanceof RefPanelCalSpace) {
                 // load instrumentation calibration factors
                 table = "instrumentation_factors";
@@ -879,19 +881,17 @@ public class SpaceFactory extends SPECCHIOFactory {
                 // load spectral data
                 table = "spectrum";
                 id_column = "spectrum_id";
-                //order_by = space.getOrderBy();
-                String conc_ids = SQL.conc_ids(space.getSpectrumIds());
                 order_by = null;
                 quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
             }
 			String query = " ";
 			if(space.getSelectedBand() != null){
 				// SELECT THE SUBSET OF THE BLOB THAT CORRESPONDS TO THE GIVEN BAND (LIMIT 1 if more than 1)
-				String getBand = "SELECT wvl, sid - ( SELECT sensor_element_id FROM specchio.sensor_element " +
+				String getBand = "SELECT wvl, sid - ( SELECT sensor_element_id FROM sensor_element " +
 						" WHERE sensor_id = "+ ((SensorAndInstrumentSpace) space).getSensor().getSensorId() + " LIMIT 1) " +
 						" AS x FROM ( SELECT se.avg_wavelength AS wvl, se.sensor_element_id AS sid" +
-						" , sen.* FROM specchio.sensor_element AS " +
-						" se JOIN specchio.sensor AS sen ON se.sensor_id = sen.sensor_id " +
+						" , sen.* FROM sensor_element AS " +
+						" se JOIN sensor AS sen ON se.sensor_id = sen.sensor_id " +
 						" WHERE sen.sensor_id = " + ((SensorAndInstrumentSpace) space).getSensor().getSensorId() + " HAVING se.avg_wavelength " +
 						" >= " + space.getSelectedBand() + " AND se.avg_wavelength <= " + (space.getSelectedBand() + 1) + ") AS r LIMIT 1";
 
@@ -906,12 +906,14 @@ public class SpaceFactory extends SPECCHIOFactory {
 
 
 				// Define and run the query that will return the subset of the blob (1 element, 4 bytes)
-				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM specchio.spectrum AS sp " +
-						" WHERE sp.spectrum_id IN ( " + getStatementBuilder().conc_ids(space.getSpectrumIds()) + " )";
+				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM spectrum AS sp " +
+						" WHERE sp.spectrum_id IN ( " + conc_ids + " )"  + quicker_order_by;
 			} else{
 				// SELECT THE WHOLE BLOB
 				String columns[] = new String[] { "measurement", id_column };
-				query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by;
+				//query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by;
+				query = "SELECT sp.measurement, sp.spectrum_id FROM spectrum AS sp " +
+							" WHERE sp.spectrum_id IN ( " + conc_ids + " )"  + quicker_order_by;
 			}
 			ResultSet rs = stmt.executeQuery(query);
             Instant endexecuteQuery = Instant.now();
