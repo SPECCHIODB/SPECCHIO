@@ -389,7 +389,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 				cf.addAccountConfiguration(d);
 				
 				// report success
-				String message = "User " + user.getUsername() + " created with password " + user.getPassword() + ". " +
+				String message = "User " + user.getUsername() + " created ". " +
 						"An entry for this user has been added to your configuration file.";
 				JOptionPane.showMessageDialog(
 						(Frame)getOwner(),
