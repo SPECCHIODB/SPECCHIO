@@ -40,6 +40,12 @@ public class User {
 	
 	/** role */
 	private String role;
+
+	/** salt */
+	private String salt;
+
+	/** passhash */
+	private String passhash;
 	
 	/** external (non-SPECCHIO) identifier */
 	private String externalId;
@@ -73,6 +79,8 @@ public class User {
 		this.inst = new Institute(other.inst);
 		this.externalId = other.externalId;
 		this.description = other.description;
+		this.salt = other.salt;
+		this.passhash = other.passhash;
 	}
 	
 	
@@ -124,6 +132,14 @@ public class User {
 	@XmlElement(name="www")
 	public String getWwwAddress() { return this.www; }
 	public void setWwwAddress(String www) { this.www = www; }
+
+	@XmlElement(name="salt")
+	public String getSalt() { return this.salt; }
+	public void setSalt(String salt) { this.salt = salt; }
+
+	@XmlElement(name="passhash")
+	public String getPassHash() { return this.passhash; }
+	public void setPassHash(String passhash) { this.passhash = passhash; }
 	
 	/** test whether or not two user objects are equal, as judged by their user ids or usernames */
 	public boolean equals(Object other) {
