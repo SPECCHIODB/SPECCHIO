@@ -30,15 +30,15 @@ public class OceanView_FileLoader extends JAZ_FileLoader{
 		{
 			hdr.setCompany("OceanOptics");
 			
-			// extract spectrometer name from line 1
-			String[] line1_tokens = t1.split("_");
-			
-			String tmp = line1_tokens[line1_tokens.length-2];
-			String[] tmp_tokens = tmp.split(" ");
-			
-			String instr_name = tmp_tokens[tmp_tokens.length-1];
-			
-			instr_name = instr_name.substring(0, instr_name.length()-1); // cut the last character as this is the number given within a cluster of spectrometers
+			// extract spectrometer name from line 1: this is actually not needed and error prone anyway!
+//			String[] line1_tokens = t1.split("_");
+//			
+//			String tmp = line1_tokens[line1_tokens.length-2];
+//			String[] tmp_tokens = tmp.split(" ");
+//			
+//			String instr_name = tmp_tokens[tmp_tokens.length-1];
+//			
+//			instr_name = instr_name.substring(0, instr_name.length()-1); // cut the last character as this is the number given within a cluster of spectrometers
 			
 			// this is actually not consistent either! E.g. L_20150711_D80_USB4C032391_031.txt Node
 			//hdr.setInstrumentName(instr_name); // second last token: Data from MAYP1114952_13-22-06-700.txt Node
