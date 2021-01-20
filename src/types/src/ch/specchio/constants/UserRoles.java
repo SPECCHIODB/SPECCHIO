@@ -11,7 +11,7 @@ public class UserRoles {
 	/** string identifier for normal user role */
 	public static final String USER = "user";
 	
-	/** string identifier for anonymous role */
+	/** string identifier for read_only_user role */
 	public static final String READ_ONLY_USER = "read_only_user";	
 	
 	/** string identifier for anonymous role */
