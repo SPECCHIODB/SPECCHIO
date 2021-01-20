@@ -268,7 +268,12 @@ public class SPECCHIOService {
 	 */
 	public boolean isAdmin() {
 		
+		 String ck_auth = this.request.getAuthType(); // returns null if user is not authenticated
+		
 		Principal name = security.getUserPrincipal();
+		boolean ck_admin = security.isUserInRole(UserRoles.ADMIN);
+		boolean ck_user = security.isUserInRole(UserRoles.USER);
+		boolean ck_ro = security.isUserInRole(UserRoles.READ_ONLY_USER);
 		return security.isUserInRole(UserRoles.ADMIN);		
 	}	
 	
