@@ -350,7 +350,7 @@ public class UniSpec_SPU_FileLoader extends SpectralFileLoader {
 				
 				if (tag.equals("Number Scans")) 
 				{													
-					MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of internal Scans"));
+					MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of Internal Scans"));
 					mp.setValue(Integer.valueOf(Integer.valueOf(remove_leading_spaces(val))), "RAW");
 					smd_a.addEntry(mp);
 					smd_b.addEntry(mp);					
