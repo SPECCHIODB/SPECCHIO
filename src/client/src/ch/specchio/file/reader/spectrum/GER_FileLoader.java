@@ -148,7 +148,7 @@ public class GER_FileLoader extends SpectralFileLoader {
 			// for simplicity we just take the target one.
 			// Should it be needed that one needs the correct value for the white reference
 			// as well, then a list of this value must be kept for each spectrum
-			MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of internal Scans"));
+			MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of Internal Scans"));
 			mp.setValue(Integer.valueOf(avg[0]), "RAW");			
 			
 			smd.addEntry(mp);
