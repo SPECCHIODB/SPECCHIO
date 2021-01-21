@@ -247,7 +247,7 @@ public class ASD_FileLoader extends SpectralFileLoader {
 		
 		// read number of samples in the average
 		//hdr.internal_average_cnt = read_short(in);
-		mp = MetaParameter.newInstance(attributes_name_hash.get("Number of internal Scans"));
+		mp = MetaParameter.newInstance(attributes_name_hash.get("Number of Internal Scans"));
 		mp.setValue(read_short(in), "RAW");		
 		smd.addEntry(mp);	
 		
