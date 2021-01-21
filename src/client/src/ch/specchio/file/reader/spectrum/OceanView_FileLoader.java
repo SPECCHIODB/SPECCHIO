@@ -91,7 +91,7 @@ public class OceanView_FileLoader extends JAZ_FileLoader{
 	{		
 		String[] sub_tokens = tokens[1].split(" ");
 		
-		MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of internal Scans"));
+		MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of Internal Scans"));
 		try {
 			mp.setValue(Integer.valueOf(sub_tokens[0]), "RAW");
 			smd.addEntry(mp);
