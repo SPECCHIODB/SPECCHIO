@@ -104,7 +104,7 @@ public class APOGEE_FileLoader extends SpectralFileLoader {
 			
 			if (tag.equals("Avg"))
 			{
-				MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of internal Scans"));
+				MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Number of Internal Scans"));
 				mp.setValue(Integer.valueOf(val), "RAW");		
 				smd.addEntry(mp);					
 			}
