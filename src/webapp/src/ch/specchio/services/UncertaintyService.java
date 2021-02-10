@@ -1,9 +1,5 @@
 package ch.specchio.services;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import javax.annotation.security.*;
@@ -17,6 +13,7 @@ import ch.specchio.factories.UncertaintyFactory;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.types.Campaign;
 import ch.specchio.types.InstrumentNode;
+import ch.specchio.types.SpectralSet;
 
 
 /**
@@ -27,6 +24,45 @@ import ch.specchio.types.InstrumentNode;
 @DeclareRoles({UserRoles.ADMIN, UserRoles.USER})
 
 public class UncertaintyService extends SPECCHIOService {
+	
+	/**
+	 * Insert an uncertainty node.
+	 * 
+	 * @param spectral set id
+	 * 
+	 * @return the id of the new uncertainty node (can be spectrum or instrument)
+	 * 
+	 */
+	
+	@POST
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	@Path("insertUncertaintyNode")
+	
+	public XmlInteger insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFactoryException {
+		
+		System.out.println("Inserting new uncertainty node");
+	
+		try
+		{
+	
+			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+			factory.insertUncertaintyNode(spectral_set);
+			factory.dispose();
+	
+		}
+		catch(SPECCHIOFactoryException e)
+		{
+			System.out.println(e.toString());
+			throw(e);
+		}
+	
+
+		return new XmlInteger(spectral_set.instrument_node_id); 
+	
+		
+		
+	}
 	
 	
 	/**
@@ -65,6 +101,33 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 	
+	/**
+	 * Retrieve an instrument node.
+	 * 
+	 * @param an instrument_node_id
+	 * 
+	 * @return the corresponding instrument node
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 * 
+	 */
+	
+	@GET
+	@Path("getInstrumentNode/{instrument_node_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public InstrumentNode getInstrumentNode(
+			@PathParam("instrument_node_id") int instrument_node_id
+		) throws SPECCHIOFactoryException {
+		
+		System.out.println("Fetching instrument node");
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		InstrumentNode selectedInstrumentNode  = factory.getInstrumentNode(instrument_node_id);
+		factory.dispose();
+		return selectedInstrumentNode;
+		
+
+	}
 	
 	
 }

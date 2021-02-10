@@ -2202,6 +2202,23 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 	
 	/**
+	 * 
+	 * Get instrument node for a given instrument node id
+	 * 
+	 * @param an instrument node id
+	 * 
+	 * @return an InstrumentNode
+	 * 
+	 */
+	
+	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOWebClientException {
+		
+		return getObject(InstrumentNode.class, "uncertainty", "getInstrumentNode", Integer.toString(instrument_node_id));
+	}
+	
+
+	 
+	/**
 	 * Insert instrument node.
 	 * 
 	 * @param an InstrumentNode object
@@ -2307,6 +2324,27 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return postForInteger("spectrum", "insertTargetReferenceLinks", new SpectrumIdsDescriptor(target_id, reference_ids));
 		
 	}
+	
+	
+	/**
+	 * Insert an uncertainty node
+	 * 
+	 * @param spectral_set a spectral set
+	 * @param the id of the uncertainty set for the given node to be inserted
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	
+	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		
+		return postForInteger("uncertainty", "insertUncertaintyNode", spectral_set);
+		
+	}
+ 	
+	
 	
 	/**
 	 * Test for the existence of a calibration in the database.

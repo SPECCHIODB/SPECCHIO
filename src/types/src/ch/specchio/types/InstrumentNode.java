@@ -17,9 +17,13 @@ public class InstrumentNode {
 	@XmlElement public int instrument_node_id;
 	@XmlElement public String node_type;
 	@XmlElement public Float[] u_vector;
-	@XmlElement public double[] confidence_level;
+	@XmlElement public double confidence_level;
 	@XmlElement public String abs_rel;
 	@XmlElement public int unit_id;
+	
+	public InstrumentNode() {
+		unit_id = 1;
+	}
 	
 	
 	/**
@@ -75,7 +79,7 @@ public class InstrumentNode {
 	 * @return confidence_level   Percentage from 0 to 1
 	 */
 	@XmlElement(name="confidence_level")
-	public double[] getConfidenceLevel() {
+	public double getConfidenceLevel() {
 
 		return confidence_level;
 
@@ -86,11 +90,33 @@ public class InstrumentNode {
 	 *
 	 * @param confidence_level   Percentage from 0 to 1
 	 */
-	public void setConfidenceLevel(double[] confidence_level) {
+	public void setConfidenceLevel(double confidence_level) {
 
 		this.confidence_level = confidence_level;
 
 	}
+	
+	/**
+	 * Get the instrument node uncertainty vector
+	 *
+	 * @return u_vector
+	 */
+
+	@XmlElement(name="u_vector")
+	public Float[] getUncertaintyVector() {
+		return u_vector;
+	}
+	
+	
+	/**
+	 * Set the instrument node uncertainty vector.
+	 *
+	 * @param u_vector
+	 */
+	public void setUncertaintyVector(Float[] u_vector) {
+		this.u_vector = u_vector;
+	}
+	
 	
 	/**
 	 * Get whether the instrument node uncertainty is absolute or relative.
@@ -114,6 +140,32 @@ public class InstrumentNode {
 		this.abs_rel = abs_rel;
 
 	}
+	
+	/**
+	 * Get the instrument node unit id.
+	 *
+	 * @return the instrument node unit id
+	 */
+	@XmlElement(name="unit_id")
+	public int getUnitId() {
+
+		return unit_id;
+
+	}
+
+
+	/**
+	 * Set the instrument node unit id.
+	 *
+	 * @param instrument_node_id  unit id
+	 */
+	public void setUnitId(int unit_id) {
+
+		this.unit_id = unit_id;
+
+	}
+	
+	
 	
 	
 }
