@@ -2344,6 +2344,26 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
  	
+	/**
+	 * 
+	 * Insert new uncertainty set
+	 * 
+	 * @param spectral_set a spectral set with an uncertainty_set_description
+	 * 
+	 * @return the id of the created uncertainty set
+	 * 
+	 * @throws SPECCHIOClientException
+	 * 
+	 */
+	
+	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		return postForInteger("uncertainty", "insertNewUncertaintySet", spectral_set);
+		
+		
+	}
+	
+	
 	
 	
 	/**

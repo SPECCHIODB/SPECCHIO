@@ -54,6 +54,99 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 	}
 	
+	/** 
+	*
+	* Insert and create new uncertainty set. This creates a new uncertainty set id, a blank adjacency matrix
+	* 
+	* @param uncertainty_set_description the description of the uncertainty set to be created
+	* 
+	* @throws SPECCHIOFactoryException
+	* 
+ 	*/
+	
+	public void insertNewUncertaintySet(SpectralSet spectral_set) {
+		
+		try {
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		// Finding max of uncertainty_node_ids in uncertainty_node table
+		
+		String max_query = "SELECT MAX(node_set_id) from uncertainty_node_set";
+		
+		PreparedStatement max_pstmt = SQL.prepareStatement(max_query);
+		
+		ResultSet max_rs = max_pstmt.executeQuery();
+		
+		 while (max_rs.next()) {
+		        int last_node_set_id = max_rs.getInt(1);
+		        
+		        int new_node_set_id = last_node_set_id + 1;
+		        
+		        spectral_set.node_set_id = new_node_set_id;
+		              
+		 }
+		 
+		max_pstmt.close();
+		
+		String uc_set_query = "insert into uncertainty_set(uncertainty_set_description, node_set_id) " +
+				" values (?, ?)";
+	
+	
+		PreparedStatement uc_set_pstmt = SQL.prepareStatement(uc_set_query, Statement.RETURN_GENERATED_KEYS);
+				
+		uc_set_pstmt.setString (1, spectral_set.getUncertaintySetDescription());
+		uc_set_pstmt.setInt(2, spectral_set.getNodeSetId());
+		
+		int affectedRows = uc_set_pstmt.executeUpdate();
+		
+		ResultSet generatedKeys = uc_set_pstmt.getGeneratedKeys();
+		
+		
+		while (generatedKeys.next()) {
+
+			int uc_set_id = generatedKeys.getInt(1);
+			
+			System.out.println("inserted id: " + uc_set_id);
+			
+			spectral_set.setUncertaintySetId(uc_set_id);
+			
+			
+		}
+		
+		
+		uc_set_pstmt.close();
+		
+		// We're also going to create the first node with null id because that way this node_set_id is 'locked in'
+		// Logic fun to follow
+		
+		String node_set_query = "insert into uncertainty_node_set(node_set_id, node_num) " +
+				"values (?, ?)";
+		
+		PreparedStatement node_set_pstmt = SQL.prepareStatement(node_set_query, Statement.RETURN_GENERATED_KEYS);
+		
+		int node_num = 1;
+		
+		node_set_pstmt.setInt(1, spectral_set.getNodeSetId());
+		node_set_pstmt.setInt(2, node_num);
+		
+		node_set_pstmt.executeUpdate();
+		
+		node_set_pstmt.close();
+		
+		
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+		
+		
+	}
+	
+	
+	
 	// getInstrumentNode
 	// Retrieve information about instrument node for a given instrument node id
 	
@@ -205,20 +298,11 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			
 			
 			PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-					
-			//pstmt.setString (1, "test_node_pstmt");
-			//pstmt.setDouble (2, 0.07);
-			//pstmt.setString (3, "rel");
-			
+							
 			pstmt.setString (1, instrument_node.getNodeType());
 			pstmt.setDouble (2, instrument_node.getConfidenceLevel());
-			//pstmt.setDouble (2, instrument_node.getConfidenceLevel());
 			pstmt.setString (3, instrument_node.getAbsRel());
-			
-			System.out.println(query);
-			
-			System.out.println(pstmt);
-			
+					
 			int affectedRows = pstmt.executeUpdate();
 			
 			System.out.println("pstmt executed");
@@ -271,6 +355,10 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			statement.executeUpdate();
 
 			vector.close();
+			statement.close();
+			
+			
+			
 			
 			
 			
@@ -328,7 +416,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 			                                                                                        
 				PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 					
-				pstmt.setString (1, spectral_set.getNodeDescription()); //This needs renaming
+				pstmt.setString (1, spectral_set.getNodeDescription()); 
 				pstmt.setDouble (2, spectral_set.getConfidenceLevel());
 				pstmt.setString (3, spectral_set.getAbsRel());
 				pstmt.setInt (4, spectral_set.getUnitId());
@@ -386,8 +474,8 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				
 				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
 				
-				pstmt.setBoolean (1, is_spectrum); 
-				pstmt.setInt (2, spectral_set.getInstrumentNodeId());
+				pstmt_uc_node.setBoolean (1, is_spectrum); 
+				pstmt_uc_node.setInt (2, spectral_set.getInstrumentNodeId());
 				
 				// Getting uncertainty node id in return
 				
@@ -399,10 +487,28 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 
 					int uc_node_id = generatedKeys_2.getInt(1);
 				
-					System.out.println("inserted uncertainty node id: " + uc_node_id);			
+					System.out.println("inserted uncertainty node id: " + uc_node_id);	
+					
+					spectral_set.setUncertaintyNodeId(uc_node_id);
 				
 				}
 						
+						
+				// Updating uncertainty_node_set
+				
+				// First we need to get the node_set_id associated with uncertainty_set...
+				// I think this needs to be set up at the same time as a uc set because you have to have a node set with a uc set! 
+				
+				
+				
+				
+				// Updating uncertainty set
+				
+				
+				
+				
+				
+				
 				
 				
 			}
@@ -417,10 +523,16 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				     
 				ArrayList<Integer> spectrum_ids = spectral_set.spectrum_ids;
 				
+				// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
 				
-				
-				
-				
+				// Finding length of spectrum_ids and creating a spectrum node for each
+				 
+				for(int i=0; i<spectrum_ids.size(); i++) {
+					
+					System.out.println(i);
+					
+					
+				}
 				
 				
 				
@@ -435,9 +547,21 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				System.out.println("add_uncertainty_source exists");
 				
 				
+				
+				
+				
 			}
 			
 			
+			if (spectral_set.add_uncertainty_source_by_id != 0) {
+				
+				
+				System.out.println("add_uncertainty_source_by_id exists");
+				
+				
+				
+				
+			}
 			
 			
 			

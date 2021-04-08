@@ -101,6 +101,36 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 	
+	@POST
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	@Path("insertNewUncertaintySet")
+	public XmlInteger insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOFactoryException {
+		
+		System.out.println("Service: Inserting new uncertainty set");
+		
+		try
+		{
+		
+			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.insertNewUncertaintySet(spectral_set);
+		factory.dispose();
+		
+		}
+		catch(SPECCHIOFactoryException e)
+		{
+			System.out.println(e.toString());
+			throw(e);
+		}
+		
+		// this might need more of a chain than just 'Factory'
+		return new XmlInteger(spectral_set.getUncertaintySetId()); 
+		
+	}
+	
+	
+	
+	
 	/**
 	 * Retrieve an instrument node.
 	 * 

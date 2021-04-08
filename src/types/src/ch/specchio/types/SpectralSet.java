@@ -23,10 +23,20 @@ public class SpectralSet {
 	//Elements which are specific to spectrum-level nodes
 	@XmlElement public ArrayList<Integer> spectrum_ids;
 	@XmlElement public String spectrum_set_description;
+	@XmlElement public Float[] uncertainty_vectors;
 	
 	// Elements which are specific to edge connections
 	@XmlElement public int add_uncertainty_source_by_id;
 	@XmlElement public String add_uncertainty_source;
+
+	// Elements which are specific to groupings
+	@XmlElement public int uncertainty_set_id;
+	@XmlElement public String uncertainty_set_description;
+	
+	@XmlElement public int uncertainty_node_id;
+	@XmlElement public int node_set_id;
+	
+	
 	
 	// To add to database specchio_client.insert_uncertainty_of_set(spectral_set)
 	
@@ -240,6 +250,99 @@ public class SpectralSet {
 	public void setSpectrumSetDescription(String spectrum_set_description) {
 
 		this.spectrum_set_description = spectrum_set_description;
+
+	}
+	
+	/** 
+	 * Get the uncertainty set id 
+	 * 
+	 * @return uncertainty_set_id the uncertainty set identifier
+	 */
+	@XmlElement(name = "uncertainty_set_id")
+	public int getUncertaintySetId() {
+		
+		return uncertainty_set_id;
+	}
+	
+	/**
+	 * Set the uncertainty set id
+	 *
+	 * @param uncertainty_set_id  unique uncertainty set id
+	 */
+	public void setUncertaintySetId(int uncertainty_set_id) {
+
+		this.uncertainty_set_id = uncertainty_set_id;
+
+	}
+	
+	
+	/** 
+	 * Get the uncertainty set description 
+	 * 
+	 * @return uncertainty_set_description the uncertainty set description
+	 */
+	@XmlElement(name = "uncertainty_set_description")
+	public String getUncertaintySetDescription() {
+		
+		return uncertainty_set_description;
+	}
+	
+	/**
+	 * Set the uncertainty set description
+	 *
+	 * @param uncertainty_set_description the uncertainty set description
+	 */
+	public void setUncertaintySetDescription(String uncertainty_set_description) {
+
+		this.uncertainty_set_description = uncertainty_set_description;
+
+	}
+	
+	
+	/** 
+	 * Get the uncertainty node id - this is where we standardise the instrument/spectrum nodes
+	 * 
+	 * @return uncertainty_node_id
+	 */
+	@XmlElement(name = "uncertainty_node_id")
+	public int getUncertaintyNodeId() {
+		
+		return uncertainty_node_id;
+	}
+	
+	/**
+	 * Set the uncertainty node id
+	 *
+	 * @param uncertainty_node_id  
+	 */
+	public void setUncertaintyNodeId(int uncertainty_node_id) {
+
+		this.uncertainty_node_id = uncertainty_node_id;
+
+	}
+	
+	
+	
+	
+	/** 
+	 * Get the node set id - a node set is a collection of nodes within an uncertainty set
+	 * 
+	 * @return node_set_id node set identifier
+	 */
+	@XmlElement(name = "node_set_id")
+	public int getNodeSetId() {
+		
+		return node_set_id;
+	}
+	
+	/**
+	 * Set the node set id
+	 *
+	 * @param node_set_id  unique node set id
+	 */
+	public void setNodeSetId(int node_set_id) {
+
+		this.node_set_id = node_set_id;
 
 	}
 	
