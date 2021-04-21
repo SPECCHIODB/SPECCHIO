@@ -555,7 +555,44 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		
 	}	
 	
-	
+	/**																																																																																																												/**
+	 * Get the identifiers of all spectra that match a full text search for metadata hierarchy.
+	 * 
+	 * @param search_str		the search string
+	 * 
+	 * @return an array of identifiers
+	 * 
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearchUsingHierarchy(String search_str) throws SPECCHIOFactoryException {
+		
+		ArrayList<Integer> ids = new ArrayList<Integer>();	
+		
+		try {
+			Statement stmt = getStatementBuilder().createStatement();
+		
+			//String query = "select distinct spectrum_x_eav.spectrum_id, eav.string_val from spectrum_x_eav, eav where spectrum_x_eav.eav_id = eav.eav_id and eav.string_val like '" + search_str + "'";
+			
+			String query = "select distinct hierarchy_level_x_spectrum.spectrum_id, eav.string_val from eav inner join hierarchy_x_eav USING (eav_id) inner join hierarchy_level_x_spectrum USING (hierarchy_level_id) where string_val like '" + search_str + "'";
+			
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				ids.add(rs.getInt(1));
+			}
+			rs.close();							
+		
+			stmt.close();			
+			
+		}
+		catch (SQLException ex) {
+			// database error
+			System.out.println(ex.toString());
+			throw new SPECCHIOFactoryException(ex);
+		}			
+		
+		return ids;
+		
+	}	
 	
 	/**
 	 * Helper method for countIdsMatchQuery() and getIdsMatchingQuery().

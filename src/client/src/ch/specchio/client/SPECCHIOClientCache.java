@@ -1480,6 +1480,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 
 	/**
+	 * Get the identifiers of all spectra that match a full text search using metadata hierarchy.
+	 * 
+	 * @param search_str		the search string
+	 * 
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearchUsingHierarchy(String search_str) throws SPECCHIOClientException {
+		
+		return realClient.getSpectrumIdsMatchingFullTextSearchUsingHierarchy(search_str);
+		
+	}
+	
+	/**
 	 * Get the identifiers of all spectra that match a full text search.
 	 *
 	 * @param campaignId		the search string

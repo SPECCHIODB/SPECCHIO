@@ -971,6 +971,16 @@ public interface SPECCHIOClient {
 	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearch(String search_str) throws SPECCHIOClientException;
 
 	/**
+	 * Get the identifiers of all spectra that match a full text search using hierarchy.
+	 * 
+	 * @param search_str		the search string
+	 * 
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearchUsingHierarchy(String search_str) throws SPECCHIOClientException;
+
+	
+	/**
 	 * Get the identifiers of all spectra that match a full text search.
 	 *
 	 * @param campaignId		the search string

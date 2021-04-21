@@ -1903,6 +1903,27 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return ids;
 	}
 
+	/**
+	 * Get the identifiers of all spectra that match a full text search using metadata hierarchy.
+	 * 
+	 * @param search_str		the search string
+	 * 
+	 * @return an array list of spectrum identifiers
+	 */
+	public ArrayList<Integer> getSpectrumIdsMatchingFullTextSearchUsingHierarchy(String search_str) throws SPECCHIOClientException {
+		
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString("%" + search_str + "%");
+		
+		List<Integer> id_array = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "full_text_search_using_hierarchy", xmlstr));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		
+		ids.addAll(id_array);
+		return ids;
+	}
+	
 
 	/**
 	 * Get the identifiers of all spectra that match a full text search.

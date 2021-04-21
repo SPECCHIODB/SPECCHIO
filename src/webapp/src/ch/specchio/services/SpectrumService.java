@@ -520,6 +520,33 @@ public class SpectrumService extends SPECCHIOService {
 		return adapter.marshalArray(ids);
 		
 	}
+	
+	/**
+	 * Get the identifiers of all spectra that match a full text search using metadata hierarchy.
+	 * 
+	 * @param search_str		the search string
+	 * 
+	 * @return an array of identifiers
+	 * 
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */	
+	@POST
+	@Path("full_text_search_using_hierarchy")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] full_text_search_using_hierarchy(XmlString search_str) throws SPECCHIOFactoryException {
+		
+		
+		
+		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		List<Integer> ids = factory.getSpectrumIdsMatchingFullTextSearchUsingHierarchy(search_str.getString());
+		factory.dispose();
+		
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);
+		
+	}
+	
 
 	/**
 	 * Get the identifiers of all spectra that match a full text search.
