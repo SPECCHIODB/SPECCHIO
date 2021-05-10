@@ -23,7 +23,8 @@ public class SpectralSet {
 	//Elements which are specific to spectrum-level nodes
 	@XmlElement public ArrayList<Integer> spectrum_ids;
 	@XmlElement public String spectrum_set_description;
-	@XmlElement public Float[] uncertainty_vectors;
+	@XmlElement public int spectrum_set_id;
+	@XmlElement public Float[][] u_vectors;
 	
 	// Elements which are specific to edge connections
 	@XmlElement public int add_uncertainty_source_by_id;
@@ -48,6 +49,8 @@ public class SpectralSet {
 	
 	// A constructor
 	public SpectralSet() {
+		
+		this.spectrum_ids = new ArrayList<Integer>();
 		
 	}
 	
@@ -231,9 +234,9 @@ public class SpectralSet {
 	}
 	
 	/**
-	 * Get the uncertainty node node_type.
+	 * Get the spectrum set description.
 	 *
-	 * @return node_type   either 'spectrum' or 'instrument'
+	 * @return spectrum_set_description  
 	 */
 	@XmlElement(name="spectrum_set_description")
 	public String getSpectrumSetDescription() {
@@ -243,13 +246,35 @@ public class SpectralSet {
 	}
 	
 	/**
-	 * Set the uncertainty node node_type
+	 * Set the spectrum set description
 	 *
-	 * @param node_type  a either 'spectrum' or 'instrument'
+	 * @param spectrum_set_description  
 	 */
 	public void setSpectrumSetDescription(String spectrum_set_description) {
 
 		this.spectrum_set_description = spectrum_set_description;
+
+	}
+	
+	/** 
+	 * Get the spectrum set id 
+	 * 
+	 * @return spectrum_set_id the spectrum set identifier
+	 */
+	@XmlElement(name = "spectrum_set_id")
+	public int getSpectrumSetId() {
+		
+		return spectrum_set_id;
+	}
+	
+	/**
+	 * Set the spectrum set id
+	 *
+	 * @param spectrum_set_id  unique spectrum set id
+	 */
+	public void setSpectrumSetId(int spectrum_set_id) {
+
+		this.spectrum_set_id = spectrum_set_id;
 
 	}
 	
@@ -345,6 +370,30 @@ public class SpectralSet {
 		this.node_set_id = node_set_id;
 
 	}
+	
+	/**
+	 * Get the instrument node uncertainty vector
+	 *
+	 * @return u_vectors
+	 */
+
+	@XmlElement(name="u_vectors")
+	public Float[][] getUncertaintyVectors() {
+		return u_vectors;
+	}
+	
+	
+	/**
+	 * Set the instrument node uncertainty vector.
+	 *
+	 * @param u_vectors
+	 */
+	public void setUncertaintyVectors(Float[][] u_vectors) {
+		this.u_vectors = u_vectors;
+	}
+	
+	
+	
 	
 	
 	

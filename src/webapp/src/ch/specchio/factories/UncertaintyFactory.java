@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.ujmp.core.Matrix;
+import org.ujmp.core.matrix.DenseMatrix;
 
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.types.Campaign;
@@ -117,8 +119,8 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 		uc_set_pstmt.close();
 		
-		// We're also going to create the first node with null id because that way this node_set_id is 'locked in'
-		// Logic fun to follow
+		// We're also going to create the first node with id = null because that way this node_set_id is 'locked in'
+		// There is a foreign key constraint on 'node_id' but because this column is nullable, we can use null for now
 		
 		String node_set_query = "insert into uncertainty_node_set(node_set_id, node_num) " +
 				"values (?, ?)";
@@ -126,6 +128,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		PreparedStatement node_set_pstmt = SQL.prepareStatement(node_set_query, Statement.RETURN_GENERATED_KEYS);
 		
 		int node_num = 1;
+		//int node_id = 0;
 		
 		node_set_pstmt.setInt(1, spectral_set.getNodeSetId());
 		node_set_pstmt.setInt(2, node_num);
@@ -402,17 +405,17 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 			
 			
 			// Here we need an if statement to determine whether node is an instrument or spectrum node
+			// The first inserts are spectrum/instrument dependent
+			// Uncertainty node set and uncertainty set updates are the same process for both
 			
 			if(node_type.equals("instrument")) {
-				
-				
+			
 				System.out.println("uncertainty node type: instrument");
 				
 				// What to do here? Same as instrument node!
 				
 				String query = "insert into instrument_node(node_type, confidence_level, abs_rel, unit_id) " +
 						" values (?, ?, ?, ?)";
-			
 			                                                                                        
 				PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 					
@@ -432,7 +435,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					System.out.println("inserted id: " + instrument_node_id);
 				
 					spectral_set.setInstrumentNodeId(instrument_node_id); //Which id? Instrument_node_id
-				
 				
 				}
 			
@@ -492,57 +494,509 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					spectral_set.setUncertaintyNodeId(uc_node_id);
 				
 				}
-						
-						
-				// Updating uncertainty_node_set
-				
-				// First we need to get the node_set_id associated with uncertainty_set...
-				// I think this needs to be set up at the same time as a uc set because you have to have a node set with a uc set! 
-				
-				
-				
-				
-				// Updating uncertainty set
-				
-				
-				
-				
-				
-				
-				
 				
 			}
-			
+				
 			else if(node_type.equals("spectrum")) {
 				
 				System.out.println("uncertainty node type: spectrum");
 				
-				// More steps here
+				// First creating a new spectrum set
 				
-				//Get spectrum ids
-				     
-				ArrayList<Integer> spectrum_ids = spectral_set.spectrum_ids;
+				// NB: Spectrum set id is on auto-increment
 				
-				// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
+				String spectrum_set_query = "insert into spectrum_set(spectrum_set_description) " +
+						" values (?)";
+			
+			
+				PreparedStatement spectrum_set_pstmt = SQL.prepareStatement(spectrum_set_query, Statement.RETURN_GENERATED_KEYS);
+						
+				spectrum_set_pstmt.setString (1, spectral_set.getSpectrumSetDescription());
 				
-				// Finding length of spectrum_ids and creating a spectrum node for each
-				 
-				for(int i=0; i<spectrum_ids.size(); i++) {
+				int affectedRows = spectrum_set_pstmt.executeUpdate();
+				
+				ResultSet generatedKeys = spectrum_set_pstmt.getGeneratedKeys();
+				
+				
+				while (generatedKeys.next()) {
+
+					int spectrum_set_id = generatedKeys.getInt(1);
 					
-					System.out.println(i);
+					System.out.println("inserted spectrum set with id: " + spectrum_set_id);
+					
+					spectral_set.setSpectrumSetId(spectrum_set_id);
 					
 					
 				}
 				
+				spectrum_set_pstmt.close();
+				
+				
+				// More steps here
+				
+				//Get spectrum ids
+				
+				ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
+				spectrum_ids = spectral_set.getSpectrumIds();
+
+				ArrayList<Integer> spectrum_subset_list = new ArrayList<Integer>();
+				
+				
+				// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
+				
+				// Finding length of spectrum_ids and creating a spectrum node for each
+				
+				// Look into batches to update multiple rows in spectrum_node
+				
+				// Same insert statement for all spectrum ids
+				
+				String spectrum_node_insert_sql = "insert into spectrum_node(node_type, confidence_level, abs_rel, unit_id, u_vector) " +
+						" values (?, ?, ?, ?, ?)";
+				
+				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql);
+				
+				System.out.println("size of spectrum_ids: " + spectrum_ids.size());
+				
+				System.out.println("a list of spectrum ids: " + spectrum_ids);
+				
+				// Insert statement for spectrum subset 
+				
+				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_node_id, spectrum_id) " +
+						" values (?, ?)";
+				
+				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql);
+				
+				
+				for(int i=0; i<spectrum_ids.size(); i++) {
+					
+					System.out.println("Running uncertainty node creation for loop for spectrum id: " + spectrum_ids.get(i));
+					
+					spectrum_node_insert_stmt.setString (1, spectral_set.getNodeDescription()); 
+					spectrum_node_insert_stmt.setDouble (2, spectral_set.getConfidenceLevel());
+					spectrum_node_insert_stmt.setString (3, spectral_set.getAbsRel());
+					spectrum_node_insert_stmt.setInt (4, spectral_set.getUnitId());
+					
+					// Next we'll look at u_vectors
+					
+					byte[] temp_buf;
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					DataOutput dos = new DataOutputStream(baos);
+				
+					// Each row represents a single spectrum's uncertainty vector
+					
+					
+					
+					
+					for (int j = 0; j < spectral_set.getUncertaintyVectors()[i].length; j++) {
+						try {
+							//System.out.println("uncertainty_vector: "+ spectral_set.getUncertaintyVectors()[i][j]);
+							dos.writeFloat(spectral_set.getUncertaintyVectors()[i][j]);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+
+					temp_buf = baos.toByteArray();
+		
+					InputStream vector = new ByteArrayInputStream(temp_buf);
+					
+					spectrum_node_insert_stmt.setBinaryStream(5, vector, spectral_set.getUncertaintyVectors()[i].length*4);
+					
+					int affectedRows_3= spectrum_node_insert_stmt.executeUpdate();
+					
+					ResultSet generatedKeys_3 = spectrum_node_insert_stmt.getGeneratedKeys();
+					
+					int spectrum_node_id = 0;
+					
+					while (generatedKeys_3.next()) {
+
+						spectrum_node_id = generatedKeys_3.getInt(1);
+					
+						System.out.println("inserted uncertainty node id: " + spectrum_node_id);	
+					
+					}
+					
+					// Now that we have spectrum node id we can use this to populate spectrum subset
+					// For the time being, we have 1 spectrum subset for each spectrum id
+					// spectrum_subset_id is currently on auto-increment
+					
+					spectrum_subset_insert_stmt.setInt (1, spectrum_node_id);
+					spectrum_subset_insert_stmt.setInt (2, spectrum_ids.get(i));
+					
+					int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+					
+					ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+					
+					int spectrum_subset_id = 0;
+					
+					while (generatedKeys_4.next()) {
+
+						spectrum_subset_id = generatedKeys_4.getInt(1);
+						System.out.println("inserted spectrum subset id: " + spectrum_subset_id);
+					
+					}
+					
+					spectrum_subset_list.add(spectrum_subset_id);
+					
+					
+
+				}
+				
+				spectrum_node_insert_stmt.close();
+				spectrum_subset_insert_stmt.close();
+				
+				System.out.println("executed all spectrum ids");
+				
+				// Once we've looped through each of the spectrum ids 
+				// we can use the list of spectrum_subset_ids to populate
+				// spectrum_set_map
+				
+				// We could use batches here?
+				
+				String spectrum_set_sql = "INSERT into spectrum_set_map(spectrum_set_id, spectrum_subset_id) " +
+						"VALUES (?, ?)";
+				
+				PreparedStatement pstmt_spectrum_set = SQL.prepareStatement(spectrum_set_sql);
+				
+				// Looping over all spectrum subset ids
+				for(int i = 0; i < spectrum_subset_list.size(); i++)
+				{
+				    int current_spectrum_subset_id = spectrum_subset_list.get(i);
+					//System.out.println(spectrum_subset_list.get(i));
+				    
+					pstmt_spectrum_set.setInt(1, spectral_set.getSpectrumSetId());
+				    pstmt_spectrum_set.setInt(2, current_spectrum_subset_id);
+				    
+				    //batch here 
+				    
+				    pstmt_spectrum_set.addBatch();
+				    
+				}
+				
+				pstmt_spectrum_set.executeBatch();
+				pstmt_spectrum_set.close();
+				
+				// Now we can create an uncertainty set id which is needed for instrument/spectrum shared section below
+				// Same as instrument except that is_spectrum is true and we have an associated spectrum set id rather than an instrument node id
+				
+				boolean is_spectrum = true; 
+				
+				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, spectrum_set_id) " +
+							"VALUES (?, ?)";
+				
+				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				pstmt_uc_node.setBoolean (1, is_spectrum); 
+				pstmt_uc_node.setInt(2, spectral_set.getSpectrumSetId());
+				
+				// Getting uncertainty node id in return
+				
+				int affectedRows_5 = pstmt_uc_node.executeUpdate();
+				
+				ResultSet generatedKeys_5 = pstmt_uc_node.getGeneratedKeys();
+					
+				while (generatedKeys_5.next()) {
+
+					int uc_node_id = generatedKeys_5.getInt(1);
+				
+					System.out.println("inserted uncertainty node id: " + uc_node_id);	
+					
+					spectral_set.setUncertaintyNodeId(uc_node_id);
+				
+				}
+				
+				System.out.println("finished spectrum-specific entries");
 				
 				
 			}
+				
+				// This section applies to both spectrum and instrument nodes
+				// Updating uncertainty_node_set: 
+				// First we get the node set id associated with the uncertainty set id
+				
+				String node_set_id_sql = "SELECT node_set_id from uncertainty_set where uncertainty_set_id = ?";
+
+				PreparedStatement pstmt_node_set_id = SQL.prepareStatement(node_set_id_sql);
+
+				pstmt_node_set_id.setInt(1, spectral_set.getUncertaintySetId());
+				
+				ResultSet uc_set_rs = pstmt_node_set_id.executeQuery();
+				
+				 while (uc_set_rs.next()) {
+				        int node_set_id = uc_set_rs.getInt(1);
+				        
+				        spectral_set.setNodeSetId(node_set_id);
+				              
+				 }
+				 
+				 pstmt_node_set_id.close();
+				 
+				 // Checking corresponding row in uncertainty_node_set. If null then populating, if not then new node_num!
+
+				 String find_last_node_sql = "SELECT max(node_num), node_id from uncertainty_node_set where node_set_id = ?";
+				 
+				 PreparedStatement pstmt_find_last_node = SQL.prepareStatement(find_last_node_sql);
+				 
+				 pstmt_find_last_node.setInt(1, spectral_set.getNodeSetId());
+				 
+				 ResultSet find_last_node_rs = pstmt_find_last_node.executeQuery();
+				 
+				 int last_node_num = 0;
+				 int last_node_id = 0;
+				 
+				 
+				 while (find_last_node_rs.next()) {
+					 
+					 last_node_num = find_last_node_rs.getInt(1);
+					 last_node_id = find_last_node_rs.getInt(2);
+					 
+					 System.out.println("last_node_num: " + last_node_num);
+					 System.out.println("last_node_id: " + last_node_id);
+					 
+				 }
+				 
+				 pstmt_find_last_node.close();
+				 
+				 int input_node_num;
+				 PreparedStatement pstmt_node_set;
+				 
+				 
+				 if (last_node_id == 0) {
+					 input_node_num = last_node_num;
+					 
+					 String node_set_sql = "UPDATE uncertainty_node_set set node_id = ? where node_set_id = ? and node_num = ?";
+					 
+					 pstmt_node_set = SQL.prepareStatement(node_set_sql, Statement.RETURN_GENERATED_KEYS);
+						
+					 pstmt_node_set.setInt (1, spectral_set.getUncertaintyNodeId()); 
+					 pstmt_node_set.setInt (2, spectral_set.getNodeSetId());
+					 pstmt_node_set.setInt (3, input_node_num);
+					 
+					 
+					 
+				 }
+				 else {
+					 input_node_num = last_node_num + 1;
+					 
+					 String node_set_sql = "INSERT into uncertainty_node_set(node_set_id, node_num, node_id) " + "VALUES (?, ?, ?)";
+					 
+					 pstmt_node_set = SQL.prepareStatement(node_set_sql, Statement.RETURN_GENERATED_KEYS);
+						
+					 pstmt_node_set.setInt (1, spectral_set.getNodeSetId()); 
+					 pstmt_node_set.setInt (2, input_node_num);
+					 pstmt_node_set.setInt (3, spectral_set.getUncertaintyNodeId());
+					 
+					 
+					 
+				 }
+				 
+				 pstmt_node_set.executeUpdate();
+				 
+				 pstmt_node_set.close();
+				 
+				 System.out.println("Inserted node_id into uncertainty_node_set");
+				 
+				 // Updating uncertainty set
+			
+				 // Getting current adjacency matrix
+				 
+				 String get_adjacency_matrix_sql = "SELECT adjacency_matrix from uncertainty_set where uncertainty_set_id = ?";
+				 
+				 PreparedStatement pstmt_get_adjacency_matrix = SQL.prepareStatement(get_adjacency_matrix_sql);
+				 
+				 pstmt_get_adjacency_matrix.setInt(1, spectral_set.getUncertaintySetId());
+				 
+				 ResultSet get_adjacency_matrix_rs = pstmt_get_adjacency_matrix.executeQuery();
+				 
+				// Checking if null
+				 //boolean val = get_adjacency_matrix_rs.next();
+				 
+				 //System.out.println("val is: "+ val);
+				 
+			     while (get_adjacency_matrix_rs.next()) {
+			    	 
+			    	 Blob adjacency_blob = get_adjacency_matrix_rs.getBlob("adjacency_matrix");
+		        		
+		        		System.out.println("adjacency_blob: " + adjacency_blob);
+		        		
+		        		if (adjacency_blob == null) {
+		        			System.out.println("adjacency matrix is empty");
+		        			
+		        			Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
+				            
+				            System.out.println("Created new adjacency matrix: "  + adjacency_matrix);
+		        			
+				            System.out.println("Number of columns: " + adjacency_matrix.getColumnCount());
+				            
+				            System.out.println("Number of rows: " + adjacency_matrix.getRowCount());
+				            
+				            // Now need to find a way to insert this into mysql
+				            
+				            String update_sql = "UPDATE uncertainty_set SET adjacency_matrix = ? where uncertainty_set_id = "
+									+ spectral_set.getUncertaintySetId();
+							
+							PreparedStatement update_pstmt = SQL.prepareStatement(update_sql);		
+									
+							byte[] temp_buf;
+							ByteArrayOutputStream baos = new ByteArrayOutputStream();
+							DataOutput dos = new DataOutputStream(baos);
+							
+							int count = 0;
+							
+							for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
+								for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
+									try {
+										dos.writeFloat(adjacency_matrix.getAsInt(row, col));
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								count++;
+								}
+							}
+							
+							System.out.println("count is: " + count ); 
+
+							temp_buf = baos.toByteArray();
+					
+							InputStream vector = new ByteArrayInputStream(temp_buf);
+							
+							update_pstmt.setBinaryStream(1, vector, count * 4);
+							
+							update_pstmt.executeUpdate();
+
+							vector.close();
+				            
+		        			
+				            
+		        		}
+			    	 
+		        		else {
+		        			System.out.println("adjacency matrix is not empty");
+		        			
+		        			// Now we need to convert the blob back to a matrix
+		        			// One question is how we know what dimensions it has!
+		        			// We can use node_num to determine this!
+		        			
+		        			int final_matrix_dimension = input_node_num;
+		        			int input_matrix_dimension = input_node_num - 1; //We've created a new node num but this is the existing dimension
+		        			
+		        			System.out.println("Matrix dimension: " + input_matrix_dimension);
+		        			System.out.println("input node num: " + input_node_num);
+		        			
+		        			Matrix adjacency_matrix = DenseMatrix.factory.zeros(final_matrix_dimension,final_matrix_dimension);
+		        			
+		        			int input_row_num = 0;
+		        			int input_col_num = 0; 
+		        			int matrix_i = 0;
+		        			
+		        			InputStream binstream = adjacency_blob.getBinaryStream();
+		    				DataInput dis = new DataInputStream(binstream);
+
+		    				
+		    				int dim = binstream.available() / 4;		
+
+		    					for(int i = 0; i < dim; i++)
+		    					{
+		    							matrix_i = i+1; //we are indexing matrix starting at 1 
+		    							int blob_int = dis.readInt();
+		    							System.out.println("int i has value: "+ blob_int);
+		    							
+		    							// Finding modulus of i / dim 
+		    							
+		    							int remainder = matrix_i % input_matrix_dimension; 
+		    							
+		    							if(remainder == 0) {
+		    								input_col_num = input_matrix_dimension;
+		    								
+		    							}
+		    							else {
+		    								input_col_num = remainder;
+		    								
+		    							}
+		    							
+		    							// Once we have col num we can calculate row num
+		    							
+		    							input_row_num = (matrix_i + (input_matrix_dimension - input_col_num))/input_matrix_dimension; 
+		    							
+		    							System.out.println("input col num: " + input_col_num);
+		    							System.out.println("input row num: " + input_row_num);
+		    							
+		    							//Changing back to java indexing:
+		    							
+		    							input_row_num = input_row_num - 1;
+		    							input_col_num = input_col_num - 1;
+		    							
+		    						    adjacency_matrix.setAsInt(blob_int, input_row_num, input_col_num );	
+		    					}	
+		    					
+		    					System.out.println("Retrieved adjacency matrix: " + adjacency_matrix);
+		    					
+		    					binstream.close();
+		    					
+		    					// Now we need to check whether there are any updates to the current matrix
+		    					// Maybe we should move the adjacency retrieval to its own function
+		    					// If we are adding a source without id we can use create_instrument_node?
+		    					
+		    					
+		    					
+		    					
+		    					
+		    					
+		    					
+		    					
+		    					// Now matrix should be automatically bigger on both sides so all we need to do is put this back into the database
+		    					
+		    					String update_sql = "UPDATE uncertainty_set SET adjacency_matrix = ? where uncertainty_set_id = "
+										+ spectral_set.getUncertaintySetId();
+								
+								PreparedStatement update_pstmt = SQL.prepareStatement(update_sql);		
+										
+								byte[] temp_buf;
+								ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								DataOutput dos = new DataOutputStream(baos);
+								
+								int count = 0;
+								
+								for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
+									for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
+										try {
+											dos.writeFloat(adjacency_matrix.getAsInt(row, col));
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+									count++;
+									}
+								}
+								
+								System.out.println("count is: " + count ); 
+
+								temp_buf = baos.toByteArray();
+						
+								InputStream vector = new ByteArrayInputStream(temp_buf);
+								
+								update_pstmt.setBinaryStream(1, vector, count * 4);
+								
+								update_pstmt.executeUpdate();
+
+								vector.close();
+		    					
+		    					System.out.println("Inserted new adjacency matrix after update");
+		        		
+		        		}
+		        		
+			     }
+	
+					  
+				 pstmt_get_adjacency_matrix.close();
+
 			
 			// Once node has been created then we check to see if there are any links to other nodes
 			
 			if (spectral_set.add_uncertainty_source != null) {
 				
 				// We need an adjacency matrix to exist!!
+				// Should we do this prior to updating the adjacency matrix in the database??
+				// Yep!
 				
 				System.out.println("add_uncertainty_source exists");
 				
