@@ -58,7 +58,7 @@ public class UncertaintyService extends SPECCHIOService {
 		}
 	
 
-		return new XmlInteger(spectral_set.instrument_node_id); 
+		return new XmlInteger(spectral_set.getUncertaintyNodeId()); 
 	
 		
 		

@@ -27,8 +27,12 @@ public class SpectralSet {
 	@XmlElement public Float[][] u_vectors;
 	
 	// Elements which are specific to edge connections
-	@XmlElement public int add_uncertainty_source_by_id;
-	@XmlElement public String add_uncertainty_source;
+	//@XmlElement public int add_uncertainty_source_by_id;
+	//@XmlElement public String add_uncertainty_source;
+	
+	// Elements specific to edge connections v2
+	@XmlElement public int uncertainty_source_id; //an uncertainty node id
+	@XmlElement public String source_link_description; //description of how source is linked to node
 
 	// Elements which are specific to groupings
 	@XmlElement public int uncertainty_set_id;
@@ -392,8 +396,55 @@ public class SpectralSet {
 		this.u_vectors = u_vectors;
 	}
 	
+	/** 
+	 * Get the uncertainty source id - an uncertainty node id
+	 * 
+	 * @return uncertainty_source_id the uncertainty node id of the source
+	 */
+	@XmlElement(name = "uncertainty_source_id")
+	public int getUncertaintySourceId() {
+		
+		return uncertainty_source_id;
+	}
+	
+	/**
+	 * Get the source link description ie. edge value
+	 * 
+	 * @return source_link_description the description of how the source links to current node
+	 */
+	@XmlElement(name = "source_link_description")
+	public String getSourceLinkDescription() {
+		
+		return source_link_description;
+	}
 	
 	
+	
+	/**
+	 * Set the id of a linked uncertainty source
+	 *
+	 * @param uncertainty_source_id  the uncertainty node id of the linked node
+	 */
+	public void add_uncertainty_source_by_id(int uncertainty_source_id) {
+
+		this.uncertainty_source_id = uncertainty_source_id;
+
+	}
+	
+	/**
+	 * Set the id and the edge value (source_link_description) of a linked uncertainty source
+	 * 
+	 * @param uncertainty_source_id		the uncertainty node id of the linked node 
+	 * @param source_link_description	the description of how this source links to the current node			
+	 * 
+	 */
+	public void add_uncertainty_source_by_id(int uncertainty_source_id, String source_link_description) {
+		
+		this.uncertainty_source_id = uncertainty_source_id;
+		this.source_link_description = source_link_description;
+		
+		
+	}
 	
 	
 	

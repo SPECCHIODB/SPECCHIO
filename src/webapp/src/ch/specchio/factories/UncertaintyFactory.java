@@ -798,7 +798,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				 
 				 // Updating uncertainty set
 			
-				 // Getting current adjacency matrix
+				 // Statements to get current adjacency matrix
 				 
 				 String get_adjacency_matrix_sql = "SELECT adjacency_matrix from uncertainty_set where uncertainty_set_id = ?";
 				 
@@ -808,10 +808,14 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				 
 				 ResultSet get_adjacency_matrix_rs = pstmt_get_adjacency_matrix.executeQuery();
 				 
-				// Checking if null
-				 //boolean val = get_adjacency_matrix_rs.next();
+				 // Statements to update adjacency matrix in mysql
 				 
-				 //System.out.println("val is: "+ val);
+				 String update_adjacency_matrix_sql = "UPDATE uncertainty_set SET adjacency_matrix = ? where uncertainty_set_id = "
+							+ spectral_set.getUncertaintySetId();
+					
+				 PreparedStatement update_adjacency_matrix_pstmt = SQL.prepareStatement(update_adjacency_matrix_sql);	
+				 
+				 Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
 				 
 			     while (get_adjacency_matrix_rs.next()) {
 			    	 
@@ -819,55 +823,16 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		        		
 		        		System.out.println("adjacency_blob: " + adjacency_blob);
 		        		
+		        		// If adjacency matrix is null then we create a 1x1 matrix
+		        		// If adjacency matrix is not null then we add an extra row and column for the new node 
+		        		
 		        		if (adjacency_blob == null) {
 		        			System.out.println("adjacency matrix is empty");
 		        			
-		        			Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
+		        			adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
 				            
 				            System.out.println("Created new adjacency matrix: "  + adjacency_matrix);
-		        			
-				            System.out.println("Number of columns: " + adjacency_matrix.getColumnCount());
-				            
-				            System.out.println("Number of rows: " + adjacency_matrix.getRowCount());
-				            
-				            // Now need to find a way to insert this into mysql
-				            
-				            String update_sql = "UPDATE uncertainty_set SET adjacency_matrix = ? where uncertainty_set_id = "
-									+ spectral_set.getUncertaintySetId();
-							
-							PreparedStatement update_pstmt = SQL.prepareStatement(update_sql);		
-									
-							byte[] temp_buf;
-							ByteArrayOutputStream baos = new ByteArrayOutputStream();
-							DataOutput dos = new DataOutputStream(baos);
-							
-							int count = 0;
-							
-							for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
-								for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
-									try {
-										dos.writeFloat(adjacency_matrix.getAsInt(row, col));
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-								count++;
-								}
-							}
-							
-							System.out.println("count is: " + count ); 
 
-							temp_buf = baos.toByteArray();
-					
-							InputStream vector = new ByteArrayInputStream(temp_buf);
-							
-							update_pstmt.setBinaryStream(1, vector, count * 4);
-							
-							update_pstmt.executeUpdate();
-
-							vector.close();
-				            
-		        			
-				            
 		        		}
 			    	 
 		        		else {
@@ -883,7 +848,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		        			System.out.println("Matrix dimension: " + input_matrix_dimension);
 		        			System.out.println("input node num: " + input_node_num);
 		        			
-		        			Matrix adjacency_matrix = DenseMatrix.factory.zeros(final_matrix_dimension,final_matrix_dimension);
+		        			adjacency_matrix = DenseMatrix.factory.zeros(final_matrix_dimension,final_matrix_dimension);
 		        			
 		        			int input_row_num = 0;
 		        			int input_col_num = 0; 
@@ -934,90 +899,124 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		    					binstream.close();
 		    					
 		    					// Now we need to check whether there are any updates to the current matrix
-		    					// Maybe we should move the adjacency retrieval to its own function
+		    					// Maybe we should move the adjacency retrieval to its own function - add to wish list?
 		    					// If we are adding a source without id we can use create_instrument_node?
 		    					
-		    					
-		    					
-		    					
-		    					
-		    					
-		    					
-		    					
 		    					// Now matrix should be automatically bigger on both sides so all we need to do is put this back into the database
-		    					
-		    					String update_sql = "UPDATE uncertainty_set SET adjacency_matrix = ? where uncertainty_set_id = "
-										+ spectral_set.getUncertaintySetId();
-								
-								PreparedStatement update_pstmt = SQL.prepareStatement(update_sql);		
-										
-								byte[] temp_buf;
-								ByteArrayOutputStream baos = new ByteArrayOutputStream();
-								DataOutput dos = new DataOutputStream(baos);
-								
-								int count = 0;
-								
-								for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
-									for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
-										try {
-											dos.writeFloat(adjacency_matrix.getAsInt(row, col));
-										} catch (IOException e) {
-											e.printStackTrace();
-										}
-									count++;
-									}
-								}
-								
-								System.out.println("count is: " + count ); 
-
-								temp_buf = baos.toByteArray();
-						
-								InputStream vector = new ByteArrayInputStream(temp_buf);
-								
-								update_pstmt.setBinaryStream(1, vector, count * 4);
-								
-								update_pstmt.executeUpdate();
-
-								vector.close();
-		    					
-		    					System.out.println("Inserted new adjacency matrix after update");
-		        		
+	
 		        		}
+		        		
+		        		// Here's where we can check if node has any links!
+		        		// First looking at node_id only
+		        		
+		    			if (spectral_set.getUncertaintySourceId() != 0) {
+		    				
+		    				// Here we need logic to determine whether link = simple or has description
+		    				
+		    				// First checking content of source_link_description
+		    				
+		    				System.out.println("Edge value checking: " + spectral_set.getSourceLinkDescription());
+		    				
+		    				// NB: Can use null to determine whether edge value exists 
+		    				
+		    				
+		    				System.out.println("add_uncertainty_source_by_id exists");
+		    				
+		    				// Testing link
+		    				// Here we get a given id of an uncertainty_node
+		    				
+		    				// Need to find out what index in the matrix this id takes
+		    				// This is a source so the train of uncertainty goes from this value to the current id
+		    				// At the moment focusing on simple links only ie edge_value = 1
+		    				
+		    				int node_id_of_source = spectral_set.getUncertaintySourceId();
+		    				
+		    				// Looking in uncertainty_node_set for the node_id using the current node_set_id too
+		    				// We use the current uncertainty set because the node has to reside within the current set
+		    				
+		    				String get_node_num_of_source_sql = "SELECT node_num from uncertainty_node_set where node_set_id = ? and node_id = ?";
+		   				 
+		   				 	PreparedStatement pstmt_get_node_num_of_source = SQL.prepareStatement(get_node_num_of_source_sql);
+		   				 
+		    				// Setting the values of the select statement
+
+		   				    pstmt_get_node_num_of_source.setInt(1, spectral_set.getNodeSetId());
+		   				    pstmt_get_node_num_of_source.setInt(2, node_id_of_source);
+		   				    
+		   				    ResultSet get_node_num_of_source_rs = pstmt_get_node_num_of_source.executeQuery();
+		   				 	
+		   				    int source_node_num = 0;
+		   				    
+		   				    while (get_node_num_of_source_rs.next()) {
+							 
+		   				    	source_node_num = get_node_num_of_source_rs.getInt(1);
+		   				    	System.out.println("node_num of source: " + source_node_num);
+
+							 }
+						 
+		   				    pstmt_get_node_num_of_source.close();
+		    				
+		   				    // We could create another spectral set to store this data?
+		   				    
+		   				    // Now finding using our index to change the adjacency matrix
+		   				    
+		   				    // If source is node_num 1 and our node to insert is node_num 2 
+		   				    // Column represents the node which is receiving the source ie 2.
+		   				    // Row represents the source node which here would be 1.
+		   				    
+		   				    // edge value for now is a simple link ie. 1
+		   				    
+		   				    int edge_value = 1;
+		   				    
+		   				    System.out.println("Coordinates of adjacency matrix change: " + source_node_num + "," + input_node_num);
+		   				    
+		   				    System.out.println("Dimensions of the adjacency matrix: " + adjacency_matrix.getRowCount() + "," + adjacency_matrix.getColumnCount());
+		   				    
+		   				    // minus 1 for java indexing
+		   				    adjacency_matrix.setAsInt(edge_value, source_node_num-1, input_node_num-1);		   				    
+		   				    
+		   				    System.out.println("Adjacency matrix after source is added: " + adjacency_matrix);
+		   				    
+		   				    
+		    			}
+
+		        		
+		        		byte[] temp_buf;
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						DataOutput dos = new DataOutputStream(baos);
+						
+						int count = 0;
+						
+						for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
+							for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
+								try {
+									dos.writeFloat(adjacency_matrix.getAsInt(row, col));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							count++;
+							}
+						}
+
+						temp_buf = baos.toByteArray();
+				
+						InputStream vector = new ByteArrayInputStream(temp_buf);
+						
+						update_adjacency_matrix_pstmt.setBinaryStream(1, vector, count * 4);
+						
+						update_adjacency_matrix_pstmt.executeUpdate();
+						System.out.println("Inserted new adjacency matrix after update");
+		        		
+						update_adjacency_matrix_pstmt.close();
+						vector.close();
 		        		
 			     }
 	
 					  
 				 pstmt_get_adjacency_matrix.close();
-
-			
-			// Once node has been created then we check to see if there are any links to other nodes
-			
-			if (spectral_set.add_uncertainty_source != null) {
+				 
+				 
 				
-				// We need an adjacency matrix to exist!!
-				// Should we do this prior to updating the adjacency matrix in the database??
-				// Yep!
-				
-				System.out.println("add_uncertainty_source exists");
-				
-				
-				
-				
-				
-			}
-			
-			
-			if (spectral_set.add_uncertainty_source_by_id != 0) {
-				
-				
-				System.out.println("add_uncertainty_source_by_id exists");
-				
-				
-				
-				
-			}
-			
-			
 			
 		}
 		catch (SQLException ex) {
