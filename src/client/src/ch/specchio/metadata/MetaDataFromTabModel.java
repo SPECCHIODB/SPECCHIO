@@ -8,6 +8,7 @@ import java.util.Hashtable;
 import java.util.ListIterator;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
@@ -247,6 +248,9 @@ public class MetaDataFromTabModel {
 			else if (column[i] instanceof DateCell)
 			{
 				value = ((DateCell)column[i]).getDate();
+				DateTime dateTime = new DateTime(value);
+				DateTime d = dateTime.withZone(DateTimeZone.UTC); // enforce UTC, fingers crossed!
+				value = d;
 			}
 			else if (column[i] instanceof BooleanCell)
 			{
