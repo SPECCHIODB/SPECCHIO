@@ -780,17 +780,17 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	{
 		if(loader.is_fluoresence_sensor())
 		{
-			if(!loader.getDw_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_fluorescence(), instr, "dw_coef", "Downwelling channel - radiometric gain");
-			if(!loader.getUp_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_fluorescence(), instr, "up_coef", "Upwelling channel - radiometric gain");
-			if(!loader.getNl_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_fluorescence(), instr, "nl_coefs", "Non-Linearity Coefficients");
-			if(!loader.getAutonulling_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_fluorescence(), instr, "autonulling_coefs", "Autonulling Coefficients");
+			if(!loader.getDw_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_fluorescence(), instr, "dw_coef", "Downwelling channel - radiometric gain", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getUp_coef_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_fluorescence(), instr, "up_coef", "Upwelling channel - radiometric gain", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getNl_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_fluorescence(), instr, "nl_coefs", "Non-Linearity Coefficients", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getAutonulling_coefs_fluorescence().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_fluorescence(), instr, "autonulling_coefs", "Autonulling Coefficients", Calibration.RADIOMETRIC_CALIBRATION);
 		}
 		else
 		{
-			if(!loader.getDw_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_broadrange(), instr, "dw_coef", "Downwelling channel - radiometric gain");
-			if(!loader.getUp_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_broadrange(), instr, "up_coef", "Upwelling channel - radiometric gain");
-			if(!loader.getNl_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_broadrange(), instr, "nl_coefs", "Non-Linearity Coefficients");
-			if(!loader.getAutonulling_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_broadrange(), instr, "autonulling_coefs", "Autonulling Coefficients");
+			if(!loader.getDw_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getDw_coef_broadrange(), instr, "dw_coef", "Downwelling channel - radiometric gain", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getUp_coef_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getUp_coef_broadrange(), instr, "up_coef", "Upwelling channel - radiometric gain", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getNl_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getNl_coefs_broadrange(), instr, "nl_coefs", "Non-Linearity Coefficients", Calibration.RADIOMETRIC_CALIBRATION);
+			if(!loader.getAutonulling_coefs_broadrange().isEmpty()) insertInstrumentCalibration(loader, loader.getAutonulling_coefs_broadrange(), instr, "autonulling_coefs", "Autonulling Coefficients", Calibration.RADIOMETRIC_CALIBRATION);
 		}
 		
 	}
@@ -799,7 +799,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	
 	
 
-	private void insertInstrumentCalibration(SpectralFileLoader loader, ArrayList<Float> coeffs, Instrument instr, String name, String comment) {
+	private void insertInstrumentCalibration(SpectralFileLoader loader, ArrayList<Float> coeffs, Instrument instr, String name, String comment, int calibration_type) {
 		
 		Calibration c = new Calibration();																		
 		c.setInstrumentId(instr.getInstrumentId());
@@ -808,7 +808,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		c.setName(name);
 		c.setComments(comment);
 		c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.DN_div_Radiance).getUnitId()); // should be L/DN
-		
+		c.setCalibration_type(calibration_type);
 		
 		double[] doubleArray = new double[coeffs.size()];
 		for (int i = 0; i < coeffs.size(); i++) {
