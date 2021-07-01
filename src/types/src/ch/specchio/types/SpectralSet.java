@@ -26,35 +26,29 @@ public class SpectralSet {
 	@XmlElement public int spectrum_set_id;
 	@XmlElement public Float[][] u_vectors;
 	
-	// Elements which are specific to edge connections
-	//@XmlElement public int add_uncertainty_source_by_id;
-	//@XmlElement public String add_uncertainty_source;
-	
-	// Elements specific to edge connections v2
+	// Elements specific to a single edge connection
 	@XmlElement public int uncertainty_source_id; //an uncertainty node id
 	@XmlElement public String source_link_description; //description of how source is linked to node
 
+	// Elements specific to a group of edge connections
+    public ArrayList<UncertaintySourcePair> uncertainty_source_pairs;
+    public ArrayList<Integer> uncertainty_source_ids;
+	
 	// Elements which are specific to groupings
 	@XmlElement public int uncertainty_set_id;
 	@XmlElement public String uncertainty_set_description;
-	
+	 
 	@XmlElement public int uncertainty_node_id;
 	@XmlElement public int node_set_id;
-	
-	
-	
-	// To add to database specchio_client.insert_uncertainty_of_set(spectral_set)
-	
-	// Need to create new uncertainty set and then insert_new_uncertainty_node
-	
-	// specchio_client.create_new_uncertainty_set('name_of_set') returns id of new set
-	
-	//
 	
 	// A constructor
 	public SpectralSet() {
 		
 		this.spectrum_ids = new ArrayList<Integer>();
+		this.uncertainty_source_pairs = new ArrayList<UncertaintySourcePair>();
+		this.uncertainty_source_ids = new ArrayList<Integer>();
+		
+		UncertaintySourcePair source_pair = new UncertaintySourcePair();
 		
 	}
 	
@@ -423,28 +417,113 @@ public class SpectralSet {
 	/**
 	 * Set the id of a linked uncertainty source
 	 *
-	 * @param uncertainty_source_id  the uncertainty node id of the linked node
+	 * @param input_source_id  the uncertainty node id of the linked node
 	 */
-	public void add_uncertainty_source_by_id(int uncertainty_source_id) {
-
-		this.uncertainty_source_id = uncertainty_source_id;
+	public void add_uncertainty_source_by_id(int input_source_id) {
+		
+		// Adding source information to uncertainty pair
+		
+		UncertaintySourcePair source_pair = new UncertaintySourcePair();
+		
+		source_pair.setSourceId(input_source_id); 
+		
+		// adding this source pair to arraylist of source pairs
+		
+		uncertainty_source_pairs.add(source_pair);
 
 	}
 	
 	/**
 	 * Set the id and the edge value (source_link_description) of a linked uncertainty source
 	 * 
-	 * @param uncertainty_source_id		the uncertainty node id of the linked node 
-	 * @param source_link_description	the description of how this source links to the current node			
+	 * @param input_source_id		the uncertainty node id of the linked node 
+	 * @param input_source_link_description	the description of how this source links to the current node			
 	 * 
 	 */
-	public void add_uncertainty_source_by_id(int uncertainty_source_id, String source_link_description) {
+	public void add_uncertainty_source_by_id(int input_source_id, String input_source_link_description) {
 		
-		this.uncertainty_source_id = uncertainty_source_id;
-		this.source_link_description = source_link_description;
+		// Adding source information to uncertainty pair
 		
+		UncertaintySourcePair source_pair = new UncertaintySourcePair();
+		
+		source_pair.setSourceId(input_source_id);
+		source_pair.setSourceLinkDescription(input_source_link_description);
+		
+		// adding this source pair to arraylist of source pairs
+		
+		uncertainty_source_pairs.add(source_pair);
 		
 	}
+	
+	/**
+	 * Set the arraylist of type UncertaintySourcePair which is a set of source ids and source descriptions
+	 * 
+	 * @param uncertainty_source_pairs		an arraylist of type UncertaintySourcePair		
+	 * 
+	 */
+	
+	public void setUncertaintySourcePairs(ArrayList<UncertaintySourcePair> uncertainty_source_pairs) {
+		
+		this.uncertainty_source_pairs = uncertainty_source_pairs;
+		
+	}
+	
+
+	/**
+	 * Getting uncertainty source pairs
+	 * 
+	 * @return uncertainty_source_pairs a list of type UncertaintySourcePair
+	 * 
+	 */
+	
+	@XmlElement(name = "uncertainty_source_pairs")
+	public ArrayList<UncertaintySourcePair> getUncertaintySourcePairs() {
+		
+		return uncertainty_source_pairs;
+	}
+	
+	
+	/**
+	 * Set the id of a linked uncertainty source
+	 *
+	 * @param input_source_id  the uncertainty node id of the linked node
+	 */
+	public void add_uncertainty_source_id_only(int input_source_id) {
+		
+		this.uncertainty_source_ids.add(input_source_id);
+
+
+	}
+
+	/** 
+	 * 
+	 * Set the arraylist of all uncertainty source ids
+	 * 
+	 * @param uncertainty_source_ids an arraylist of integers of uncertainty source ids
+	 * 
+	 */
+	
+	public void setUncertaintySourceIds(ArrayList<Integer> uncertainty_source_ids) {
+		
+		this.uncertainty_source_ids = uncertainty_source_ids;
+		
+	}
+	
+	
+	/**
+	 * Getting uncertainty source ids
+	 * 
+	 * @return uncertainty_source_ids a list of type integer
+	 * 
+	 */
+	
+	@XmlElement(name = "uncertainty_source_ids")
+	public ArrayList<Integer> getUncertaintySourceIds() {
+		
+		return uncertainty_source_ids;
+	}
+	
+
 	
 	
 	

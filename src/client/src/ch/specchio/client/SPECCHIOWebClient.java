@@ -2326,12 +2326,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 	
 	
+	
 	/**
 	 * Insert an uncertainty node
 	 * 
 	 * @param spectral_set a spectral set
-	 * @param the id of the uncertainty set for the given node to be inserted
-	 * 
 	 * @return the id of the created node
 	 * 
 	 * @throws SPECCHIOClientException
@@ -2339,8 +2338,9 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	
 	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
 		
+		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.uncertainty_source_pairs, spectral_set.uncertainty_source_ids, spectral_set.spectrum_ids, spectral_set);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNode", spectral_set);
+		return postForInteger("uncertainty", "insertUncertaintyNode", ssd);
 		
 	}
  	

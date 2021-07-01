@@ -1235,12 +1235,12 @@ public interface SPECCHIOClient {
 	 */
 	public int insertClosestTargetReferenceLink(int target_id, ArrayList<Integer> reference_ids) throws SPECCHIOClientException;
 
+	
 	/**
 	 * 
 	 * Insert an uncertainty node
 	 * 
 	 * @param spectral_set a spectral set
-	 * @param the id of the uncertainty set for the given node to be inserted
 	 * 
 	 * @return the id of the created node
 	 * 

@@ -19,10 +19,9 @@ import org.ujmp.core.Matrix;
 import org.ujmp.core.matrix.DenseMatrix;
 
 import ch.specchio.eav_db.SQL_StatementBuilder;
-import ch.specchio.types.Campaign;
 import ch.specchio.types.InstrumentNode;
-import ch.specchio.types.ResearchGroup;
 import ch.specchio.types.SpectralSet;
+import ch.specchio.types.UncertaintySourcePair;
 
 public class UncertaintyFactory extends SPECCHIOFactory {
 	
@@ -119,8 +118,8 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 		uc_set_pstmt.close();
 		
-		// We're also going to create the first node with id = null because that way this node_set_id is 'locked in'
-		// There is a foreign key constraint on 'node_id' but because this column is nullable, we can use null for now
+		// The first node gets id = null
+		// There is a foreign key constraint on 'node_id' but because this column is nullable, we can use null
 		
 		String node_set_query = "insert into uncertainty_node_set(node_set_id, node_num) " +
 				"values (?, ?)";
@@ -128,7 +127,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		PreparedStatement node_set_pstmt = SQL.prepareStatement(node_set_query, Statement.RETURN_GENERATED_KEYS);
 		
 		int node_num = 1;
-		//int node_id = 0;
 		
 		node_set_pstmt.setInt(1, spectral_set.getNodeSetId());
 		node_set_pstmt.setInt(2, node_num);
@@ -137,25 +135,18 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 		node_set_pstmt.close();
 		
-		
 		}
 		catch (SQLException ex) {
 			// bad SQL
 			throw new SPECCHIOFactoryException(ex);
 		}
 		
-		
-		
 	}
 	
-	
-	
-	// getInstrumentNode
-	// Retrieve information about instrument node for a given instrument node id
-	
+
 	/**
 	 * 
-	 * Get all associated rows for a given instrument node id including the uncertainty vector
+	 * Get all associated values for a given instrument node id including the uncertainty vector
 	 * 
 	 * @param instrument_node_id the instrument_node_id of interest
 	 * 
@@ -187,13 +178,8 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		        double confidence_level = rs.getDouble("confidence_level");
 		        String abs_rel = rs.getString("abs_rel");
 		        int unit_id = rs.getInt("unit_id");
-		        
-		        
+		        	        
 		        Blob u_vector_blob = rs.getBlob("u_vector");
-		       // byte [] bytes = blob.getBytes(1l, (int)blob.length());
-		        //for(int i=0; i<bytes.length;i++) {
-		         //   System.out.println(Arrays.toString(bytes));
-		        //}
 		        
 		        System.out.println(node_type + ", " + confidence_level + ", " + abs_rel +
 		                           ", " + unit_id +  ", " + u_vector_blob);
@@ -204,7 +190,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		        selectedInstrumentNode.setUnitId(unit_id);
 		        selectedInstrumentNode.setId(instrument_node_id);
 		        
-		        //Blob u_vector = rs.getBlob(2);
 				InputStream binstream = u_vector_blob.getBinaryStream();
 				DataInput dis = new DataInputStream(binstream);
 
@@ -219,7 +204,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 							Float f = dis.readFloat();
 							u_vector[i] = f.floatValue();
 						} catch (IOException e) {
-							// don't know what would cause this
+							
 							e.printStackTrace();
 						}				
 					}		
@@ -227,16 +212,9 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 					
 					selectedInstrumentNode.setUncertaintyVector(u_vector);
 					
-					
-					//selectedInstrumentNode.u_vector = u_vector;
-					//selectedInstrumentNode.unit_id = unit_id;
-					
-					
-					
-
 
 				} catch (IOException e) {
-					// dont't know what would cause this
+					
 					e.printStackTrace();
 				}
 
@@ -244,27 +222,21 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				try {
 					binstream.close();
 				} catch (IOException e) {
-					// don't know what would cause this
+					
 					e.printStackTrace();
 				}
 		        
 		        
 		      }
 		
-		
-		
-		
 		return selectedInstrumentNode;
 		}
 		catch (SQLException ex) {
-			// bad SQL
+
 			throw new SPECCHIOFactoryException(ex);
 		}
 	}
 	
-	
-	//insertInstrumentNode
-	// void because it assigns an id attribute to the object which can then be found using 'getId' in uncertainty service
 	
 	/**
 	 * Insert a new instrument node into the database.
@@ -280,22 +252,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			// create SQL-building objects
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			
-		
-			// insert the instrument node into the database
-			//String query;
-			
-			//query = "INSERT INTO instrument_node(node_type, confidence_level, abs_rel) VALUES (" +
-			//			SQL.quote_string(instrument_node.getNodeType()) + ", 0.07 ," +
-			//			SQL.quote_string(instrument_node.getAbsRel()) +
-			//			")";
-			
-			//query = "insert into instrument_node(node_type, confidence_level, abs_rel) values(" +
-			//		SQL.conc_values(
-			//				instrument_node.getNodeType(),
-			//				instrument_node.getConfidenceLevel(),
-			//				instrument_node.getAbsRel()
-			//		) + ")";
-			
 			String query = "insert into instrument_node(node_type, confidence_level, abs_rel) " +
 						" values (?, ?, ?)";
 			
@@ -309,15 +265,9 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			int affectedRows = pstmt.executeUpdate();
 			
 			System.out.println("pstmt executed");
-			
-			//ResultSet rs = pstmt.executeQuery("select last_insert_id()");
-			//while (rs.next()) {
-		//		instrument_node.setId(rs.getInt(1));
-		//	}
 		
 			ResultSet generatedKeys = pstmt.getGeneratedKeys();
 					
-			
 			while (generatedKeys.next()) {
 
 				int int_id = generatedKeys.getInt(1);
@@ -329,9 +279,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				
 			}
 			
-			
 			pstmt.close();
-			
 			
 			String update_stm = "UPDATE instrument_node set u_vector = ? where instrument_node_id = "
 					+ instrument_node.getId();
@@ -360,21 +308,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			vector.close();
 			statement.close();
 			
-			
-			
-			
-			
-			
-			//Statement stmt = SQL.createStatement();
-			//stmt.executeUpdate(query);
-		
-			// get the instrument node id
-			//ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
-			//while (rs.next())
-		//		instrument_node.setId(rs.getInt(1));
-		//	stmt.close();
-			
-			
 		}
 		catch (SQLException ex) {
 			// bad SQL
@@ -394,7 +327,20 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	 * @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
 	 */
 	
-public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFactoryException {
+public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , ArrayList<Integer> uc_source_ids, ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
+		 
+		// Re-assigning arraylists
+		
+		spectral_set.setUncertaintySourceIds(uc_source_ids);
+		spectral_set.setUncertaintySourcePairs(uc_pairs);
+		spectral_set.setSpectrumIds(uc_spectrum_ids);
+		
+		for (int i=0; i < spectral_set.uncertainty_source_pairs.size(); i++) {
+			
+			UncertaintySourcePair current_pair =  spectral_set.uncertainty_source_pairs.get(i);
+			
+		}
+		
 		
 		try {
 			
@@ -402,8 +348,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			
 			String node_type = spectral_set.node_type;
-			
-			
+
 			// Here we need an if statement to determine whether node is an instrument or spectrum node
 			// The first inserts are spectrum/instrument dependent
 			// Uncertainty node set and uncertainty set updates are the same process for both
@@ -411,8 +356,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 			if(node_type.equals("instrument")) {
 			
 				System.out.println("uncertainty node type: instrument");
-				
-				// What to do here? Same as instrument node!
 				
 				String query = "insert into instrument_node(node_type, confidence_level, abs_rel, unit_id) " +
 						" values (?, ?, ?, ?)";
@@ -432,9 +375,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 
 					int instrument_node_id = generatedKeys.getInt(1);
 				
-					System.out.println("inserted id: " + instrument_node_id);
-				
-					spectral_set.setInstrumentNodeId(instrument_node_id); //Which id? Instrument_node_id
+					spectral_set.setInstrumentNodeId(instrument_node_id); 
 				
 				}
 			
@@ -488,8 +429,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				while (generatedKeys_2.next()) {
 
 					int uc_node_id = generatedKeys_2.getInt(1);
-				
-					System.out.println("inserted uncertainty node id: " + uc_node_id);	
 					
 					spectral_set.setUncertaintyNodeId(uc_node_id);
 				
@@ -522,19 +461,12 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 
 					int spectrum_set_id = generatedKeys.getInt(1);
 					
-					System.out.println("inserted spectrum set with id: " + spectrum_set_id);
-					
 					spectral_set.setSpectrumSetId(spectrum_set_id);
 					
 					
 				}
 				
 				spectrum_set_pstmt.close();
-				
-				
-				// More steps here
-				
-				//Get spectrum ids
 				
 				ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 				spectrum_ids = spectral_set.getSpectrumIds();
@@ -543,19 +475,13 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				
 				
 				// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
-				
 				// Finding length of spectrum_ids and creating a spectrum node for each
-				
-				// Look into batches to update multiple rows in spectrum_node
-				
 				// Same insert statement for all spectrum ids
 				
 				String spectrum_node_insert_sql = "insert into spectrum_node(node_type, confidence_level, abs_rel, unit_id, u_vector) " +
 						" values (?, ?, ?, ?, ?)";
 				
 				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql);
-				
-				System.out.println("size of spectrum_ids: " + spectrum_ids.size());
 				
 				System.out.println("a list of spectrum ids: " + spectrum_ids);
 				
@@ -566,26 +492,18 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				
 				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql);
 				
-				
 				for(int i=0; i<spectrum_ids.size(); i++) {
-					
-					System.out.println("Running uncertainty node creation for loop for spectrum id: " + spectrum_ids.get(i));
 					
 					spectrum_node_insert_stmt.setString (1, spectral_set.getNodeDescription()); 
 					spectrum_node_insert_stmt.setDouble (2, spectral_set.getConfidenceLevel());
 					spectrum_node_insert_stmt.setString (3, spectral_set.getAbsRel());
 					spectrum_node_insert_stmt.setInt (4, spectral_set.getUnitId());
 					
-					// Next we'll look at u_vectors
-					
 					byte[] temp_buf;
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					DataOutput dos = new DataOutputStream(baos);
 				
 					// Each row represents a single spectrum's uncertainty vector
-					
-					
-					
 					
 					for (int j = 0; j < spectral_set.getUncertaintyVectors()[i].length; j++) {
 						try {
@@ -610,9 +528,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					
 					while (generatedKeys_3.next()) {
 
-						spectrum_node_id = generatedKeys_3.getInt(1);
-					
-						System.out.println("inserted uncertainty node id: " + spectrum_node_id);	
+						spectrum_node_id = generatedKeys_3.getInt(1);	
 					
 					}
 					
@@ -632,13 +548,10 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					while (generatedKeys_4.next()) {
 
 						spectrum_subset_id = generatedKeys_4.getInt(1);
-						System.out.println("inserted spectrum subset id: " + spectrum_subset_id);
 					
 					}
 					
 					spectrum_subset_list.add(spectrum_subset_id);
-					
-					
 
 				}
 				
@@ -651,8 +564,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				// we can use the list of spectrum_subset_ids to populate
 				// spectrum_set_map
 				
-				// We could use batches here?
-				
 				String spectrum_set_sql = "INSERT into spectrum_set_map(spectrum_set_id, spectrum_subset_id) " +
 						"VALUES (?, ?)";
 				
@@ -662,13 +573,11 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 				for(int i = 0; i < spectrum_subset_list.size(); i++)
 				{
 				    int current_spectrum_subset_id = spectrum_subset_list.get(i);
-					//System.out.println(spectrum_subset_list.get(i));
 				    
 					pstmt_spectrum_set.setInt(1, spectral_set.getSpectrumSetId());
 				    pstmt_spectrum_set.setInt(2, current_spectrum_subset_id);
 				    
 				    //batch here 
-				    
 				    pstmt_spectrum_set.addBatch();
 				    
 				}
@@ -704,9 +613,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					spectral_set.setUncertaintyNodeId(uc_node_id);
 				
 				}
-				
-				System.out.println("finished spectrum-specific entries");
-				
 				
 			}
 				
@@ -750,9 +656,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					 last_node_num = find_last_node_rs.getInt(1);
 					 last_node_id = find_last_node_rs.getInt(2);
 					 
-					 System.out.println("last_node_num: " + last_node_num);
-					 System.out.println("last_node_id: " + last_node_id);
-					 
 				 }
 				 
 				 pstmt_find_last_node.close();
@@ -772,8 +675,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					 pstmt_node_set.setInt (2, spectral_set.getNodeSetId());
 					 pstmt_node_set.setInt (3, input_node_num);
 					 
-					 
-					 
 				 }
 				 else {
 					 input_node_num = last_node_num + 1;
@@ -786,18 +687,13 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 					 pstmt_node_set.setInt (2, input_node_num);
 					 pstmt_node_set.setInt (3, spectral_set.getUncertaintyNodeId());
 					 
-					 
-					 
 				 }
 				 
 				 pstmt_node_set.executeUpdate();
 				 
 				 pstmt_node_set.close();
 				 
-				 System.out.println("Inserted node_id into uncertainty_node_set");
-				 
 				 // Updating uncertainty set
-			
 				 // Statements to get current adjacency matrix
 				 
 				 String get_adjacency_matrix_sql = "SELECT adjacency_matrix from uncertainty_set where uncertainty_set_id = ?";
@@ -821,8 +717,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 			    	 
 			    	 Blob adjacency_blob = get_adjacency_matrix_rs.getBlob("adjacency_matrix");
 		        		
-		        		System.out.println("adjacency_blob: " + adjacency_blob);
-		        		
 		        		// If adjacency matrix is null then we create a 1x1 matrix
 		        		// If adjacency matrix is not null then we add an extra row and column for the new node 
 		        		
@@ -839,14 +733,12 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		        			System.out.println("adjacency matrix is not empty");
 		        			
 		        			// Now we need to convert the blob back to a matrix
-		        			// One question is how we know what dimensions it has!
-		        			// We can use node_num to determine this!
+		        			// We use node_num to determine dimensions of the matrix
 		        			
 		        			int final_matrix_dimension = input_node_num;
 		        			int input_matrix_dimension = input_node_num - 1; //We've created a new node num but this is the existing dimension
 		        			
 		        			System.out.println("Matrix dimension: " + input_matrix_dimension);
-		        			System.out.println("input node num: " + input_node_num);
 		        			
 		        			adjacency_matrix = DenseMatrix.factory.zeros(final_matrix_dimension,final_matrix_dimension);
 		        			
@@ -858,14 +750,13 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		    				DataInput dis = new DataInputStream(binstream);
 
 		    				
-		    				int dim = binstream.available() / 4;		
+		    				int dim = binstream.available() / 4;	
 
 		    					for(int i = 0; i < dim; i++)
 		    					{
 		    							matrix_i = i+1; //we are indexing matrix starting at 1 
 		    							int blob_int = dis.readInt();
-		    							System.out.println("int i has value: "+ blob_int);
-		    							
+		    						
 		    							// Finding modulus of i / dim 
 		    							
 		    							int remainder = matrix_i % input_matrix_dimension; 
@@ -898,88 +789,100 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 		    					
 		    					binstream.close();
 		    					
-		    					// Now we need to check whether there are any updates to the current matrix
-		    					// Maybe we should move the adjacency retrieval to its own function - add to wish list?
-		    					// If we are adding a source without id we can use create_instrument_node?
-		    					
-		    					// Now matrix should be automatically bigger on both sides so all we need to do is put this back into the database
-	
+		    				
 		        		}
 		        		
-		        		// Here's where we can check if node has any links!
-		        		// First looking at node_id only
+
+		        		// Uncertainty source pairs contain all the information about node and edge links to this uncertainty node
 		        		
-		    			if (spectral_set.getUncertaintySourceId() != 0) {
+		        		ArrayList<UncertaintySourcePair> uncertainty_source_pairs = spectral_set.getUncertaintySourcePairs();
+		        				        		
+		    			if (uncertainty_source_pairs.size() > 0) {
 		    				
-		    				// Here we need logic to determine whether link = simple or has description
+		    				System.out.println("One or more uncertainty sources exist");
 		    				
-		    				// First checking content of source_link_description
-		    				
-		    				System.out.println("Edge value checking: " + spectral_set.getSourceLinkDescription());
-		    				
-		    				// NB: Can use null to determine whether edge value exists 
-		    				
-		    				
-		    				System.out.println("add_uncertainty_source_by_id exists");
-		    				
-		    				// Testing link
-		    				// Here we get a given id of an uncertainty_node
-		    				
-		    				// Need to find out what index in the matrix this id takes
-		    				// This is a source so the train of uncertainty goes from this value to the current id
-		    				// At the moment focusing on simple links only ie edge_value = 1
-		    				
-		    				int node_id_of_source = spectral_set.getUncertaintySourceId();
-		    				
-		    				// Looking in uncertainty_node_set for the node_id using the current node_set_id too
-		    				// We use the current uncertainty set because the node has to reside within the current set
-		    				
-		    				String get_node_num_of_source_sql = "SELECT node_num from uncertainty_node_set where node_set_id = ? and node_id = ?";
-		   				 
-		   				 	PreparedStatement pstmt_get_node_num_of_source = SQL.prepareStatement(get_node_num_of_source_sql);
-		   				 
-		    				// Setting the values of the select statement
+		    				System.out.println("The number of uncertainty source pairs is:" + uncertainty_source_pairs.size());
+	    				
+		    				for(int i = 0; i < uncertainty_source_pairs.size(); i++) {
+		    					
+		    					// Getting individual values of source pair
+		    					
+		    					UncertaintySourcePair source_pair = uncertainty_source_pairs.get(i);
+		    					
+		    					int node_id_of_source = source_pair.getSourceId();
+		    						
+		    					String description_of_source = source_pair.getSourceLinkDescription();
+		    					
+		    					String get_node_num_of_source_sql = "SELECT node_num from uncertainty_node_set where node_set_id = ? and node_id = ?";
+				   				 
+			   				 	PreparedStatement pstmt_get_node_num_of_source = SQL.prepareStatement(get_node_num_of_source_sql);
+			    				
+		    					
+		    					pstmt_get_node_num_of_source.setInt(1, spectral_set.getNodeSetId());
+			   				    pstmt_get_node_num_of_source.setInt(2, node_id_of_source);
+			   				    
+			   				    ResultSet get_node_num_of_source_rs = pstmt_get_node_num_of_source.executeQuery();
+			   				 	
+			   				    int source_node_num = 0;
+			   				    
+			   				    while (get_node_num_of_source_rs.next()) {
+								 
+			   				    	source_node_num = get_node_num_of_source_rs.getInt(1);
+			   				    	System.out.println("node_num of source: " + source_node_num);
 
-		   				    pstmt_get_node_num_of_source.setInt(1, spectral_set.getNodeSetId());
-		   				    pstmt_get_node_num_of_source.setInt(2, node_id_of_source);
-		   				    
-		   				    ResultSet get_node_num_of_source_rs = pstmt_get_node_num_of_source.executeQuery();
-		   				 	
-		   				    int source_node_num = 0;
-		   				    
-		   				    while (get_node_num_of_source_rs.next()) {
+								 }
 							 
-		   				    	source_node_num = get_node_num_of_source_rs.getInt(1);
-		   				    	System.out.println("node_num of source: " + source_node_num);
+			   				    pstmt_get_node_num_of_source.close();
+		    					
+			   				    int edge_id = 0;
+			    				
+			   				    // If source link description is null then it's a 'simple' edge and edge value = 1
+			    				if (description_of_source == null) {
+			    					
+			    					edge_id = 1;
+			    				
+			    				}
+			    				
+			    				// If source link description is not null: 
+		    					// insert new row into uncertainty_edge, edge_id will auto-increment
+			    				// Edge value = source link description
+			    				
+			    				else {
+			    					
+			    					System.out.println("source link description is not null");
+			    					
+			    					String edge_insert_sql = "INSERT into uncertainty_edge(edge_value) " + "VALUES (?)";
+			   					 
+			    					PreparedStatement pstmt_edge_insert = SQL.prepareStatement(edge_insert_sql, Statement.RETURN_GENERATED_KEYS);
+			   						
+			    					pstmt_edge_insert.setString(1, spectral_set.getSourceLinkDescription());
+			    					
+			    					int affectedRows_6= pstmt_edge_insert.executeUpdate();
+			    					
+			    					ResultSet generatedKeys_6 = pstmt_edge_insert.getGeneratedKeys();
+			    					
+			    					while (generatedKeys_6.next()) {
 
-							 }
-						 
-		   				    pstmt_get_node_num_of_source.close();
-		    				
-		   				    // We could create another spectral set to store this data?
+			    						edge_id = generatedKeys_6.getInt(1);
+			    						System.out.println("inserted new edge with id: " + edge_id);
+			    					
+			    					}
+			    					
+			    					
+			    				}
+			    				System.out.println("Coordinates of adjacency matrix change: " + source_node_num + "," + input_node_num);
+			   				    
+			   				    System.out.println("Dimensions of the adjacency matrix: " + adjacency_matrix.getRowCount() + "," + adjacency_matrix.getColumnCount());
+			   				    
+			   				    // minus 1 for java indexing
+			   				    adjacency_matrix.setAsInt(edge_id, source_node_num-1, input_node_num-1);		   				    
+			   				    
+			   				    System.out.println("Adjacency matrix after source is added: " + adjacency_matrix);
+			   				    
+			   				    
+		    				}		    				
 		   				    
-		   				    // Now finding using our index to change the adjacency matrix
-		   				    
-		   				    // If source is node_num 1 and our node to insert is node_num 2 
-		   				    // Column represents the node which is receiving the source ie 2.
-		   				    // Row represents the source node which here would be 1.
-		   				    
-		   				    // edge value for now is a simple link ie. 1
-		   				    
-		   				    int edge_value = 1;
-		   				    
-		   				    System.out.println("Coordinates of adjacency matrix change: " + source_node_num + "," + input_node_num);
-		   				    
-		   				    System.out.println("Dimensions of the adjacency matrix: " + adjacency_matrix.getRowCount() + "," + adjacency_matrix.getColumnCount());
-		   				    
-		   				    // minus 1 for java indexing
-		   				    adjacency_matrix.setAsInt(edge_value, source_node_num-1, input_node_num-1);		   				    
-		   				    
-		   				    System.out.println("Adjacency matrix after source is added: " + adjacency_matrix);
-		   				    
-		   				    
-		    			}
-
+		    			}		    			
 		        		
 		        		byte[] temp_buf;
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -990,7 +893,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 						for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
 							for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
 								try {
-									dos.writeFloat(adjacency_matrix.getAsInt(row, col));
+									dos.writeInt(adjacency_matrix.getAsInt(row, col));
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -1005,8 +908,7 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 						update_adjacency_matrix_pstmt.setBinaryStream(1, vector, count * 4);
 						
 						update_adjacency_matrix_pstmt.executeUpdate();
-						System.out.println("Inserted new adjacency matrix after update");
-		        		
+	
 						update_adjacency_matrix_pstmt.close();
 						vector.close();
 		        		
@@ -1014,9 +916,6 @@ public void insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOFacto
 	
 					  
 				 pstmt_get_adjacency_matrix.close();
-				 
-				 
-				
 			
 		}
 		catch (SQLException ex) {

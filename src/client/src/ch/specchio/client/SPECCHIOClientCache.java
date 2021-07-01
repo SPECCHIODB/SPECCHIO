@@ -1901,12 +1901,13 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	
+	
 	/**
 	 * 
 	 * Insert an uncertainty node
 	 * 
 	 * @param spectral_set a spectral set
-	 * @param the id of the uncertainty set for the given node to be inserted
 	 * 
 	 * @return the id of the created node
 	 * 
@@ -1914,6 +1915,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 */
 	
 	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
 		
 		return realClient.insertUncertaintyNode(spectral_set);
 		
