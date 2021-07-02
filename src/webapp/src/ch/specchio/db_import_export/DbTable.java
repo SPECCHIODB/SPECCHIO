@@ -730,7 +730,7 @@ class FkTableField extends TableField
 	
 				referenced_table = rs.getString(1);
 				referenced_column_name = rs.getString(2);
-				System.out.println("         referencing: " + referenced_table);
+				//System.out.println("         referencing: " + referenced_table);
 			}
 			
 			rs.close();	
@@ -857,9 +857,6 @@ public class DbTable
 			Statement stmt = SQL.createStatement();
 			query = "select column_name, data_type, column_key, is_nullable from information_schema.columns where table_name = '" + name + "' AND table_schema = '" + this.schema + "'";
 			rs = stmt.executeQuery(query);
-		
-			System.out.println("table_name: " + name);
-			System.out.println("this.schema: " + this.schema);
 			
 			while (rs.next()) {
 	
@@ -867,12 +864,6 @@ public class DbTable
 				String data_type = rs.getString(2);
 				String column_key = rs.getString(3);
 				String is_nullable = rs.getString(4);
-				
-				System.out.println("rs.next()");
-				System.out.println("column_name : " + column_name);
-				System.out.println("data_type : " + data_type);
-				System.out.println("column_key : " + column_key);
-				System.out.println("is_nullable : " + is_nullable);
 				
 				// x-rel key check:
 				// check for x-relation table feature: primary key fields exist as FK fields as well 
@@ -887,7 +878,6 @@ public class DbTable
 					while (xrel_rs.next()) 
 					{
 						cnt = xrel_rs.getInt(1);
-						System.out.println("  xrel_rs cnt: " + cnt);
 					}
 					
 					if(cnt > 0) 
@@ -903,16 +893,10 @@ public class DbTable
 				
 				if(column_key.equals("MUL"))
 				{
-					System.out.println("  FK: " + column_name);
+					//System.out.println("  FK: " + column_name);
 					FkTableField fktf = new FkTableField(SQL, this.schema, column_name, data_type, name);
 					FKs.add(fktf);
 					tf = fktf; // store in overall column list further down ...
-					
-					System.out.println("tf: "+ tf);
-					
-					System.out.println("fktf.referenced_table" + fktf.referenced_table);
-					System.out.println("fktf.referencing_table" + fktf.referencing_table);
-					
 					
 					// check for recursive tables
 					if(fktf.referenced_table.equals(fktf.referencing_table))
@@ -923,7 +907,7 @@ public class DbTable
 				
 				if(column_key.equals("PRI"))
 				{
-					System.out.println("  PRI: " + column_name);
+					//System.out.println("  PRI: " + column_name);
 					if(xrel_fk)
 					{
 						FkTableField fktf = new FkTableField(SQL, this.schema, column_name, data_type, name);
@@ -943,7 +927,7 @@ public class DbTable
 				
 				if(column_key.equals(""))
 				{
-					System.out.println("  : " + column_name);
+					//System.out.println("  : " + column_name);
 					tf = new TableField(column_name, data_type, is_nullable);
 					this.cols.add(tf);
 					
