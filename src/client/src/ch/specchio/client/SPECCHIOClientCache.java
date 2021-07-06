@@ -1794,6 +1794,40 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Get instrument node for an instrument_node_id
+	 * 
+	 * @param instrument_node_id 
+	 * 
+	 * @return an instrument node
+	 * 
+	 */
+	
+	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOClientException {
+		
+		return realClient.getInstrumentNode(instrument_node_id);
+		
+	}
+	
+	
+	/**
+	 * Insert instrument node.
+	 * 
+	 * @param an InstrumentNode object
+	 * 
+	 * @return the id of the new instrument node
+	 * 
+	 */
+	
+	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException {
+		
+		//some comments here to test 
+		return realClient.insertInstrumentNode(instrument_node);
+		
+	}
+	
+	
 	
 	/**
 	 * Insert a picture of an instrument into the database.
@@ -1879,6 +1913,47 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.insertTargetReferenceLinks(target_id, reference_ids);
 		
 	}
+	
+	
+	
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param spectral_set a spectral set
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * 
+	 */
+	
+	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		
+		return realClient.insertUncertaintyNode(spectral_set);
+		
+		
+	}
+	
+	
+	/**
+	 * 
+	 * Insert a new blank uncertainty set
+	 * 
+	 * @param spectral_set a spectral set with an uncertainty set description
+	 * 
+	 * @return the id of the created uncertainty set
+	 * 
+	 */
+	
+	
+	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException{
+		
+		return realClient.insertNewUncertaintySet(spectral_set);
+		
+	}
+	
+	
 	
 	/**
 	 * Test for the existence of a calibration in the database.

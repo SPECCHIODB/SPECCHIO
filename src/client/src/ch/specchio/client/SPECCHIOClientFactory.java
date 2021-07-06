@@ -44,12 +44,14 @@ public class SPECCHIOClientFactory {
         Path location = null;
         
         String locationProperty = System.getProperty("javax.net.ssl.trustStore");
+        
         if ((null != locationProperty) && (locationProperty.length() > 0)) {
-            Path p = Paths.get(locationProperty);
+        	Path p = Paths.get(locationProperty);
             File f = p.toFile();
             if (f.exists() && f.isFile() && f.canRead()) {
                 location = p;
-            }
+            }	
+            	
         } else {
             String javaHome = System.getProperty("java.home");
             location = Paths.get(javaHome, "lib", "security", "jssecacerts");
@@ -57,16 +59,15 @@ public class SPECCHIOClientFactory {
                 location = Paths.get(javaHome, "lib", "security", "cacerts");
             }
         }
-        
+              
         default_trust_store = location.toString();
-
+        
         String passwordProperty = System.getProperty("javax.net.ssl.trustStorePassword");
         if ((null != passwordProperty) && (passwordProperty.length() > 0)) {
         	default_trust_store_password = passwordProperty;
         } else {
         	default_trust_store_password = "changeit";
         }		
-		
 		
 		loadServerDescriptors();
 		
@@ -208,6 +209,7 @@ public class SPECCHIOClientFactory {
 			}
 			
 			
+			
 			return file.getPath();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -257,6 +259,7 @@ public class SPECCHIOClientFactory {
 	public static SPECCHIOClientFactory getInstance() throws SPECCHIOClientException {
 		
 		if (instance == null) {
+
 			instance = new SPECCHIOClientFactory();
 		}
 		

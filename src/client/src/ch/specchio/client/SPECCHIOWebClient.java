@@ -2200,7 +2200,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	/**
 	 * Insert a new institute into the database
 	 * 
-	 * @param institute	an Instite object describing the new institute
+	 * @param institute	an Institute object describing the new institute
 	 * 
 	 * @return the identifier of the new institute
 	 */
@@ -2219,6 +2219,38 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	public void insertInstrumentCalibration(Calibration c) throws SPECCHIOWebClientException {
 		
 		postForString("instrumentation", "insertInstrumentCalibration", c);
+		
+	}
+	
+	/**
+	 * 
+	 * Get instrument node for a given instrument node id
+	 * 
+	 * @param an instrument node id
+	 * 
+	 * @return an InstrumentNode
+	 * 
+	 */
+	
+	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOWebClientException {
+		
+		return getObject(InstrumentNode.class, "uncertainty", "getInstrumentNode", Integer.toString(instrument_node_id));
+	}
+	
+
+	 
+	/**
+	 * Insert instrument node.
+	 * 
+	 * @param an InstrumentNode object
+	 * 
+	 * @return the id of the new instrument node
+	 * 
+	 */
+	
+	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException {
+		
+		return postForInteger("uncertainty", "insertInstrumentNode", instrument_node);
 		
 	}
 	
@@ -2313,6 +2345,47 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return postForInteger("spectrum", "insertTargetReferenceLinks", new SpectrumIdsDescriptor(target_id, reference_ids));
 		
 	}
+	
+	
+	
+	/**
+	 * Insert an uncertainty node
+	 * 
+	 * @param spectral_set a spectral set
+	 * @return the id of the created node
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	
+	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.uncertainty_source_pairs, spectral_set.uncertainty_source_ids, spectral_set.spectrum_ids, spectral_set);
+		
+		return postForInteger("uncertainty", "insertUncertaintyNode", ssd);
+		
+	}
+ 	
+	/**
+	 * 
+	 * Insert new uncertainty set
+	 * 
+	 * @param spectral_set a spectral set with an uncertainty_set_description
+	 * 
+	 * @return the id of the created uncertainty set
+	 * 
+	 * @throws SPECCHIOClientException
+	 * 
+	 */
+	
+	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		return postForInteger("uncertainty", "insertNewUncertaintySet", spectral_set);
+		
+		
+	}
+	
+	
+	
 	
 	/**
 	 * Test for the existence of a calibration in the database.

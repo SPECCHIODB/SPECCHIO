@@ -857,7 +857,7 @@ public class DbTable
 			Statement stmt = SQL.createStatement();
 			query = "select column_name, data_type, column_key, is_nullable from information_schema.columns where table_name = '" + name + "' AND table_schema = '" + this.schema + "'";
 			rs = stmt.executeQuery(query);
-		
+			
 			while (rs.next()) {
 	
 				String column_name = rs.getString(1);

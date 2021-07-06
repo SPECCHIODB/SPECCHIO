@@ -1119,6 +1119,9 @@ public interface SPECCHIOClient {
 	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException;
 	
 	
+	
+	
+	
 	/**
 	 * Get a list of all of the users in the database.
 	 * 
@@ -1137,6 +1140,7 @@ public interface SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	public User[] getUsersWithStatistics() throws SPECCHIOWebClientException;	
+	
 	
 	/**
 	 * Import a campaign.
@@ -1242,6 +1246,59 @@ public interface SPECCHIOClient {
 	public int insertClosestTargetReferenceLink(int target_id, ArrayList<Integer> reference_ids) throws SPECCHIOClientException;
 
 	
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param spectral_set a spectral set
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * 
+	 */
+	
+	
+	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException;
+
+	/**
+	 * 
+	 * Insert new uncertainty set
+	 * 
+	 * @param spectral_set
+	 * 
+	 * @return the id of the created set
+	 * 
+	 */
+	
+	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException;	
+	
+	
+	/**
+	 * 
+	 * Get instrument node for a selected instrument id
+	 * 
+	 * @param an instrument node id
+	 * 
+	 * @return an InstrumentNode
+	 * 
+	 */
+	
+	
+	
+	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOClientException;
+	
+	/**
+	 * Insert an instrument node into the database.
+	 * 
+	 * @param InstrumentNode type
+	 * 
+	 * @return an instrument_node_id
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	
+	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException;
+
 	
 	/**
 	 * Insert a target-reference links.
