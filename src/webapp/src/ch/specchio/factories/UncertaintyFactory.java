@@ -481,7 +481,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				String spectrum_node_insert_sql = "insert into spectrum_node(node_type, confidence_level, abs_rel, unit_id, u_vector) " +
 						" values (?, ?, ?, ?, ?)";
 				
-				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql);
+				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
 				System.out.println("a list of spectrum ids: " + spectrum_ids);
 				
@@ -490,7 +490,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_node_id, spectrum_id) " +
 						" values (?, ?)";
 				
-				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql);
+				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
 				for(int i=0; i<spectrum_ids.size(); i++) {
 					
@@ -639,7 +639,9 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				 
 				 // Checking corresponding row in uncertainty_node_set. If null then populating, if not then new node_num!
 
-				 String find_last_node_sql = "SELECT max(node_num), node_id from uncertainty_node_set where node_set_id = ?";
+				 //String find_last_node_sql = "SELECT max(node_num), node_id from uncertainty_node_set where node_set_id = ?";
+				 
+				 String find_last_node_sql = "SELECT node_num, node_id, node_set_id FROM uncertainty_node_set JOIN (SELECT MAX(node_num) AS max_node_num FROM uncertainty_node_set) max ON node_num = max_node_num WHERE node_set_id = ?";
 				 
 				 PreparedStatement pstmt_find_last_node = SQL.prepareStatement(find_last_node_sql);
 				 
