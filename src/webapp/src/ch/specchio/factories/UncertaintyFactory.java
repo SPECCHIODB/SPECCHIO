@@ -163,7 +163,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		// create SQL-building objects
 		SQL_StatementBuilder SQL = getStatementBuilder();
 		
-		String sql_stmt = "SELECT node_type, u_vector, confidence_level, abs_rel, unit_id from instrument_node where instrument_node_id = ?";
+		String sql_stmt = "SELECT node_description, u_vector, confidence_level, abs_rel, unit_id from instrument_node where instrument_node_id = ?";
 
 		PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
 
@@ -174,19 +174,19 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		//Getting information from ResultSet
 		
 		 while (rs.next()) {
-		        String node_type = rs.getString("node_type");
+		        String node_description = rs.getString("node_description");
 		        double confidence_level = rs.getDouble("confidence_level");
 		        String abs_rel = rs.getString("abs_rel");
 		        int unit_id = rs.getInt("unit_id");
 		        	        
 		        Blob u_vector_blob = rs.getBlob("u_vector");
 		        
-		        System.out.println(node_type + ", " + confidence_level + ", " + abs_rel +
+		        System.out.println(node_description + ", " + confidence_level + ", " + abs_rel +
 		                           ", " + unit_id +  ", " + u_vector_blob);
 		        
 		        selectedInstrumentNode.setAbsRel(abs_rel);
 		        selectedInstrumentNode.setConfidenceLevel(confidence_level);
-		        selectedInstrumentNode.setNodeType(node_type);
+		        selectedInstrumentNode.setNodeType("instrument");
 		        selectedInstrumentNode.setUnitId(unit_id);
 		        selectedInstrumentNode.setId(instrument_node_id);
 		        
@@ -252,7 +252,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			// create SQL-building objects
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			
-			String query = "insert into instrument_node(node_type, confidence_level, abs_rel) " +
+			String query = "insert into instrument_node(node_description, confidence_level, abs_rel) " +
 						" values (?, ?, ?)";
 			
 			
@@ -357,7 +357,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			
 				System.out.println("uncertainty node type: instrument");
 				
-				String query = "insert into instrument_node(node_type, confidence_level, abs_rel, unit_id) " +
+				String query = "insert into instrument_node(node_description, confidence_level, abs_rel, unit_id) " +
 						" values (?, ?, ?, ?)";
 			                                                                                        
 				PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -478,7 +478,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				// Finding length of spectrum_ids and creating a spectrum node for each
 				// Same insert statement for all spectrum ids
 				
-				String spectrum_node_insert_sql = "insert into spectrum_node(node_type, confidence_level, abs_rel, unit_id, u_vector) " +
+				String spectrum_node_insert_sql = "insert into spectrum_node(node_description, confidence_level, abs_rel, unit_id, u_vector) " +
 						" values (?, ?, ?, ?, ?)";
 				
 				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
@@ -641,26 +641,47 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 
 				 //String find_last_node_sql = "SELECT max(node_num), node_id from uncertainty_node_set where node_set_id = ?";
 				 
-				 String find_last_node_sql = "SELECT node_num, node_id, node_set_id FROM uncertainty_node_set JOIN (SELECT MAX(node_num) AS max_node_num FROM uncertainty_node_set) max ON node_num = max_node_num WHERE node_set_id = ?";
+				 //String find_last_node_sql = "SELECT node_num, node_id, node_set_id FROM uncertainty_node_set JOIN (SELECT MAX(node_num) AS max_node_num FROM uncertainty_node_set) max ON node_num = max_node_num WHERE node_set_id = ?";
 				 
-				 PreparedStatement pstmt_find_last_node = SQL.prepareStatement(find_last_node_sql);
+				 // Breaking this into two steps:
 				 
-				 pstmt_find_last_node.setInt(1, spectral_set.getNodeSetId());
+				 String find_last_node_num_sql = "SELECT max(node_num) from uncertainty_node_set where node_set_id = ?";
+				
+				 PreparedStatement pstmt_find_last_node_num = SQL.prepareStatement(find_last_node_num_sql);
 				 
-				 ResultSet find_last_node_rs = pstmt_find_last_node.executeQuery();
+				 pstmt_find_last_node_num.setInt(1, spectral_set.getNodeSetId());
+				 
+				 ResultSet find_last_node_num_rs = pstmt_find_last_node_num.executeQuery();
 				 
 				 int last_node_num = 0;
-				 int last_node_id = 0;
 				 
-				 
-				 while (find_last_node_rs.next()) {
+				 while (find_last_node_num_rs.next()) {
 					 
-					 last_node_num = find_last_node_rs.getInt(1);
-					 last_node_id = find_last_node_rs.getInt(2);
+					 last_node_num = find_last_node_num_rs.getInt(1);
 					 
 				 }
 				 
-				 pstmt_find_last_node.close();
+				 pstmt_find_last_node_num.close();
+				 
+				 String find_last_node_id_sql = "SELECT node_id from uncertainty_node_set where node_set_id = ? AND node_num =?";
+					
+				 PreparedStatement pstmt_find_last_node_id = SQL.prepareStatement(find_last_node_id_sql);
+				 
+				 pstmt_find_last_node_id.setInt(1, spectral_set.getNodeSetId());
+				 pstmt_find_last_node_id.setInt(2, last_node_num);
+				 
+				 ResultSet find_last_node_id_rs = pstmt_find_last_node_id.executeQuery();
+				 
+				 int last_node_id = 0;
+				 
+				 while (find_last_node_id_rs.next()) {
+					 
+					 last_node_id = find_last_node_id_rs.getInt(1);
+					 
+				 }
+				 
+				 pstmt_find_last_node_id.close();
+				 
 				 
 				 int input_node_num;
 				 PreparedStatement pstmt_node_set;
