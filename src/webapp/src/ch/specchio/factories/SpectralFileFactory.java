@@ -763,7 +763,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 					}
 
 					
-					if(spec_file.getMeasurandDesignator(i) == SpectralFile.TARGET)
+					if(spec_file.getMeasurandDesignator(i) == SpectralFile.TARGET  && contains_targets_and_references)
 					{
 						tgt_spectrum_result = res;
 						// as targets appear after the reference in the input file, we can safely assume that these last two can be linked
