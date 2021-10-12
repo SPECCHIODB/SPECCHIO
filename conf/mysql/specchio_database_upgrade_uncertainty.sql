@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `uncertainty_edge` (
 -- Creating spectrum_node
 CREATE TABLE IF NOT EXISTS `spectrum_node` (
   `spectrum_node_id` int(11) NOT NULL AUTO_INCREMENT,
-  `node_type` varchar(100) DEFAULT NULL,
+  `node_description` varchar(100) DEFAULT NULL,
   `u_vector` blob DEFAULT NULL,
   `confidence_level` double(3,2),
   `abs_rel` varchar(3),
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `spectrum_subset` (
   `spectrum_subset_id` int(11) NOT NULL AUTO_INCREMENT,
   `spectrum_node_id` int(11) DEFAULT NULL,
   `spectrum_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`spectrum_subset_id`),
+  PRIMARY KEY (`spectrum_subset_id`, `spectrum_node_id`, `spectrum_id`),
   KEY `spectrum_node_id` (`spectrum_node_id`),
   CONSTRAINT `spectrum_subset_ibfk_1` FOREIGN KEY (`spectrum_node_id`) REFERENCES `spectrum_node` (`spectrum_node_id`)
 );
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `spectrum_set_map` (
 -- Creating instrument_node
 CREATE TABLE IF NOT EXISTS `instrument_node` (
   `instrument_node_id` int(11) NOT NULL AUTO_INCREMENT,
-  `node_type` varchar(100) DEFAULT NULL,
+  `node_description` varchar(100) DEFAULT NULL,
   `u_vector` blob DEFAULT NULL,
   `confidence_level` double(3,2),
   `abs_rel` varchar(3),
