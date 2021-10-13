@@ -37,6 +37,13 @@ public class SpectralSetDescriptor {
 		
 	}
 	
+	public SpectralSetDescriptor(ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) {
+		
+		this.uc_spectrum_ids = uc_spectrum_ids;
+		this.spectral_set = spectral_set;
+	
+	}
+	
 
 	@XmlElement(name="uc_source_pairs")
 	public ArrayList<UncertaintySourcePair> getUcSourcePairs() { return this.uc_source_pairs; }

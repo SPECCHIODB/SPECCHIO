@@ -639,10 +639,6 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				 
 				 // Checking corresponding row in uncertainty_node_set. If null then populating, if not then new node_num!
 
-				 //String find_last_node_sql = "SELECT max(node_num), node_id from uncertainty_node_set where node_set_id = ?";
-				 
-				 //String find_last_node_sql = "SELECT node_num, node_id, node_set_id FROM uncertainty_node_set JOIN (SELECT MAX(node_num) AS max_node_num FROM uncertainty_node_set) max ON node_num = max_node_num WHERE node_set_id = ?";
-				 
 				 // Breaking this into two steps:
 				 
 				 String find_last_node_num_sql = "SELECT max(node_num) from uncertainty_node_set where node_set_id = ?";
@@ -951,7 +947,133 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 		
 	}
 	
+	/**
+ 	* Insert a new spectrum subset into the database.
+ 	* 
+ 	* @param spectral_set_id	the spectral set id
+ 	* 
+ 	* @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
+ 	*/
+
+	public void insertSpectrumSubset(ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
+
+		// Re-assigning arraylists
+		
+		spectral_set.setSpectrumIds(uc_spectrum_ids);
+		
+		// What do we want to do about node_type? Do we want to check this is 'spectrum'?
+
+		try {
+		
+			// create SQL-building objects
+			SQL_StatementBuilder SQL = getStatementBuilder();
+		
+			String spectrum_node_insert_sql = "insert into spectrum_node(node_description, confidence_level, abs_rel, unit_id, u_vector) " +
+				" values (?, ?, ?, ?, ?)";
+			String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
+				" values (?, ?, ?)";
+			String spectrum_subset_select_max_sql = "select max(spectrum_subset_id) from spectrum_subset;";
+			
+			// PreparedStatements
+		
+			PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement spectrum_subset_select_max_stmt = SQL.prepareStatement(spectrum_subset_select_max_sql, Statement.RETURN_GENERATED_KEYS);
+			
+			// Find max spectrum_subset_id 
+			
+			int affectedRows = spectrum_subset_select_max_stmt.executeUpdate();
+			ResultSet generatedKeys = spectrum_subset_select_max_stmt.getGeneratedKeys();
+			int max_spectrum_subset_id = 0;
+			
+			while (generatedKeys.next()) {
+
+				max_spectrum_subset_id = generatedKeys.getInt(1);	
+			
+			}
+			
+			int spectrum_subset_id = max_spectrum_subset_id + 1;
+			
+			System.out.println("Max spectrum subset id: " + max_spectrum_subset_id);
+		
+			spectrum_subset_select_max_stmt.close();
+			
+			// Insert into spectrum_node and spectrum_subset
+			// Need to make sure that the code below only inserts one spectrum_subset_id
+			
+			ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
+			spectrum_ids = spectral_set.getSpectrumIds();
+
+			ArrayList<Integer> spectrum_subset_list = new ArrayList<Integer>();
+			
+			for(int i=0; i<spectrum_ids.size(); i++) {
+				
+				spectrum_node_insert_stmt.setString (1, spectral_set.getNodeDescription());
+				spectrum_node_insert_stmt.setDouble (2, spectral_set.getConfidenceLevel());
+				spectrum_node_insert_stmt.setString (3, spectral_set.getAbsRel());
+				spectrum_node_insert_stmt.setInt (4, spectral_set.getUnitId());
+				
+				byte[] temp_buf;
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutput dos = new DataOutputStream(baos);
+			
+				// Each row represents a single spectrum's uncertainty vector
+				
+				for (int j = 0; j < spectral_set.getUncertaintyVectors()[i].length; j++) {
+					try {
+						dos.writeFloat(spectral_set.getUncertaintyVectors()[i][j]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				temp_buf = baos.toByteArray();
 	
+				InputStream vector = new ByteArrayInputStream(temp_buf);
+				
+				spectrum_node_insert_stmt.setBinaryStream(5, vector, spectral_set.getUncertaintyVectors()[i].length*4);
+				
+				int affectedRows_2= spectrum_node_insert_stmt.executeUpdate();
+				
+				ResultSet generatedKeys_2 = spectrum_node_insert_stmt.getGeneratedKeys();
+				
+				int spectrum_node_id = 0;
+				
+				while (generatedKeys_2.next()) {
+
+					spectrum_node_id = generatedKeys_2.getInt(1);	
+				
+				}
+				
+				// Now that we have spectrum node id we can use this to populate spectrum subset
+				// For the time being, we have 1 spectrum subset for each spectrum id
+				// spectrum_subset_id is currently on auto-increment
+				
+				spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+				spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+				spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+				
+				int affectedRows_3= spectrum_subset_insert_stmt.executeUpdate();
+				
+			}
+			
+			spectrum_node_insert_stmt.close();
+			spectrum_subset_insert_stmt.close();
+			
+			spectral_set.setSpectrumSubsetId(spectrum_subset_id);
+			
+			System.out.println("executed all spectrum ids");
+			
+			// Returning spectrum subset id
+
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+	}
 	
 	
 	

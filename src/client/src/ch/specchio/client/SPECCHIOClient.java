@@ -1245,6 +1245,20 @@ public interface SPECCHIOClient {
 	 */
 	public int insertClosestTargetReferenceLink(int target_id, ArrayList<Integer> reference_ids) throws SPECCHIOClientException;
 
+	/**
+	 * 
+	 * Insert a spectrum subset
+	 * 
+	 * @param spectral_subset a spectrum subset
+	 * 
+	 * @return the id of the created spectrum subset
+	 * 
+	 * 
+	 */
+	
+	
+	public int insertSpectrumSubset(SpectralSet spectral_set) throws SPECCHIOClientException;
+
 	
 	/**
 	 * 

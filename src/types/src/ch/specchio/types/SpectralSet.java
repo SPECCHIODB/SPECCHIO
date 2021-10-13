@@ -26,6 +26,9 @@ public class SpectralSet {
 	@XmlElement public int spectrum_set_id;
 	@XmlElement public Float[][] u_vectors;
 	
+	// Elements specific to spectrum subsets
+	@XmlElement public int spectrum_subset_id;
+	
 	// Elements specific to a single edge connection
 	@XmlElement public int uncertainty_source_id; //an uncertainty node id
 	@XmlElement public String source_link_description; //description of how source is linked to node
@@ -523,7 +526,28 @@ public class SpectralSet {
 		return uncertainty_source_ids;
 	}
 	
+	/** 
+	 * Get the spectrum subset id 
+	 * 
+	 * @return spectrum_subset_id the spectrum subset identifier
+	 */
+	@XmlElement(name = "spectrum_subset_id")
+	public int getSpectrumSubsetId() {
+		
+		return spectrum_subset_id;
+	}
+	
+	/**
+	 * Set the spectrum subset id
+	 *
+	 * @param spectrum_subset_id  unique spectrum subset id
+	 */
+	public void setSpectrumSubsetId(int spectrum_subset_id) {
 
+		this.spectrum_subset_id = spectrum_subset_id;
+
+	}
+	
 	
 	
 	

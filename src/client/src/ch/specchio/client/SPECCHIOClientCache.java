@@ -1914,7 +1914,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param spectral_subset a spectrum subset
+	 * 
+	 * @return the id of the created spectrum subset
+	 * 
+	 * 
+	 */
 	
+	public int insertSpectrumSubset(SpectralSet spectral_set) throws SPECCHIOClientException {
+		
+		return realClient.insertSpectrumSubset(spectral_set);
+		
+	}
 	
 	/**
 	 * 
