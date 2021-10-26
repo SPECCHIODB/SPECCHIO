@@ -829,7 +829,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			}
 			rs.close();
 			stmt.close();
-		}
+		} 
 		catch (SQLException ex) {
 			// database error
 			throw new SPECCHIOFactoryException(ex);
@@ -908,13 +908,20 @@ public class SpaceFactory extends SPECCHIOFactory {
 				// Define and run the query that will return the subset of the blob (1 element, 4 bytes)
 				 query = "SELECT substring(sp.measurement, "+ substringIndex + " , 4), sp.spectrum_id FROM spectrum AS sp " +
 						" WHERE sp.spectrum_id IN ( " + conc_ids + " )"  + quicker_order_by;
-			} else{
+			} else if(table.equals("spectrum")){
 				// SELECT THE WHOLE BLOB
 				String columns[] = new String[] { "measurement", id_column };
 				//query = buildSpaceQuery(table, id_column, columns, space.getSpectrumIds(), order_by) + quicker_order_by;
 				query = "SELECT sp.measurement, sp.spectrum_id FROM spectrum AS sp " +
 							" WHERE sp.spectrum_id IN ( " + conc_ids + " )"  + quicker_order_by;
 			}
+			else if(table.equals("instrumentation_factors")) {
+				
+				query = "SELECT measurement, instrumentation_factors_id FROM instrumentation_factors WHERE instrumentation_factors_id = " + conc_ids;
+				System.out.println("instrumentaton_factors query" + query);
+				
+			}
+			
 			ResultSet rs = stmt.executeQuery(query);
             Instant endexecuteQuery = Instant.now();
             long msecondsexecuteQuery = Duration.between(startexecuteQuery, endexecuteQuery).toMillis();
