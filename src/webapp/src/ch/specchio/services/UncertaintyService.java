@@ -48,7 +48,7 @@ public class UncertaintyService extends SPECCHIOService {
 		{
 				
 			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-			factory.insertUncertaintyNode(ssd.getUcSourcePairs(), ssd.getUcSourceIds(), ssd.getUcSpectrumIds(), spectral_set);
+			factory.insertUncertaintyNode(ssd.getUcSourcePairs(), ssd.getUcSourceIds(), ssd.getUcSpectrumIds(), ssd.getUcSpectrumSubsetIds(), spectral_set);
 			factory.dispose();
 	
 		}

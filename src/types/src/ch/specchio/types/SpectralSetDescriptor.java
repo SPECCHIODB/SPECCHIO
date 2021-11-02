@@ -15,6 +15,7 @@ public class SpectralSetDescriptor {
 	private ArrayList<UncertaintySourcePair> uc_source_pairs;
 	private ArrayList<Integer> uc_source_ids;
 	private ArrayList<Integer> uc_spectrum_ids;
+	private ArrayList<Integer> uc_spectrum_subset_ids;
 	private SpectralSet spectral_set;
 	
 
@@ -24,15 +25,19 @@ public class SpectralSetDescriptor {
 		this.uc_source_pairs = new ArrayList<UncertaintySourcePair>(); 
 		this.uc_source_ids = new ArrayList<Integer>();
 		this.uc_spectrum_ids = new ArrayList<Integer>();
+		this.uc_spectrum_subset_ids = new ArrayList<Integer>();
 		this.spectral_set = new SpectralSet();
 		
 	}
 	
-	public SpectralSetDescriptor(ArrayList<UncertaintySourcePair> uc_source_pairs, ArrayList<Integer> uc_source_ids, ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) {
+	public SpectralSetDescriptor(ArrayList<UncertaintySourcePair> uc_source_pairs, ArrayList<Integer> uc_source_ids, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids, SpectralSet spectral_set) {
+		
+
 		
 		this.uc_source_pairs = uc_source_pairs;
 		this.uc_source_ids = uc_source_ids;
 		this.uc_spectrum_ids = uc_spectrum_ids;
+		this.uc_spectrum_subset_ids = uc_spectrum_subset_ids;
 		this.spectral_set = spectral_set;
 		
 	}
@@ -60,6 +65,11 @@ public class SpectralSetDescriptor {
 	@XmlElement(name="spectral_set")
 	public SpectralSet getSpectralSet() { return this.spectral_set; }
 	public void setSpectralSet(SpectralSet spectral_set) { this.spectral_set = spectral_set; }
+	
+	@XmlElement(name="uc_spectrum_subset_ids")
+	public ArrayList<Integer> getUcSpectrumSubsetIds() { return this.uc_spectrum_subset_ids; }
+	public void setUcSpectrumSubsetIds(ArrayList<Integer> uc_spectrum_subset_ids) { this.uc_spectrum_subset_ids = uc_spectrum_subset_ids; }
+	
 	
 }
 
