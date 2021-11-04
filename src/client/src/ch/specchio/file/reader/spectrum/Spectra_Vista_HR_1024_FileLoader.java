@@ -384,7 +384,7 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 	{
 		// time= 05/03/2015 12:17:23 PM, 05/03/2015 12:24:55 PM
 		// time= 11-lug-15 13.08.32, 11-lug-15 13.08.47
-		
+		// time= 07/15/2021 11:59:30AM		% damn bloody American format!!!!
 		
 		// check what pattern might apply here
 		DateTimeFormatter formatter = null;
@@ -405,6 +405,11 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").withZoneUTC());
 		
 		formatters.add(DateTimeFormat.forPattern( "dd-MMM-yy HH.mm.ss").withLocale( Locale.ITALY ).withZoneUTC());
+		
+		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ssa").withZoneUTC());
+		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ssa").withZoneUTC());
+		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyyhh:mm:ssa").withZoneUTC());
+		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyyhh:mm:ssa").withZoneUTC());
 		
 		
 //		if (str.contains("/") && str.contains(":") && (str.contains("PM") || str.contains("AM")))
