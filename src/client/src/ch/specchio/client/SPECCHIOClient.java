@@ -1118,8 +1118,15 @@ public interface SPECCHIOClient {
 	 */
 	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException;
 	
+	/**
+	 * 
+	 * Get details of an uncertainty set
+	 * 
+	 * @param uncertainty_set_id, the desired uncertainty_set_id of the uncertainty set
+	 * 
+	 */
 	
-	
+	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException;
 	
 	
 	/**

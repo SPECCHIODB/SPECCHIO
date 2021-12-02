@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+
 import org.ujmp.core.Matrix;
 import org.ujmp.core.matrix.DenseMatrix;
 
@@ -141,6 +143,167 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			throw new SPECCHIOFactoryException(ex);
 		}
 		
+	}
+	
+	/**
+	 * 
+	 * Get adjacency matrix and uncertainty node information for an uncertainty set
+	 * 
+	 * @param uncertainty_set_id the uncertainty_set_id of interest
+	 * 
+	 * @throws SPECCHIOFactoryException 
+	 */
+	
+	
+	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOFactoryException {
+		
+		
+		SpectralSet selectedUncertaintySet = new SpectralSet();
+		
+		try {
+			
+			// Select statement to get data from uncertainty_set
+			
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			
+			String select_uc_set_sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement select_uc_set_sql_pstmt = SQL.prepareStatement(select_uc_set_sql_stmt);
+			select_uc_set_sql_pstmt.setInt(1, uncertainty_set_id);
+			ResultSet select_uc_set_rs = select_uc_set_sql_pstmt.executeQuery();
+
+			// Selecting data from uncertainty_node_set
+			
+			String select_uc_node_set_sql_stmt = "SELECT node_num, node_id from uncertainty_node_set where node_set_id = ?";
+			PreparedStatement select_uc_node_set_sql_pstmt = SQL.prepareStatement(select_uc_node_set_sql_stmt);
+			
+			// Creating some lists
+			ArrayList<Integer> node_id_list = new ArrayList<Integer>();
+			ArrayList<Integer> node_num_list = new ArrayList<Integer>();
+			
+			Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
+			
+			// Getting data from ResultSet
+			
+			while (select_uc_set_rs.next()) {
+				
+				int node_set_id = select_uc_set_rs.getInt("node_set_id");
+				String uncertainty_set_description = select_uc_set_rs.getString("uncertainty_set_description");
+				
+				System.out.println("node_set_id: " + node_set_id);
+				System.out.println("uncertainty_set_description: " + uncertainty_set_description);
+				
+				// Setting these values in the selectedUncertaintySet
+				
+				selectedUncertaintySet.setNodeSetId(node_set_id);
+				selectedUncertaintySet.setUncertaintySetDescription(uncertainty_set_description);
+				
+				// Extracting adjacency blob. Will change this to matrix form and see how this appears in MATLAB
+				
+				Blob adjacency_blob = select_uc_set_rs.getBlob("adjacency_matrix");
+				
+				System.out.println("adjacency_blob: " + adjacency_blob);
+		
+				// Using the node_set_id 
+				 
+				select_uc_node_set_sql_pstmt.setInt(1, node_set_id);
+				ResultSet select_uc_node_set_rs = select_uc_node_set_sql_pstmt.executeQuery();
+				
+				int j = 1;
+				
+				while (select_uc_node_set_rs.next()) {
+					
+					System.out.println("i in select_uc_node_set_rs is: " + j);
+					
+					int node_id = select_uc_node_set_rs.getInt("node_id");
+					int node_num = select_uc_node_set_rs.getInt("node_num");
+					
+					System.out.println("node_num: " + node_num);
+					System.out.println("node_id: " + node_id);
+					
+					// Extract node_num and node_id. I think this is extracted line by line.
+					
+					node_id_list.add(node_id);
+					node_num_list.add(node_num);
+					
+					System.out.println("Node_id_list: " + node_id_list);
+					System.out.println("Node_num_list: " + node_num_list);
+					
+					j = j + 1;
+					
+				}
+				
+				selectedUncertaintySet.setUncertaintyNodeIds(node_id_list);
+				selectedUncertaintySet.setNodeNums(node_num_list);
+				
+				// Finding the max of node_num list
+				Integer max_node_num = Collections.max(node_num_list);
+					
+				// Then need to convert this to a normal adjacency matrix but we need the highest node_num in order to create the correct dimensions
+				 
+				int matrix_dimension = max_node_num;
+     			
+     			System.out.println("Matrix dimension: " + matrix_dimension);
+     			
+     			adjacency_matrix = DenseMatrix.factory.zeros(matrix_dimension,matrix_dimension);
+     			
+     			int input_row_num = 0;
+     			int input_col_num = 0; 
+     			int matrix_i = 0;
+     			
+     			InputStream binstream = adjacency_blob.getBinaryStream();
+ 				DataInput dis = new DataInputStream(binstream);
+
+ 				
+ 				int dim = binstream.available() / 4;	
+
+ 					for(int i = 0; i < dim; i++)
+ 					{
+ 							matrix_i = i+1; //we are indexing matrix starting at 1 
+ 							int blob_int = dis.readInt();
+ 						
+ 							// Finding modulus of i / dim 
+ 							
+ 							int remainder = matrix_i % matrix_dimension; 
+ 							
+ 							if(remainder == 0) {
+ 								input_col_num = matrix_dimension;
+ 								
+ 							}
+ 							else {
+ 								input_col_num = remainder;
+ 								
+ 							}
+ 							
+ 							// Once we have col num we can calculate row num
+ 							
+ 							input_row_num = (matrix_i + (matrix_dimension - input_col_num))/matrix_dimension; 
+ 							
+ 							System.out.println("input col num: " + input_col_num);
+ 							System.out.println("input row num: " + input_row_num);
+ 							
+ 							//Changing back to java indexing:
+ 							
+ 							input_row_num = input_row_num - 1;
+ 							input_col_num = input_col_num - 1;
+ 							
+ 						    adjacency_matrix.setAsInt(blob_int, input_row_num, input_col_num );	
+ 					}	
+ 					
+ 					System.out.println("Retrieved adjacency matrix: " + adjacency_matrix);
+ 					selectedUncertaintySet.setAdjacencyMatrix(adjacency_matrix);
+ 					
+				}
+						
+			return selectedUncertaintySet;
+		}
+		catch(SQLException ex) {
+
+			throw new SPECCHIOFactoryException(ex);
+		}
+		catch (IOException ex) {
+			
+			throw new SPECCHIOFactoryException(ex);
+		}	
 	}
 	
 
@@ -953,6 +1116,8 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 						for (int row = 0; row < adjacency_matrix.getRowCount(); row++) {
 							for (int col = 0; col < adjacency_matrix.getColumnCount(); col++) {
 								try {
+									System.out.println("dos.writeInt for row: " + row + ", col: "
+											+ col + ",value: " + adjacency_matrix.getAsInt(row, col));
 									dos.writeInt(adjacency_matrix.getAsInt(row, col));
 								} catch (IOException e) {
 									e.printStackTrace();

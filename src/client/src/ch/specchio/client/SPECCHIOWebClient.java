@@ -2103,7 +2103,21 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Get uncertainty set
+	 * 
+	 * @param uncertainty_set_id the uncertainty set id of the desired uncertainty set
+	 * 	
+	 */
+	
+	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException {
 		
+		
+		return getObject(SpectralSet.class, "uncertainty", "getUncertaintySet", Integer.toString(uncertainty_set_id));
+
+		
+	}
 	
 	
 	/**

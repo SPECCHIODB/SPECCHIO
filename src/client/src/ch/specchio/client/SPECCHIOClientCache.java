@@ -1688,6 +1688,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}	
 	
 	/**
+	 * 
+	 * Get an uncertainty set
+	 * 
+	 * @param uncertainty_set_id the uncertainty_set_id for the desired uncertainty set
+	 * 
+	 */
+	
+	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException {
+		
+		return realClient.getUncertaintySet(uncertainty_set_id);
+		
+	}
+	
+	/**
 	 * Get a list of all of the users in the database.
 	 * 
 	 * @return an array of User objects

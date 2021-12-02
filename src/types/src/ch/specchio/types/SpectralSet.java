@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+
+import org.ujmp.core.Matrix;
+import org.ujmp.core.matrix.DenseMatrix;
+
 /**
  * This class represents a spectral set
  */
@@ -44,6 +48,11 @@ public class SpectralSet {
 	 
 	@XmlElement public int uncertainty_node_id;
 	@XmlElement public int node_set_id;
+	
+	// Elements to do with returning uncertainty set information
+	public ArrayList<Integer> uncertainty_node_ids;
+	public ArrayList<Integer> node_nums;
+	public Matrix adjacency_matrix;
 	
 	// A constructor
 	public SpectralSet() {
@@ -569,6 +578,68 @@ public class SpectralSet {
 		this.spectrum_subset_ids = spectrum_subset_ids;
 	}
 	
+	/**
+	 * Get the uncertainty node ids for an uncertainty set
+	 * 
+	 * @param uncertainty_node_ids a list of uncertainty node ids for an uncertainty set
+	 */
+	
+	@XmlElement(name="uncertainty_node_ids")
+	public ArrayList<Integer> getUncertaintyNodeIds() {
+		return uncertainty_node_ids;
+	}
+	
+	/**
+	 * Set the uncertainty node ids for an uncertainty set
+	 * 
+	 * @param uncertainty_set_node_ids a list of uncertainty node ids
+	 */
+	
+	public void setUncertaintyNodeIds(ArrayList<Integer> uncertainty_node_ids) {
+		this.uncertainty_node_ids = uncertainty_node_ids;
+	}
+	
+	/**
+	 * Get the uncertainty node numbers for an uncertainty set
+	 * 
+	 * @param node_nums a list of uncertainty node numbers
+	 */
+	
+	@XmlElement(name="node_num")
+	public ArrayList<Integer> getNodeNums() {
+		return node_nums;
+	}
+	
+	/**
+	 * Set the uncertainty node numbers for an uncertainty set
+	 * 
+	 * @param node_nums a list of uncertainty node numbers
+	 */
+	
+	public void setNodeNums(ArrayList<Integer> node_nums) {
+		this.node_nums = node_nums;
+	}
+	
+	/**
+	 * Get the adjacency_matrix for an uncertainty set
+	 * 
+	 * @param adjacency_matrix the adjacency matrix for an uncertainty set 
+	 */
+	
+	@XmlElement(name="adjacency_matrix")
+	public Matrix getAdjacencyMatrix() {
+		return adjacency_matrix;
+	}
+	
+	/**
+	 * Set the adjacency_matrix for an uncertainty set
+	 * 
+	 * @param adjacency_matrix an adjacency matrix 
+	 */
+	
+	public void setAdjacencyMatrix(Matrix adjacency_matrix) {
+		this.adjacency_matrix = adjacency_matrix;
+	}
 	
 	
 }

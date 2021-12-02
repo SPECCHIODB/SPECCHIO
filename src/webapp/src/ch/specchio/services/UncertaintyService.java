@@ -189,5 +189,28 @@ public class UncertaintyService extends SPECCHIOService {
 
 	}
 	
+	/**
+	 * Retrieve an uncertainty set
+	 * 
+	 * @param uncertainty_set_id
+	 * 
+	 * @return SpectralSet 
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	@GET
+	@Path("getUncertaintySet/{uncertainty_set_id}")
+	public SpectralSet getUncertaintySet(
+			@PathParam("uncertainty_set_id") int uncertainty_set_id
+		) throws SPECCHIOFactoryException {
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		SpectralSet selectedUncertaintySet  = factory.getUncertaintySet(uncertainty_set_id);
+		factory.dispose();
+		return selectedUncertaintySet;
+		
+	}
+	
 	
 }
