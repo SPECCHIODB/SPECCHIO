@@ -51,6 +51,12 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 	private boolean contains_R;
 	private String[] data_headers;
 	private int no_of_bands;
+	private boolean contains_TGT_Ls;
+	private boolean contains_REF_Ls;
+	private boolean contains_REF_DNs;
+	private boolean contains_TGT_DNs;
+	private boolean contains_channel_nos;
+	private boolean contains_R_as_factor_of_1;
 	
 	public Spectral_Evolution_FileLoader(SPECCHIOClient specchio_client, SpecchioCampaignDataLoader campaignDataLoader) {
 		super("Spectral Evolution Data File", specchio_client, campaignDataLoader);
@@ -99,14 +105,20 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 			hdr_ended = analyse_file(tokens, d);						
 		}		
 		
-		// figure out how many spectral vectors there are
-		no_of_spectral_vectors = no_of_columns - 1;
-		
-
 		
 		// read data header
 		line=d.readLine();
 		parse_data_header(line);
+		
+		// figure out how many spectral vectors there are
+		no_of_spectral_vectors = no_of_columns - 1;
+				
+		
+		if (contains_channel_nos)
+		{
+			no_of_spectral_vectors = no_of_columns - 2;
+		}
+
 		
 		// create metadata entries for all spectral vectors
 		spec_file.setNumberOfSpectra(no_of_spectral_vectors);
@@ -145,11 +157,22 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		// split line by tabs
 		data_headers = line.split("\t");
 
+		contains_channel_nos = line.contains("Chan.#");
 		contains_DNs = line.contains("Counts");
 		contains_Ls = line.contains("Rad.");
 		contains_Ref = line.contains("Ref.");
 		contains_Tgt = line.contains("Target");
 		contains_R = line.contains("Reflect.");
+		
+		contains_REF_DNs = line.contains("Raw Counts (Ref.)");
+		contains_TGT_DNs = line.contains("Raw Counts (Target)");
+		
+		contains_REF_Ls = line.contains("Rad. (Ref.)");
+		contains_TGT_Ls = line.contains("Rad. (Target)");
+		
+		contains_R_as_factor_of_1 = line.contains("Tgt./Ref. [1.0]");
+		
+		
 		
 		
 		// build measurement type metadata, measurand designators and assign correct capture times
@@ -160,6 +183,7 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 			if(data_headers[i].contains("Rad")) this.spec_file.addMeasurementUnits(MeasurementUnit.Radiance);
 			
 			if(data_headers[i].contains("Reflect.")) this.spec_file.addMeasurementUnits(MeasurementUnit.Reflectance);
+			if(data_headers[i].contains("Tgt./Ref. [1.0]")) this.spec_file.addMeasurementUnits(MeasurementUnit.Reflectance);
 			
 			// measurand designators
 			if(data_headers[i].contains("Ref.")) this.spec_file.addMeasurandDesignator(SpectralFile.REFERENCE);
@@ -383,7 +407,7 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		// read line by line
 		while((line=d.readLine()) != null)
 		{
-			if(line.substring(0,1).equals(" "))
+			while(line.substring(0,1).equals(" "))
 			{
 				line = line.substring(1); // cut first character if it is a whitespace that messes up the splitting
 			}
@@ -392,18 +416,33 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 			// see: http://stackoverflow.com/questions/225337/how-do-i-split-a-string-with-any-whitespace-chars-as-delimiters
 			String[] tokens = line.split("\\s+");	
 			
-			// first token is wavelength
-			wvls[band_no] = (Float.valueOf(tokens[0]));
+			int data_start = 1;
+			
+			Float channel_no;
+			if (this.contains_channel_nos)
+			{
+				channel_no = (Float.valueOf(tokens[0]));
+				data_start = 2;
+			}
+			else
+			{
+				// first token is wavelength
+				data_start = 1;
+			}
+						
+			wvls[band_no] = (Float.valueOf(tokens[data_start - 1]));
 			
 			// measurements follow
-			for(int i=0;i<this.no_of_spectral_vectors;i++)
+			int cnt = 0;
+			for(int i=data_start;i<this.no_of_spectral_vectors+data_start;i++)
 			{
-				f[i][band_no] = Float.valueOf(tokens[i+1]);
+				f[cnt][band_no] = Float.valueOf(tokens[i]);
 				
 				if(spec_file.getMeasurementUnits(i) == MeasurementUnit.Reflectance) // this is a reflectance value
 				{
-					f[i][band_no] /= 100; // normalise to range 0:1	
-				}			
+					f[cnt][band_no] /= 100; // normalise to range 0:1	
+				}	
+				cnt = cnt + 1;
 			}
 			
 			band_no++;
