@@ -11,6 +11,7 @@ import ch.specchio.file.reader.campaign.SpecchioCampaignDataLoader;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.SpectralFile;
+import ch.specchio.types.spatial_pos;
 
 public class OceanView_FileLoader extends JAZ_FileLoader{
 	
@@ -172,39 +173,49 @@ public class OceanView_FileLoader extends JAZ_FileLoader{
 //					
 //	}		
 //	
-//	if(t1.equals("longitude"))
-//	{		
-//		if (hdr.pos[0] == null) 
-//		{
-//			hdr.pos[0] = new spatial_pos();
-//			hdr.pos[1] = new spatial_pos();
-//			hdr.pos[2] = new spatial_pos();
-//		}
-//		
-//		double longitudes[] = read_gps_data(tokens[1]);
-//		
-//		hdr.pos[0].longitude = longitudes[0]; // reference
-//		hdr.pos[1].longitude = longitudes[1]; // tgt radiance
-//		hdr.pos[2].longitude = longitudes[1]; // tgt reflectance
-//		
-//	}
-//	
-//	if(t1.equals("latitude"))
-//	{		
-//		if (hdr.pos[0] == null) 
-//		{
-//			hdr.pos[0] = new spatial_pos();
-//			hdr.pos[1] = new spatial_pos();
-//			hdr.pos[2] = new spatial_pos();
-//		}
-//		
-//		double latitudes[] = read_gps_data(tokens[1]);
-//		
-//		hdr.pos[0].latitude = latitudes[0]; // reference
-//		hdr.pos[1].latitude = latitudes[1]; // tgt radiance
-//		hdr.pos[2].latitude = latitudes[1]; // tgt reflectance
-//		
-//	}			
+	if(t1.equals("Longitude"))
+	{		
+		
+		if(hdr.getPos().size() == 0)
+		{
+			hdr.addPos(new spatial_pos());
+		}
+		
+		String[] sub_tokens = tokens[1].split(" ");
+		
+		hdr.getPos(0).longitude = Double.valueOf(sub_tokens[0]);
+		
+	}
+	
+	if(t1.equals("Latitude"))
+	{		
+		
+		if(hdr.getPos().size() == 0)
+		{
+			hdr.addPos(new spatial_pos());
+		}
+		
+		String[] sub_tokens = tokens[1].split(" ");
+		
+		hdr.getPos(0).latitude = Double.valueOf(sub_tokens[0]);
+		
+	}
+	
+	if(t1.equals("Altitude"))
+	{		
+		
+		if(hdr.getPos().size() == 0)
+		{
+			hdr.addPos(new spatial_pos());
+		}
+		
+		String[] sub_tokens = tokens[1].split(" ");
+		
+		hdr.getPos(0).altitude = Double.valueOf(sub_tokens[0]);
+		
+	}	
+	
+
 	
 	if(t1.equals(this.start_of_spectral_data))
 	{
