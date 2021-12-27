@@ -247,44 +247,48 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				contains_targets_and_references = true;
 			}
 			
-			
-			if(spec_file.getMeasurementUnits().contains(MeasurementUnit.DN))// && !contains_several_units)
+			if (contains_several_units || contains_targets_and_references)
 			{
-				getSubHierarchyId(subhierarchies, hierarchy_id, "DN");
-				
-				if (contains_targets_and_references)
+			
+
+				if(spec_file.getMeasurementUnits().contains(MeasurementUnit.DN))// && !contains_several_units)
 				{
-					getSubHierarchyId(subhierarchies, subhierarchies.get("DN"), "Targets");
-					getSubHierarchyId(subhierarchies, subhierarchies.get("DN"), "References");							
+					getSubHierarchyId(subhierarchies, hierarchy_id, "DN");
+
+					if (contains_targets_and_references)
+					{
+						getSubHierarchyId(subhierarchies, subhierarchies.get("DN"), "Targets");
+						getSubHierarchyId(subhierarchies, subhierarchies.get("DN"), "References");							
+					}
+
 				}
-				
-			}
-			
-			if(spec_file.getMeasurementUnits().contains(MeasurementUnit.Radiance))// && !contains_several_units)
-			{
-				getSubHierarchyId(subhierarchies, hierarchy_id, "Radiance");
-				
-				if (contains_targets_and_references)
+
+				if(spec_file.getMeasurementUnits().contains(MeasurementUnit.Radiance))// && !contains_several_units)
 				{
-					getSubHierarchyId(subhierarchies, subhierarchies.get("Radiance"), "Targets");
-					getSubHierarchyId(subhierarchies, subhierarchies.get("Radiance"), "References");							
+					getSubHierarchyId(subhierarchies, hierarchy_id, "Radiance");
+
+					if (contains_targets_and_references)
+					{
+						getSubHierarchyId(subhierarchies, subhierarchies.get("Radiance"), "Targets");
+						getSubHierarchyId(subhierarchies, subhierarchies.get("Radiance"), "References");							
+					}
+
+				}	
+
+				if(spec_file.getMeasurementUnits().contains(MeasurementUnit.Reflectance))// && !contains_several_units)
+				{
+					getSubHierarchyId(subhierarchies, hierarchy_id, "Reflectance");
+
 				}
-				
-			}	
-			
-			if(spec_file.getMeasurementUnits().contains(MeasurementUnit.Reflectance))// && !contains_several_units)
-			{
-				getSubHierarchyId(subhierarchies, hierarchy_id, "Reflectance");
-							
+
+
+				//			if(contains_targets_and_references && contains_several_units)
+				//			{
+				//				getSubHierarchyId(subhierarchies, hierarchy_id, "Targets");
+				//				getSubHierarchyId(subhierarchies, hierarchy_id, "References");
+				//			}
+
 			}
-			
-			
-//			if(contains_targets_and_references && contains_several_units)
-//			{
-//				getSubHierarchyId(subhierarchies, hierarchy_id, "Targets");
-//				getSubHierarchyId(subhierarchies, hierarchy_id, "References");
-//			}
-			
 			
 		}
 		

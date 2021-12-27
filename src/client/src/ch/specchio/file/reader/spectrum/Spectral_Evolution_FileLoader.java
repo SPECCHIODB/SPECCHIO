@@ -215,7 +215,15 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		
 		if(t1.equals("Instrument"))
 		{
+			// PSR-2500_SN1226208 [2]
+			// SR-3500_20680T1
 			String[] instr_data = tokens[1].split("_SN");	
+			
+			if(instr_data.length == 1)
+			{
+				// try splitting by underscore only
+				instr_data = tokens[1].split("_");	
+			}
 			
 			String[] family_and_type_no = instr_data[0].split("-");
 			
@@ -289,8 +297,18 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		
 		if(t1.equals("Altitude") && tokens[1].length() > 3)
 		{	
-			//		Altitude: 1437.70				
-			altitude = Double.valueOf(tokens[1]);	
+			//		Altitude: 1437.70	
+			// 		Altitude: 77.500m
+			try
+			{
+				altitude = Double.valueOf(tokens[1]);	
+			} catch (NumberFormatException e) {
+				// deal with strange new formats like Altitude: 77.500m
+				
+				tokens[1] = tokens[1].substring(0, tokens[1].length()-1);
+				altitude = Double.valueOf(tokens[1]);	
+			}
+			
 			gps_pos_available = true;
 		}			
 		
