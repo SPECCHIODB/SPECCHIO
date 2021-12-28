@@ -84,7 +84,7 @@ dependencies {
     compile group: 'org.jfree', name: 'jfreechart', version: '1.5.0'
     compile group: 'jgraph', name: 'jgraph', version: '5.13.0.0'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
-    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
+//    compile group: 'net.sourceforge.jexcelapi', name: 'jxl', version: '2.6.12'
     compile group: 'net.sf.py4j', name: 'py4j', version: '0.10.3'
     compile group: 'net.e175.klaus', name: 'solarpositioning', version: '0.0.9'
     compile group: 'joda-time', name: 'joda-time', version: '2.6'
@@ -96,6 +96,7 @@ dependencies {
     compile group: 'com.jidesoft', name: 'jide-oss', version: '3.6.17'
     compile group: 'com.googlecode.cqengine', name: 'cqengine', version: '3.4.0'
     
+    implementation 'com.dropbox.core:dropbox-core-sdk:3.1.4'
 
     // Types
     compile project(':src:types')
