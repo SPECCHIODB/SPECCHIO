@@ -2176,17 +2176,29 @@ public class MetadataFactory extends SPECCHIOFactory {
 	 * 
 	 * @param mp	the attribute id of the metaparameters to be removed
 	 * @param ids	the list of primary entities from which the metadata is to be removed (null for all primary entities)
+	 * @throws SPECCHIOFactoryException 
 	 */
-	public void removeMetadata(int metadata_level, int attribute_id, ArrayList<Integer> ids) {
+	public void removeMetadata(int metadata_level, int attribute_id, ArrayList<Integer> ids) throws SPECCHIOFactoryException {
 		
-		// get all eav ids for that attribute and spectra ids
-		ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(metadata_level, ids, attribute_id);
-		
-		for(int eav_id : eav_ids)
-		{
-			getEavServices().delete_primary_x_eav(metadata_level, ids, eav_id, this.Is_admin());
+		try {
+			// get all eav ids for that attribute and spectra ids
+			ArrayList<Integer> eav_ids = getEavServices().get_eav_ids(metadata_level, ids, attribute_id);
+
+			//		for(int eav_id : eav_ids)
+			//		{
+			//			getEavServices().delete_primary_x_eav(metadata_level, ids, eav_id, this.Is_admin());
+			//		}
+
+			getEavServices().delete_primary_x_eav(metadata_level, ids, eav_ids, this.Is_admin());
+
+			getEavServices().delete_eavs(eav_ids, this.Is_admin()); // remove eavs; they are only deleted when not referenced anymore (but crudely so!). It may lead to zombie EAVs.
+
+
 		}
-		
+		catch (SQLException ex) {
+			// database error
+			throw new SPECCHIOFactoryException(ex);
+		}
 	}
 	
 	
