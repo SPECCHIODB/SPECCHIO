@@ -39,6 +39,8 @@ public class Capabilities {
 	
 	/** capability name for hashing algorithm config */
 	public static final String PASSWORD_HASHING_ALGORITHM = "PASSWORD_HASHING_ALGORITHM";
+
+	public static final String USE_SALTING = "USE_SALTING";
 	
 	
 	/**

@@ -1,5 +1,6 @@
 package ch.specchio.factories;
 
+import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +18,7 @@ import ch.specchio.constants.Limits;
 import ch.specchio.constants.UserRoles;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.eav_db.TableNames;
+import ch.specchio.types.Capabilities;
 import ch.specchio.types.Country;
 import ch.specchio.types.Institute;
 import ch.specchio.types.User;
@@ -40,11 +42,26 @@ public class UserFactory extends SPECCHIOFactory {
 	/**
 	 * Construct a factory using the default connection to the database.
 	 * 
+	 * @param ds_name		database connection
 	 * @throws SPECCHIOFactoryException	could not establish initial context
 	 */
 	public UserFactory(String ds_name) throws SPECCHIOFactoryException {
 		
 		super(ds_name);
+		
+	}	
+	
+	
+	/**
+	 * Construct a factory using the default connection to the database.
+	 * 
+	 * @param ds_name		database connection
+	 * @param capabilities		server capabilities and configurations
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public UserFactory(String ds_name, Capabilities capabilities) throws SPECCHIOFactoryException {
+		
+		super(ds_name, capabilities);
 		
 	}
 	
@@ -62,7 +79,6 @@ public class UserFactory extends SPECCHIOFactory {
 		
 	}
 	
-	
 	/**
 	 * Construct a factory using a specific user's connection to the database.
 	 * 
@@ -75,6 +91,25 @@ public class UserFactory extends SPECCHIOFactory {
 	public UserFactory(String db_user, String db_password, String ds_name, boolean is_admin) throws SPECCHIOFactoryException {
 
 		super(db_user, db_password, ds_name, is_admin);
+		this.db_user = db_user;
+		this.db_password = db_password;
+		
+	}	
+	
+	
+	/**
+	 * Construct a factory using a specific user's connection to the database.
+	 * 
+	 * @param db_user		database account user name
+	 * @param db_password	database account password
+	 * @param is_admin	is the user an administrator? 
+	 * @param capabilities		server capabilities and configurations
+	 * 
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public UserFactory(String db_user, String db_password, String ds_name, boolean is_admin, Capabilities capabilities) throws SPECCHIOFactoryException {
+
+		super(db_user, db_password, ds_name, is_admin, capabilities);
 		this.db_user = db_user;
 		this.db_password = db_password;
 		
@@ -281,6 +316,20 @@ public class UserFactory extends SPECCHIOFactory {
 	    return password.toString();
 	    
 	}
+	
+	/**
+	 * Returns a random salt.
+	 *
+	 * @return a hex-encoded random salt created using SecureRandom, specify byteLength
+	 */
+	private String generateSalt(int byteLength) {
+		SecureRandom secureRandom = new SecureRandom();
+		byte[] salt = new byte[byteLength];
+		secureRandom.nextBytes(salt);
+		return new BigInteger(1, salt).toString(16); //hex encoding
+	}
+	
+	
 	
 	
 	/**
@@ -851,7 +900,10 @@ public class UserFactory extends SPECCHIOFactory {
 			int pw_strength = DEFAULT_PASSWORD_STRENGTH;
 			
 			// initialise SQL-building objects
-			String query;
+			String query = null;
+			String specchio_user_pw_insert = null;
+			String salt_insert_str = ""; // variable for dynamic insert statement building
+			String salt_insert_val = ""; // variable for dynamic insert statement building
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			Statement stmt = SQL.createStatement();
 
@@ -908,14 +960,38 @@ public class UserFactory extends SPECCHIOFactory {
 			
 			// generate a username and password for the user
 			user.setUsername(generateUsername(user.getFirstName(), user.getLastName()));
-			user.setPassword(generatePassword(pw_length, pw_strength));
+			if(this.capabilities.getCapability(Capabilities.PASSWORD_HASHING_ALGORITHM).equals("MD5"))
+			{
+				user.setPassword(generatePassword(pw_length, pw_strength));
+				specchio_user_pw_insert = "MD5(" + SQL.quote_string(user.getPassword()) + "),";
+			}
+			
+			if(this.capabilities.getCapability(Capabilities.USE_SALTING).equals("enabled"))
+			{
+				user.setSalt(generateSalt(16));
+				user.setPassword((generatePassword(pw_length, pw_strength))+user.getSalt());
+				specchio_user_pw_insert = "SHA2(" + SQL.quote_string(user.getPassword()) + ", 512)" + ",";
+				salt_insert_str = ", salt";
+				salt_insert_val = " +\n" + SQL.quote_string(user.getSalt());
+			}			
+			
 
 			//System.out.println("Password: " + user.getPassword());
 			
 			// create database user
 			String userString = SQL.quote_string(user.getUsername()) + "@" + SQL.quote_string(getDatabaseUserHost());
-			query = "create user " + userString + " " +
-					"identified by " + SQL.quote_string(user.getPassword());
+			
+			if(this.capabilities.getCapability(Capabilities.PASSWORD_HASHING_ALGORITHM).equals("MD5"))
+			{
+				query = "create user " + userString + " " +
+						"identified by " + SQL.quote_string(user.getPassword());
+			}
+			else if(this.capabilities.getCapability(Capabilities.PASSWORD_HASHING_ALGORITHM).equals("SHA2"))
+			{
+				query = "create user " + userString + " " +
+						"identified with sha256_password by " + SQL.quote_string(user.getPassword());
+			}
+			
 			stmt.executeUpdate(query);
 			
 			// work out institute identifier
@@ -923,7 +999,7 @@ public class UserFactory extends SPECCHIOFactory {
 			String instIdString = (inst != null)? Integer.toString(inst.getInstituteId()) : "null";
 			
 			// update user table
-			query = "insert into specchio_user(user,first_name,last_name,institute_id,email,www,admin,password,external_id,description) values(" +
+			query = "insert into specchio_user(user,first_name,last_name,institute_id,email,www,admin,password,external_id,description" + salt_insert_str + ") values(" +
 					SQL.quote_string(user.getUsername()) + "," +
 					SQL.quote_string(user.getFirstName()) + "," +
 					SQL.quote_string(user.getLastName()) + "," +
@@ -931,9 +1007,10 @@ public class UserFactory extends SPECCHIOFactory {
 					SQL.quote_string(user.getEmailAddress()) + "," +
 					SQL.quote_string(user.getWwwAddress()) + "," +
 					(user.isInRole(UserRoles.ADMIN)? "1" : "0") + "," +
-					"MD5(" + SQL.quote_string(user.getPassword()) + ")," +
+					specchio_user_pw_insert +
 					SQL.quote_string(user.getExternalId()) + "," +
 					SQL.quote_string(user.getDescription()) +
+					salt_insert_val +
 				")";
 			stmt.executeUpdate(query);
 			
@@ -959,7 +1036,7 @@ public class UserFactory extends SPECCHIOFactory {
 			if(!getDatabaseName().equals("specchio"))
 			{
 				// update user table but without the institute to avoid inconsistencies
-				query = "insert into specchio.specchio_user(user,first_name,last_name,institute_id,email,www,admin,password,external_id) values(" +
+				query = "insert into specchio.specchio_user(user,first_name,last_name,institute_id,email,www,admin,password,external_id" + salt_insert_str + ") values(" +
 						SQL.quote_string(user.getUsername()) + "," +
 						SQL.quote_string(user.getFirstName()) + "," +
 						SQL.quote_string(user.getLastName()) + "," +
@@ -967,8 +1044,9 @@ public class UserFactory extends SPECCHIOFactory {
 						SQL.quote_string(user.getEmailAddress()) + "," +
 						SQL.quote_string(user.getWwwAddress()) + "," +
 						(user.isInRole(UserRoles.ADMIN)? "1" : "0") + "," +
-						"MD5(" + SQL.quote_string(user.getPassword()) + ")," +
+						specchio_user_pw_insert +
 						SQL.quote_string(user.getExternalId()) +
+						salt_insert_val +
 					")";
 				stmt.executeUpdate(query);
 				
@@ -1064,6 +1142,10 @@ public class UserFactory extends SPECCHIOFactory {
 			attr_and_vals.add("www"); attr_and_vals.add(user.getWwwAddress());
 			attr_and_vals.add("external_id"); attr_and_vals.add(user.getExternalId());
 			attr_and_vals.add("description"); attr_and_vals.add(user.getDescription());
+			
+			if(this.capabilities.getCapability(Capabilities.USE_SALTING).equals("enabled"))
+				attr_and_vals.add("salt"); attr_and_vals.add(user.getSalt());
+			
 			query = SQL.assemble_sql_update_query(
 					SQL.conc_attr_and_vals("specchio_user", attr_and_vals.toArray(new String[attr_and_vals.size()])),
 					"specchio_user",
@@ -1097,9 +1179,18 @@ public class UserFactory extends SPECCHIOFactory {
 
 			stmt.executeUpdate(query);			
 			
-			query = "Update specchio_user set password = " + "MD5(" + SQL.quote_string(user.getPassword()) + ") where " + userCondition;
-			stmt.executeUpdate(query);
 			
+			
+			if(this.capabilities.getCapability(Capabilities.PASSWORD_HASHING_ALGORITHM).equals("MD5"))
+			{
+				query = "Update specchio_user set password = " + "MD5(" + SQL.quote_string(user.getPassword()) + ") where " + userCondition;
+			}
+			else if(this.capabilities.getCapability(Capabilities.PASSWORD_HASHING_ALGORITHM).equals("SHA2"))
+			{
+				query = "Update specchio_user set password = " + "SHA2(" + SQL.quote_string(user.getPassword()) + ", 512) where " + userCondition;
+			}
+			
+			stmt.executeUpdate(query);
 			
 			// clean up
 			stmt.close();

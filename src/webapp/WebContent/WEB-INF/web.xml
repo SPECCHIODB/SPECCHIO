@@ -40,6 +40,10 @@
     	<param-name>PASSWORD_HASHING_ALGORITHM</param-name>
     	<param-value>MD5</param-value>
     </init-param>   
+    <init-param>
+    	<param-name>USE_SALTING</param-name>
+    	<param-value>disabled</param-value>
+    </init-param>       
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
