@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import ch.specchio.types.Campaign;
+import ch.specchio.types.Capabilities;
 
 
 /**
@@ -22,12 +23,13 @@ public abstract class CampaignFactory extends SPECCHIOFactory {
 	 * @param db_password	database account password
 	 * @param ds_name		data source name
 	 * @param is_admin		is the user an administrator? 
+	 * @param capabilities		server capabilities and configurations 
 	 * 
 	 * @throws SPECCHIOFactoryException	could not establish initial context
 	 */
-	public CampaignFactory(String db_user, String db_password, String ds_name, boolean is_admin) throws SPECCHIOFactoryException {
+	public CampaignFactory(String db_user, String db_password, String ds_name, boolean is_admin, Capabilities capabilities) throws SPECCHIOFactoryException {
 		
-		super(db_user, db_password, ds_name, is_admin);
+		super(db_user, db_password, ds_name, is_admin, capabilities);
 		
 	}
 	

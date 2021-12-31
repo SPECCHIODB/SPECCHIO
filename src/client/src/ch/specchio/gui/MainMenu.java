@@ -10,17 +10,24 @@ import java.awt.GridBagLayout;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
@@ -30,11 +37,14 @@ import ch.specchio.client.SPECCHIOServerDescriptor;
 import ch.specchio.client.SPECCHIOServerDescriptorLegacyStore;
 import ch.specchio.client.SPECCHIOServerDescriptorPreferencesStore;
 import ch.specchio.constants.UserRoles;
+import ch.specchio.file.reader.campaign.VirtualFileSystemView;
 import ch.specchio.metadata.MetaDataFromTabModel;
 import ch.specchio.queries.Query;
 import ch.specchio.types.Campaign;
 import ch.specchio.types.Capabilities;
 import ch.specchio.types.Category;
+import ch.specchio.types.CustomFileView;
+import ch.specchio.types.DropboxPath;
 import ch.specchio.types.Institute;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.SpecchioCampaign;
@@ -42,6 +52,20 @@ import ch.specchio.types.TaxonomyNodeObject;
 import ch.specchio.types.Units;
 import ch.specchio.types.User;
 import ch.specchio.types.attribute;
+
+import com.dropbox.core.DbxApiException;
+import com.dropbox.core.DbxAppInfo;
+import com.dropbox.core.DbxAuthFinish;
+import com.dropbox.core.DbxDownloader;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.DbxWebAuth;
+import com.dropbox.core.DbxWebAuthNoRedirect;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.FolderMetadata;
+import com.dropbox.core.v2.files.ListFolderResult;
+import com.dropbox.core.v2.files.Metadata;
+import com.dropbox.core.v2.users.FullAccount;
 
 
 class MainMenu implements ActionListener, ItemListener {
@@ -55,6 +79,7 @@ class MainMenu implements ActionListener, ItemListener {
    String edit_db_config_file = "Edit db_config file";
    String upgrade_db = "Upgrade database";
    String preferences = "Preferences";
+   String dropbox = "Link Dropbox Account";
    String metadata_editor = "Edit metadata";
    String metadata_from_xls = "Get metadata from XLS";
    String data_removal = "Remove data";
@@ -146,6 +171,11 @@ private JMenuItem dbConfigmenuItem;
       menuItem.addActionListener(this);
       menu.add(menuItem);
       public_menu_items.put(preferences, menuItem);
+      
+      menuItem = new JMenuItem(dropbox);
+      menuItem.addActionListener(this);
+      menu.add(menuItem);
+      public_menu_items.put(dropbox, menuItem);      
 
       menu.addSeparator();
       
@@ -297,10 +327,10 @@ private JMenuItem dbConfigmenuItem;
       public_menu_items.put(info, menuItem);
       
       // uncomment for sandbox
-//      menuItem = new JMenuItem(test);
-//      menuItem.addActionListener(this);
-//      menu.add(menuItem);      
-//      public_menu_items.put(test, menuItem);      
+      menuItem = new JMenuItem(test);
+      menuItem.addActionListener(this);
+      menu.add(menuItem);      
+      public_menu_items.put(test, menuItem);      
       
       menuBar.add(menu);
    }
@@ -533,7 +563,7 @@ private JMenuItem dbConfigmenuItem;
       if(preferences.equals(e.getActionCommand()))
       {
     	  try {
-    		  new Preferences();
+    		  new ch.specchio.gui.Preferences();
     	  }
     	  catch (SPECCHIOClientException ex) {
     		  JOptionPane.showMessageDialog(
@@ -546,6 +576,16 @@ private JMenuItem dbConfigmenuItem;
     	  
 
       }
+      
+      if(dropbox.equals(e.getActionCommand()))
+      {
+    	  
+    	  new DropboxLink();
+    	  
+      
+      
+      }
+      
       
       if(upgrade_db.equals(e.getActionCommand()))
       {
@@ -800,7 +840,7 @@ private JMenuItem dbConfigmenuItem;
                  "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
                  "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
                 		 + "<br><br>" +
-                		 "(c) 2006-2020 by Remote Sensing Laboratories (RSL)<br>" +
+                		 "(c) 2006-2022 by Remote Sensing Laboratories (RSL)<br>" +
                 		 "Dept. of Geography, " +
                 		 "University of Zurich (CH)<br>" +
                 		 "(c) 2013-2014 by University of Wollongong (AU)<br><br>" +
@@ -1013,16 +1053,129 @@ private JMenuItem dbConfigmenuItem;
     	  
     	  try {
     		  
+    		  boolean use_access_token = true;
+    		  DbxClientV2 client;
+    		  
+    		  if (use_access_token)
+    		  {
+    			  
+					SPECCHIOPreferencesStore prefs_store = new SPECCHIOPreferencesStore();
+
+					Preferences prefs = prefs_store.getPreferences();
+
+					Preferences node = prefs.node("Dropbox");    			  
+    		  
+    		  String ACCESS_TOKEN = node.get("ahueni@geo.uzh.ch", "");
+    		  
+    	        // Create Dropbox client
+    	        DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
+    	        client = new DbxClientV2(config, ACCESS_TOKEN);  
+    		  }
+    	        else
+    	        {
+    	        	DbxAppInfo dbxAppInfo = new DbxAppInfo("7gj3n1ol65mgq89", "fshdzufbmdx64zd");
+    	        	DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
+
+    	        	DbxWebAuth.Request authRequest = DbxWebAuth.newRequestBuilder()
+    	                    .build();
+    	        	DbxWebAuth dbxWebAuth = new DbxWebAuth(config, dbxAppInfo);
+    	        	
+    	                String authorizeUrl = dbxWebAuth.authorize(authRequest);
+
+    	                // Redirect the user to the Dropbox website so they can approve our application.
+    	                // The Dropbox website will send them back to /dropbox-auth-finish when they're done.
+//    	                response.sendRedirect(authorizeUrl);
+    	                
+    	                String auth_code = "I_xe0q8RHc8AAAAAAAALZV5z4MzmJME-rwxokvITXR0";
+    	                
+    	            	DbxAuthFinish authFinish = dbxWebAuth.finishFromCode(auth_code);
+    	        		String authAccessToken = authFinish.getAccessToken(); 	        	
+    	                
+
+    	    		client = new DbxClientV2(config, authAccessToken);  
+    	        	
+    	        	
+    	        }
+    		  
+    	     // Get current account info
+    	        FullAccount account = client.users().getCurrentAccount();
+    	        System.out.println(account.getName().getDisplayName());
+    	        
+    	        TreeSet<DropboxPath> choices = new TreeSet<DropboxPath>();
+    	        
+    	        ListFolderResult initial_contents = client.files().listFolder("");
+    	        
+    	        for (Metadata entry : initial_contents.getEntries())
+    	        {
+    	        	// only show folders
+    	        	if(entry.getClass() == FolderMetadata.class)
+    	        	{
+    	        		DropboxPath new_entry = new DropboxPath(entry.getPathLower(), true);
+    	        		choices.add(new_entry);
+    	        		
+    	        	}    	        	
+    	        	
+    	        }
+    	        
+    	        
+    	        
+    	        
+    	        JFileChooser fc = new JFileChooser(new VirtualFileSystemView(new DropboxPath("/Dropbox", true), client));
+    	        fc.setFileView(new CustomFileView());
+    	        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    	        int returnVal = fc.showOpenDialog(SPECCHIOApplication.getInstance().get_frame());
+    	        
+    	        boolean approved = returnVal == JFileChooser.APPROVE_OPTION;
+    	        
+//    		  
+//    	        ListFolderResult result = client.files().listFolder("/ASD_data");
+//    	        while (true) {
+//    	            for (Metadata metadata : result.getEntries()) {
+//    	                System.out.println(metadata.getPathLower());
+//    	            }
+//
+//    	            if (!result.getHasMore()) {
+//    	                break;
+//    	            }
+//
+//    	            result = client.files().listFolderContinue(result.getCursor());
+//    	        }
+//    		  
+//    	        DbxDownloader downloader = client.files().downloadBuilder("/asd_data/lan_set1_00000.asd").start();
+//    	        
+//    	        InputStream in = downloader.getInputStream();
+//    	        
+//    	        
+//    			byte[] bytes = new byte[3];
+//    			
+//    			try {
+//					in.read(bytes);
+//				} catch (IOException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+    			
+
+    			// add null at the end
+    			// byte[] bytes_ = new byte[no_of_chars+1];
+    			//
+    			// for (int i=0;i<no_of_chars;i++) bytes_[i] = bytes[i];
+    			// bytes_[no_of_chars] = 0;
+    			//
+
+//    			String file_version = new String(bytes);   	        
+    	        
+    		  
 //    		  User[] users = specchio_client.getUsersWithStatistics();
     		  
 //    		  Institute[] inst = specchio_client.getInstitutes();
-    		  int attr_id = specchio_client.getAttributesNameHash().get("File Name").getId();
+//    		  int attr_id = specchio_client.getAttributesNameHash().get("File Name").getId();
 //    		  
 //    		  ArrayList<Integer> ids = new ArrayList<Integer>();
 //    		  ids.add(251403);
 //    		  specchio_client.getMetaparameters(ids, "File Name");
 //    		  
-    		  ArrayList<MetaParameter> values = specchio_client.getDistinctValuesOfAttribute(attr_id);
+//    		  ArrayList<MetaParameter> values = specchio_client.getDistinctValuesOfAttribute(attr_id);
     		  
 //    		  ArrayList<Integer> lists = specchio_client.getNewestSpectra(10);
 //    		  Campaign[] c = specchio_client.getCampaigns();
@@ -1067,6 +1220,15 @@ private JMenuItem dbConfigmenuItem;
 		} catch (SPECCHIOClientException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
+		} catch (DbxApiException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (DbxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (BackingStoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
     	  
 //    	  try {

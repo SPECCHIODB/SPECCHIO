@@ -39,7 +39,7 @@ public class UserService extends SPECCHIOService {
 	public User createUserAccount(User user) throws SPECCHIOFactoryException {
 		
 		
-		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), this.getServerCapabilities());
 
 		if (!getSecurityContext().isUserInRole(UserRoles.ADMIN)) {
 			// a non-admin user is trying to create a user on this system
@@ -96,7 +96,7 @@ public class UserService extends SPECCHIOService {
 	@Path("getUsersWithStatistics")
 	public User[] getUsersWithStatistics() throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), this.getServerCapabilities());
 		User users[] = factory.getUsersWithStatistics();
 		factory.dispose();
 		
@@ -116,7 +116,7 @@ public class UserService extends SPECCHIOService {
 	@Path("list")
 	public User[] list() throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), this.getServerCapabilities());
 		User users[] = factory.getUsers();
 		factory.dispose();
 		
@@ -137,7 +137,7 @@ public class UserService extends SPECCHIOService {
 	@Path("login")
 	public User login() throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), this.getServerCapabilities());
 		User user = factory.getUser(getClientUsername());
 		factory.dispose();
 		
@@ -189,7 +189,7 @@ public class UserService extends SPECCHIOService {
 			}
 		}
 		
-		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		UserFactory factory = new UserFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), this.getServerCapabilities());
 		factory.updateUser(user);
 		factory.dispose();
 		

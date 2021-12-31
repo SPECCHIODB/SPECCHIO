@@ -69,7 +69,7 @@ public class PublicService extends SPECCHIOService {
 			throw new SecurityException("User creation is only enabled for administrators.");					
 		}
 		// create a user factory to do the work
-		UserFactory factory = new UserFactory(getDataSourceName());
+		UserFactory factory = new UserFactory(getDataSourceName(), this.getServerCapabilities());
 		try {
 			
 			String value = getServerCapability("CREATE_READ_ONLY_USERS_BY_DEFAULT");
@@ -120,7 +120,7 @@ public class PublicService extends SPECCHIOService {
 	@Path("insertInstitute")
 	public XmlInteger insertInstitute(Institute institute) throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getDataSourceName());
+		UserFactory factory = new UserFactory(getDataSourceName(), this.getServerCapabilities());
 		int institute_id = factory.insertInstitute(institute);
 		factory.dispose();
 		
@@ -141,7 +141,7 @@ public class PublicService extends SPECCHIOService {
 	@Path("listCountries")
 	public Country[] listCountries() throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getDataSourceName());
+		UserFactory factory = new UserFactory(getDataSourceName(), this.getServerCapabilities());
 		Country countries[] = factory.getCountries();
 		factory.dispose();
 		
@@ -162,7 +162,7 @@ public class PublicService extends SPECCHIOService {
 	@Path("listInstitutes")
 	public Institute[] listInstitutes() throws SPECCHIOFactoryException {
 		
-		UserFactory factory = new UserFactory(getDataSourceName());
+		UserFactory factory = new UserFactory(getDataSourceName(), this.getServerCapabilities());
 		Institute institutes[] = factory.getInstitutes();
 		factory.dispose();
 		

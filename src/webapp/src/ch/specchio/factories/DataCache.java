@@ -25,6 +25,7 @@ import ch.specchio.constants.SensorType;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.types.Calibration;
+import ch.specchio.types.Capabilities;
 import ch.specchio.types.ConflictStruct;
 import ch.specchio.types.Country;
 import ch.specchio.types.Institute;
@@ -41,6 +42,10 @@ public class DataCache {
 	String datasource_name;
 	SQL_StatementBuilder SQL;
 	
+	/** server capabilities and configurations */
+	public Capabilities capabilities;
+	
+	
 	ArrayList<Calibration> calibrations;
 	ArrayList<Institute> institutes;
 	ArrayList<Instrument> instruments;
@@ -53,10 +58,11 @@ public class DataCache {
 	Hashtable<String, Integer> file_format_name_2_id_hash = new Hashtable<String, Integer>();
 	
 	
-	public DataCache(SQL_StatementBuilder SQL, String datasource_name) throws SQLException
+	public DataCache(SQL_StatementBuilder SQL, String datasource_name, Capabilities capabilities) throws SQLException
 	{
 		this.SQL = SQL;
 		this.datasource_name = datasource_name;
+		this.capabilities = capabilities;
 		load_cache();
 	}
 	

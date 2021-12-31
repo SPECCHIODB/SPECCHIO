@@ -67,8 +67,13 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 		super(db_user, db_password, ds_name, is_admin);
 		
 	}
-	
-	
+
+	/**
+	 * Construct a factory using the default connection to the database.
+	 * 
+	 * @param ds_name		database connection
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */	
 	public InstrumentationFactory(String ds_name) throws SPECCHIOFactoryException {
 		super(ds_name);
 	}

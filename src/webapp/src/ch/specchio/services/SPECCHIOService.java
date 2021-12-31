@@ -140,10 +140,19 @@ public class SPECCHIOService {
 		else
 		{
 			capabilities.setCapability(Capabilities.PASSWORD_HASHING_ALGORITHM, "MD5");		
-		}		
+		}	
+		
+		String use_salting = config.getInitParameter(Capabilities.USE_SALTING);
+		if (use_salting != null) {
+			capabilities.setCapability(Capabilities.USE_SALTING, use_salting);
+		}
+		else
+		{
+			capabilities.setCapability(Capabilities.PASSWORD_HASHING_ALGORITHM, "disabled");		
+		}				
 		
 		// set database capabilities
-		SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName());
+		SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName(), this.capabilities);
 
 		Long maxObjectSize = factory.getMaximumQuerySize() - 1024;
 		capabilities.setCapability(Capabilities.MAX_OBJECT_SIZE, maxObjectSize.toString());
@@ -334,7 +343,7 @@ public class SPECCHIOService {
 			response = Response.status(Response.Status.FORBIDDEN).build();
 		} else {
 		
-			SPECCHIOFactory factory = new SPECCHIOFactory(getClientUsername(), getClientPassword(), getDataSourceName(), getSecurityContext().isUserInRole(UserRoles.ADMIN));
+			SPECCHIOFactory factory = new SPECCHIOFactory(getClientUsername(), getClientPassword(), getDataSourceName(), getSecurityContext().isUserInRole(UserRoles.ADMIN), this.getServerCapabilities());
 			try {
 								
 				factory.dbUpgrade(version, getRequest().getInputStream());

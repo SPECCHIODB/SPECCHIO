@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 import ch.specchio.eav_db.Attributes;
 import ch.specchio.eav_db.EAVDBServices;
 import ch.specchio.eav_db.SQL_StatementBuilder;
+import ch.specchio.types.Capabilities;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.MetaSpatialPoint;
@@ -78,15 +79,18 @@ public class SPECCHIOFactory {
 	/** is the user an administrator? */
 	private boolean is_admin;
 	
+	/** server capabilities and configurations */
+	public Capabilities capabilities;
+	
 	
 	public boolean Is_admin() {
 		return is_admin;
 	}
 
-
 	/**
 	 * Construct a factory using the default connection to the database.
 	 * 
+	 * @param ds_name		database connection
 	 * @throws SPECCHIOFactoryException	could not establish initial context
 	 */
 	public SPECCHIOFactory(String ds_name) throws SPECCHIOFactoryException {
@@ -102,8 +106,38 @@ public class SPECCHIOFactory {
 			throw new SecurityException(ex);
 		}
 		
+	}	
+
+	/**
+	 * Construct a factory using the default connection to the database.
+	 * 
+	 * @param ds_name		database connection
+	 * @param capabilities		server capabilities and configurations
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public SPECCHIOFactory(String ds_name, Capabilities capabilities) throws SPECCHIOFactoryException {
+		this(ds_name);
+		this.capabilities = capabilities;		
 	}
 	
+	
+	/**
+	 * Construct a factory using a specific user's connection to the database.
+	 * 
+	 * @param db_user		database account user name
+	 * @param db_password	database account password
+	 * @param is_admin	is the user an administrator? 
+	 * @param capabilities		server capabilities and configurations
+	 * 
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public SPECCHIOFactory(String db_user, String db_password, String ds_name, boolean is_admin, Capabilities capabilities) throws SPECCHIOFactoryException {
+		
+		this(db_user, db_password, ds_name, is_admin);
+		
+		this.capabilities = capabilities;
+		
+	}
 	
 	/**
 	 * Construct a factory using a specific user's connection to the database.
@@ -131,7 +165,7 @@ public class SPECCHIOFactory {
 			throw new SPECCHIOFactoryException(ex);
 		}
 		
-	}
+	}	
 	
 	
 	/**
@@ -148,6 +182,7 @@ public class SPECCHIOFactory {
 		this.is_admin = factory.Is_admin();
 		init(factory.getConnection());
 		this.my_conn = false;
+		this.capabilities = factory.capabilities;
 		
 	}
 	
@@ -182,7 +217,7 @@ public class SPECCHIOFactory {
 //					// construct and populate the data cache
 //					SPECCHIOFactory.cache = new DataCache(sql, datasource_name);
 //				}
-				SPECCHIOFactory.caches.put(datasource_name, new DataCache(sql, datasource_name));
+				SPECCHIOFactory.caches.put(datasource_name, new DataCache(sql, datasource_name, this.capabilities));
 				
 				// close the connection
 				conn.close();
