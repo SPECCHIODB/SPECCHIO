@@ -4,10 +4,14 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -19,8 +23,17 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileSystemView;
 
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.v2.DbxClientV2;
+
+import ch.specchio.client.SPECCHIOPreferencesStore;
+import ch.specchio.file.reader.campaign.VirtualFile;
+import ch.specchio.file.reader.campaign.VirtualFileSystemView;
 import ch.specchio.types.Campaign;
+import ch.specchio.types.CustomFileView;
+import ch.specchio.types.DropboxPath;
 
 
 
@@ -46,6 +59,7 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 	
 	/** "add path" button */
 	private JButton addPathButton;
+	private JButton addDropboxPathButton;
 	
 	/** "remove path" button */
 	private JButton removePathButton;
@@ -55,6 +69,8 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 	
 	/** text for the "add path" button */
 	private static final String ADD_PATH = "New path";
+	
+	private static final String ADD_DROPBOX_PATH = "New Dropbox path";
 	
 	/** text for the "remove path" button */
 	private static final String REMOVE_PATH = "Remove path";
@@ -84,6 +100,8 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 		// add the path selection list
 		pathListModel = new DefaultListModel();
 		pathListField = new JList(pathListModel);
+		FilePathRenderer fpr = new FilePathRenderer();
+		pathListField.setCellRenderer(fpr);
 		pathListField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		pathListField.addListSelectionListener(this);
 		JScrollPane pathListScrollPane = new JScrollPane(pathListField);
@@ -101,6 +119,37 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 			addPathButton.setActionCommand(ADD_PATH);
 			addPathButton.addActionListener(this);
 			buttonPanel.add(addPathButton);
+			
+			// add and enable dropbox button if there are dropbox accounts linked for this user
+			SPECCHIOPreferencesStore prefs_store;
+			try {
+				prefs_store = new SPECCHIOPreferencesStore();
+				
+				Preferences prefs = prefs_store.getPreferences();
+
+				Preferences node = prefs.node("Dropbox");	
+				
+				if (node != null)
+				{
+					String[] keys = node.keys();
+					
+					if(node.keys().length > 0)
+					{
+						addDropboxPathButton = new JButton(ADD_DROPBOX_PATH);
+						addDropboxPathButton.setActionCommand(ADD_DROPBOX_PATH);
+						addDropboxPathButton.addActionListener(this);
+						buttonPanel.add(addDropboxPathButton);
+					}
+
+				}
+				
+			} catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		
+			
 		}
 		
 		if (allowRemove) {
@@ -158,7 +207,80 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 				
 			}
 			
+		} else if (ADD_DROPBOX_PATH.equals(event.getActionCommand())) {
+			
+			SPECCHIOPreferencesStore prefs_store;
+			DbxClientV2 client;
+			
+			try {
+				prefs_store = new SPECCHIOPreferencesStore();
+	
+				Preferences prefs = prefs_store.getPreferences();	
+				Preferences node = prefs.node("Dropbox");  
+				
+				String[] accounts = node.keys();
+				int account_index = 0; // default
+				
+				if(accounts.length > 1)
+				{
+					// user needs to select which dropbox account to use
+					
+					
+					// TBD
+					
+				}
+				else
+				{
+					// only single account: no need to ask user which one to use					
+					account_index = 0;										
+				}
+				
+	    		  String ACCESS_TOKEN = node.get(accounts[account_index], "");
+	    		  
+	    		  // Create Dropbox client
+	    		  DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_access").build();
+	    		  client = new DbxClientV2(config, ACCESS_TOKEN);  
+
+	    		  JFileChooser fc = new JFileChooser(new VirtualFileSystemView(new DropboxPath("/Dropbox", true), client));
+	    		  fc.setFileView(new CustomFileView());
+	    		  fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+	    		  int returnVal = fc.showOpenDialog(SPECCHIOApplication.getInstance().get_frame());
+
+	    		  boolean approved = returnVal == JFileChooser.APPROVE_OPTION;
+
+
+	    		  if (approved) {
+	    			  File file = fc.getSelectedFile();	    
+	    			  Path path = file.toPath();
+	    			  System.out.println("Folder: " + "/Dropbox/"+ file.getName());    
+	    			  
+	    			  // add the new path to the end of the list and select it
+	    			  pathListModel.addElement(file);
+	    			  pathListField.setSelectedValue(file, true);
+
+	    			  // notify the listeners of a change
+	    			  fireListDataEvent(ListDataEvent.INTERVAL_ADDED, pathListField.getSelectedIndex(), pathListField.getSelectedIndex());
+
+	    		  } else {
+	    			  System.out.println("Open command cancelled by user.");
+	    		  }
+
+	    		 	    		  
+
+	
+			int x = 1;
+			
+			
+			
+			} catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		
 		}
+		
+		
 		
 	}
 	
@@ -312,5 +434,24 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 		}
 		
 	}
+	
+	public class FilePathRenderer extends DefaultListCellRenderer {
+
+		private static final long serialVersionUID = 1L;
+		/** Creates a new instance of FielPathRenderer */   public FilePathRenderer(){   } 
+		public Component getListCellRendererComponent(JList list,
+				Object value, int index, boolean isSelected, 
+				boolean cellHasFocus) { 
+			super.getListCellRendererComponent(list, value,index,isSelected,cellHasFocus);  
+			
+			if(value instanceof VirtualFile)
+			{
+				setText("Dropbox (Full implementation pending ...): " + value.toString());
+			}			
+			
+			return this;   } }
+	
 
 }
+
+
