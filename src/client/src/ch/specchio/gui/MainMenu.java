@@ -332,7 +332,7 @@ private JMenuItem dbConfigmenuItem;
       menu.add(menuItem);      
       public_menu_items.put(test, menuItem);      
       
-      menuBar.add(menu);
+     // menuBar.add(menu);
    }
    
 	public static MainMenu getInstance() 
@@ -1086,7 +1086,7 @@ private JMenuItem dbConfigmenuItem;
     	                // The Dropbox website will send them back to /dropbox-auth-finish when they're done.
 //    	                response.sendRedirect(authorizeUrl);
     	                
-    	                String auth_code = "I_xe0q8RHc8AAAAAAAALZV5z4MzmJME-rwxokvITXR0";
+    	                String auth_code = "XXXXX";
     	                
     	            	DbxAuthFinish authFinish = dbxWebAuth.finishFromCode(auth_code);
     	        		String authAccessToken = authFinish.getAccessToken(); 	        	
@@ -1101,22 +1101,29 @@ private JMenuItem dbConfigmenuItem;
     	        FullAccount account = client.users().getCurrentAccount();
     	        System.out.println(account.getName().getDisplayName());
     	        
-    	        TreeSet<DropboxPath> choices = new TreeSet<DropboxPath>();
     	        
-    	        ListFolderResult initial_contents = client.files().listFolder("");
-    	        
-    	        for (Metadata entry : initial_contents.getEntries())
+    	        if (1==0)
     	        {
-    	        	// only show folders
-    	        	if(entry.getClass() == FolderMetadata.class)
-    	        	{
-    	        		DropboxPath new_entry = new DropboxPath(entry.getPathLower(), true);
-    	        		choices.add(new_entry);
-    	        		
-    	        	}    	        	
     	        	
-    	        }
+    	        	// preliminary tests ...
     	        
+	    	        TreeSet<DropboxPath> choices = new TreeSet<DropboxPath>();
+	    	        
+	    	        ListFolderResult initial_contents = client.files().listFolder("");
+	    	        
+	    	        for (Metadata entry : initial_contents.getEntries())
+	    	        {
+	    	        	// only show folders
+	    	        	if(entry.getClass() == FolderMetadata.class)
+	    	        	{
+	    	        		DropboxPath new_entry = new DropboxPath(entry.getPathLower(), true);
+	    	        		choices.add(new_entry);
+	    	        		
+	    	        	}    	        	
+	    	        	
+	    	        }
+    	        
+    	        }
     	        
     	        
     	        
@@ -1127,6 +1134,16 @@ private JMenuItem dbConfigmenuItem;
     	        
     	        boolean approved = returnVal == JFileChooser.APPROVE_OPTION;
     	        
+    	        
+    	        if (returnVal == JFileChooser.APPROVE_OPTION) {
+    	            File file = fc.getSelectedFile();
+    	            //This is where a real application would open the file.
+    	            System.out.println("File: " + file.getName() + ".");    
+    	        } else {
+    	            System.out.println("Open command cancelled by user.");
+    	        }
+    	        System.out.println(returnVal);
+    	     	        
 //    		  
 //    	        ListFolderResult result = client.files().listFolder("/ASD_data");
 //    	        while (true) {
