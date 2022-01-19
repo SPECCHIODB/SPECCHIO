@@ -1809,6 +1809,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 	
 	/**
+	 * Get the adjacency matrix for a given uncertainty set
+	 * 
+	 * @param uncertainty_set_id	
+	 * 
+	 * @return an integer array of adjacency matrix
+	 */
+	public AdjacencyMatrix getAdjacencyMatrix(int uncertainty_set_id) throws SPECCHIOClientException {
+		
+		return realClient.getAdjacencyMatrix(uncertainty_set_id);
+		
+	}
+	
+	
+	/**
 	 * 
 	 * Get instrument node for an instrument_node_id
 	 * 

@@ -12,6 +12,7 @@ import ch.specchio.constants.UserRoles;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.factories.UncertaintyFactory;
 import ch.specchio.jaxb.XmlInteger;
+import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
 import ch.specchio.types.SpectralSetDescriptor;
@@ -160,6 +161,28 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 
+	
+	/**
+	 * Get the adjacency matrix for an uncertainty set
+	 * 
+	 * @param uncertainty_set_id
+	 * 
+	 * @return an array integers of the adjacency matrix
+	 * 
+	 * @throws SPECCHIOFactoryException	
+	 */
+	@GET
+	@Path("getAdjacencyMatrix/{uncertainty_set_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public AdjacencyMatrix getAdjacencyMatrix(@PathParam("uncertainty_set_id") int uncertainty_set_id) throws SPECCHIOFactoryException {
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		AdjacencyMatrix cm = factory.getAdjacencyMatrix(uncertainty_set_id);
+		factory.dispose();
+		
+		return cm;
+		
+	}
 	
 	/**
 	 * Retrieve an instrument node.

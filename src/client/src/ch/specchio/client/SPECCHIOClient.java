@@ -1293,7 +1293,18 @@ public interface SPECCHIOClient {
 	
 	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException;	
 	
-	
+
+
+	/**
+	 * Get the adjacency matrix for a given uncertainty set
+	 * 
+     * @param uncertainty_set_id	the uncertainty set identifier
+	 * 
+	 * @return an array of integers of the adjacency matrix
+	 */
+		public AdjacencyMatrix getAdjacencyMatrix(int uncertainty_set_id) throws SPECCHIOClientException;
+
+
 	/**
 	 * 
 	 * Get instrument node for a selected instrument id

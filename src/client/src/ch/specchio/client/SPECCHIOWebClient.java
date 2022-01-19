@@ -2237,6 +2237,22 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 	
 	/**
+	 * Get the adjacency matrix for an uncertainty set
+	 * 
+	 * @param uncertainty_set_id
+	 * 
+	 * @return an integer array of adjacency matrix values
+	 */
+	public AdjacencyMatrix getAdjacencyMatrix(int uncertainty_set_id) throws SPECCHIOWebClientException {
+		
+		return getObject(AdjacencyMatrix.class,
+				"uncertainty", "getAdjacencyMatrix", Integer.toString(uncertainty_set_id)
+			);
+		
+	}
+	
+	
+	/**
 	 * 
 	 * Get instrument node for a given instrument node id
 	 * 

@@ -21,6 +21,7 @@ import org.ujmp.core.Matrix;
 import org.ujmp.core.matrix.DenseMatrix;
 
 import ch.specchio.eav_db.SQL_StatementBuilder;
+import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
 import ch.specchio.types.UncertaintySourcePair;
@@ -306,7 +307,154 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		}	
 	}
 	
+	/**
+	 * Get the adjacency matrix
+	 * 
+	 * @param uncertainty_set_id 
+	 * 
+	 * @return an array of integers of the adjacency matrix
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	public AdjacencyMatrix getAdjacencyMatrix(int uncertainty_set_id) throws SPECCHIOFactoryException {
+		
+		AdjacencyMatrix selectedAdjacencyMatrix = new AdjacencyMatrix();
+		
+		// Getting matrix dimension
+		
+		int matrix_dimensions = getAdjacencyMatrixDimensions(uncertainty_set_id);
+		
+		// Extracting data from database for adjacency matrix
+		
+		try {
+			
+			// create SQL-building objects
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+			pstmt.setInt(1, uncertainty_set_id);
+			ResultSet rs = pstmt.executeQuery();
+		
+			while (rs.next()) {
+		        	        
+		        Blob adjacency_matrix_blob = rs.getBlob("adjacency_matrix");
+		      
+				InputStream binstream = adjacency_matrix_blob.getBinaryStream();
+				DataInput dis = new DataInputStream(binstream);
+				
 
+				try {
+					int dim = binstream.available() / 4;
+
+					Integer[] adj_matrix_array = new Integer[dim];
+					
+					System.out.println("dim of binstream in getAdjacencyMatrix:" + dim);
+
+					for(int i = 0; i < dim; i++)
+					{
+						try {
+							Integer f = dis.readInt();
+							adj_matrix_array[i] = f.intValue();
+						} catch (IOException e) {
+							
+							e.printStackTrace();
+						}				
+					}		
+					
+					AdjacencyMatrix anotherAdjacencyMatrix = new AdjacencyMatrix(uncertainty_set_id, adj_matrix_array, matrix_dimensions);
+					
+					// Adding this matrix to a list of matrices
+
+
+					selectedAdjacencyMatrix = anotherAdjacencyMatrix;
+
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+
+
+				try {
+					binstream.close();
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+				
+			}
+			
+			
+		} catch (SQLException ex) {
+
+				throw new SPECCHIOFactoryException(ex);
+			}
+		
+		return selectedAdjacencyMatrix;
+		
+	}
+	
+	/**
+	 * Get adjacency matrix dimension from uncertainty set id
+	 * 
+	 * @param uncertainty_set_id the uncertainty_set_id of interest
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 * 
+	 */
+	
+	public int getAdjacencyMatrixDimensions(int uncertainty_set_id) throws SPECCHIOFactoryException {
+	
+		int matrixDimension = 0;
+		int node_set_id = 0;
+		int max_node_num = 0;
+
+		try { 
+		
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			
+			// First selecting node_set_id which corresponds to the uncertainty_set_id
+			String node_set_id_sql = "SELECT node_set_id from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement pstmt_node_set_id = SQL.prepareStatement(node_set_id_sql);
+			pstmt_node_set_id.setInt(1, uncertainty_set_id);
+			ResultSet uc_set_rs = pstmt_node_set_id.executeQuery();
+		
+			while (uc_set_rs.next()) {
+		        	node_set_id = uc_set_rs.getInt(1);
+			}
+		 
+			pstmt_node_set_id.close();
+		
+			// Then getting max of node_num which is the same as the adjacency matrix dimensions
+			
+			String find_max_node_num_sql = "SELECT max(node_num) from uncertainty_node_set where node_set_id = ?";
+			PreparedStatement pstmt_find_max_node_num = SQL.prepareStatement(find_max_node_num_sql);
+			pstmt_find_max_node_num.setInt(1, node_set_id);
+			ResultSet find_max_node_num_rs = pstmt_find_max_node_num.executeQuery();
+			 
+			 while (find_max_node_num_rs.next()) {
+				 max_node_num = find_max_node_num_rs.getInt(1);
+			 }
+			 
+			 pstmt_find_max_node_num.close();
+
+			 matrixDimension = max_node_num;
+			
+			 return matrixDimension;
+			
+		}
+		
+		catch (SQLException ex) {
+
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+		
+	
+	}
+	
+	
+	
+	
 	/**
 	 * 
 	 * Get all associated values for a given instrument node id including the uncertainty vector
