@@ -2251,6 +2251,24 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * Get edge value for a given edge_id 
+	 * 
+	 * @param edge_id
+	 * 
+	 * @return an edge value string
+	 * 
+	 */
+	public String getEdgeValue(int edge_id) throws SPECCHIOWebClientException {
+		
+		System.out.println("getEdgeValue in webclient");
+		
+		String edge_value = getString("uncertainty", "getEdgeValue", Integer.toString(edge_id));	
+
+		return edge_value;
+		
+	}
+	
 	
 	/**
 	 * 

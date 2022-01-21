@@ -185,6 +185,30 @@ public class UncertaintyService extends SPECCHIOService {
 	}
 	
 	/**
+	 * Retrieve an edge value
+	 * 
+	 * @param an edge id
+	 * 
+	 * @return the corresponding edge value
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 * 
+	 */
+	@GET
+	@Path("getEdgeValue/{edge_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public String getEdgeValue(@PathParam("edge_id") int edge_id) throws SPECCHIOFactoryException {
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		String edge_value = factory.getEdgeValue(edge_id);
+		factory.dispose();
+		
+		return edge_value;
+		
+	}
+	
+	
+	/**
 	 * Retrieve an instrument node.
 	 * 
 	 * @param an instrument_node_id

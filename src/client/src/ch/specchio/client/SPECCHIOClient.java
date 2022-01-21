@@ -1305,6 +1305,18 @@ public interface SPECCHIOClient {
 		public AdjacencyMatrix getAdjacencyMatrix(int uncertainty_set_id) throws SPECCHIOClientException;
 
 
+	 /**
+	  * Get an edge value for a given edge id
+	  * 
+	  * @param edge_id
+	  * 
+	  * @return an edge value
+	  * 
+	  */
+		
+	public String getEdgeValue(int edge_id) throws SPECCHIOClientException;	
+		
+		
 	/**
 	 * 
 	 * Get instrument node for a selected instrument id
@@ -1314,7 +1326,6 @@ public interface SPECCHIOClient {
 	 * @return an InstrumentNode
 	 * 
 	 */
-	
 	
 	
 	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOClientException;

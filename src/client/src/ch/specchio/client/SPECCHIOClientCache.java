@@ -1821,6 +1821,19 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * Get the edge value for a given edge id
+	 * 
+	 * @param edge_id
+	 * 
+	 * @return an edge value string
+	 * 
+	 */
+	public String getEdgeValue(int edge_id) throws SPECCHIOClientException {
+		
+		return realClient.getEdgeValue(edge_id);
+	}
+	
 	
 	/**
 	 * 

@@ -6,8 +6,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
-import org.ujmp.core.Matrix;
-import org.ujmp.core.matrix.DenseMatrix;
 
 /**
  * This class represents a spectral set
@@ -52,7 +50,7 @@ public class SpectralSet {
 	// Elements to do with returning uncertainty set information
 	public ArrayList<Integer> uncertainty_node_ids;
 	public ArrayList<Integer> node_nums;
-	public Matrix adjacency_matrix;
+	public AdjacencyMatrix adjacency_matrix;
 	
 	// A constructor
 	public SpectralSet() {
@@ -620,26 +618,7 @@ public class SpectralSet {
 		this.node_nums = node_nums;
 	}
 	
-	/**
-	 * Get the adjacency_matrix for an uncertainty set
-	 * 
-	 * @param adjacency_matrix the adjacency matrix for an uncertainty set 
-	 */
 	
-	@XmlElement(name="adjacency_matrix")
-	public Matrix getAdjacencyMatrix() {
-		return adjacency_matrix;
-	}
-	
-	/**
-	 * Set the adjacency_matrix for an uncertainty set
-	 * 
-	 * @param adjacency_matrix an adjacency matrix 
-	 */
-	
-	public void setAdjacencyMatrix(Matrix adjacency_matrix) {
-		this.adjacency_matrix = adjacency_matrix;
-	}
 	
 	
 }

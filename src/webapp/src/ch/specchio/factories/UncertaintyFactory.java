@@ -161,13 +161,24 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 		SpectralSet selectedUncertaintySet = new SpectralSet();
 		
+		//1. adjacency matrix info
+		//2. node_set_id and uc_set_description
+		//3. node_nums and node_ids
+		//4. additional node info
+		
+		AdjacencyMatrix retrievedAdjacencyMatrix = getAdjacencyMatrix(uncertainty_set_id);
+		
+		// Assigning adjacency matrix to spectral set
+		
+		selectedUncertaintySet.adjacency_matrix = retrievedAdjacencyMatrix;
+		
 		try {
 			
 			// Select statement to get data from uncertainty_set
 			
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			
-			String select_uc_set_sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			String select_uc_set_sql_stmt = "SELECT node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
 			PreparedStatement select_uc_set_sql_pstmt = SQL.prepareStatement(select_uc_set_sql_stmt);
 			select_uc_set_sql_pstmt.setInt(1, uncertainty_set_id);
 			ResultSet select_uc_set_rs = select_uc_set_sql_pstmt.executeQuery();
@@ -181,7 +192,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			ArrayList<Integer> node_id_list = new ArrayList<Integer>();
 			ArrayList<Integer> node_num_list = new ArrayList<Integer>();
 			
-			Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
+			//Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
 			
 			// Getting data from ResultSet
 			
@@ -200,9 +211,9 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				
 				// Extracting adjacency blob. Will change this to matrix form and see how this appears in MATLAB
 				
-				Blob adjacency_blob = select_uc_set_rs.getBlob("adjacency_matrix");
+				//Blob adjacency_blob = select_uc_set_rs.getBlob("adjacency_matrix");
 				
-				System.out.println("adjacency_blob: " + adjacency_blob);
+				//System.out.println("adjacency_blob: " + adjacency_blob);
 		
 				// Using the node_set_id 
 				 
@@ -237,61 +248,61 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				selectedUncertaintySet.setNodeNums(node_num_list);
 				
 				// Finding the max of node_num list
-				Integer max_node_num = Collections.max(node_num_list);
+				//Integer max_node_num = Collections.max(node_num_list);
 					
 				// Then need to convert this to a normal adjacency matrix but we need the highest node_num in order to create the correct dimensions
 				 
-				int matrix_dimension = max_node_num;
+				//int matrix_dimension = max_node_num;
      			
-     			System.out.println("Matrix dimension: " + matrix_dimension);
+     			//System.out.println("Matrix dimension: " + matrix_dimension);
      			
-     			adjacency_matrix = DenseMatrix.factory.zeros(matrix_dimension,matrix_dimension);
+     			//adjacency_matrix = DenseMatrix.factory.zeros(matrix_dimension,matrix_dimension);
      			
-     			int input_row_num = 0;
-     			int input_col_num = 0; 
-     			int matrix_i = 0;
-     			
-     			InputStream binstream = adjacency_blob.getBinaryStream();
- 				DataInput dis = new DataInputStream(binstream);
-
- 				
- 				int dim = binstream.available() / 4;	
-
- 					for(int i = 0; i < dim; i++)
- 					{
- 							matrix_i = i+1; //we are indexing matrix starting at 1 
- 							int blob_int = dis.readInt();
- 						
- 							// Finding modulus of i / dim 
- 							
- 							int remainder = matrix_i % matrix_dimension; 
- 							
- 							if(remainder == 0) {
- 								input_col_num = matrix_dimension;
- 								
- 							}
- 							else {
- 								input_col_num = remainder;
- 								
- 							}
- 							
- 							// Once we have col num we can calculate row num
- 							
- 							input_row_num = (matrix_i + (matrix_dimension - input_col_num))/matrix_dimension; 
- 							
- 							System.out.println("input col num: " + input_col_num);
- 							System.out.println("input row num: " + input_row_num);
- 							
- 							//Changing back to java indexing:
- 							
- 							input_row_num = input_row_num - 1;
- 							input_col_num = input_col_num - 1;
- 							
- 						    adjacency_matrix.setAsInt(blob_int, input_row_num, input_col_num );	
- 					}	
- 					
- 					System.out.println("Retrieved adjacency matrix: " + adjacency_matrix);
- 					selectedUncertaintySet.setAdjacencyMatrix(adjacency_matrix);
+//     			int input_row_num = 0;
+//     			int input_col_num = 0; 
+//     			int matrix_i = 0;
+//     			
+//     			InputStream binstream = adjacency_blob.getBinaryStream();
+// 				DataInput dis = new DataInputStream(binstream);
+//
+// 				
+// 				int dim = binstream.available() / 4;	
+//
+// 					for(int i = 0; i < dim; i++)
+// 					{
+// 							matrix_i = i+1; //we are indexing matrix starting at 1 
+// 							int blob_int = dis.readInt();
+// 						
+// 							// Finding modulus of i / dim 
+// 							
+// 							int remainder = matrix_i % matrix_dimension; 
+// 							
+// 							if(remainder == 0) {
+// 								input_col_num = matrix_dimension;
+// 								
+// 							}
+// 							else {
+// 								input_col_num = remainder;
+// 								
+// 							}
+// 							
+// 							// Once we have col num we can calculate row num
+// 							
+// 							input_row_num = (matrix_i + (matrix_dimension - input_col_num))/matrix_dimension; 
+// 							
+// 							System.out.println("input col num: " + input_col_num);
+// 							System.out.println("input row num: " + input_row_num);
+// 							
+// 							//Changing back to java indexing:
+// 							
+// 							input_row_num = input_row_num - 1;
+// 							input_col_num = input_col_num - 1;
+// 							
+// 						    adjacency_matrix.setAsInt(blob_int, input_row_num, input_col_num );	
+// 					}	
+// 					
+// 					System.out.println("Retrieved adjacency matrix: " + adjacency_matrix);
+// 					selectedUncertaintySet.setAdjacencyMatrix(adjacency_matrix);
  					
 				}
 						
@@ -301,10 +312,10 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 
 			throw new SPECCHIOFactoryException(ex);
 		}
-		catch (IOException ex) {
-			
-			throw new SPECCHIOFactoryException(ex);
-		}	
+//		catch (IOException ex) {
+//			
+//			throw new SPECCHIOFactoryException(ex);
+//		}	
 	}
 	
 	/**
@@ -452,7 +463,50 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	
 	}
 	
+	/**
+	 * 
+	 * Get the edge value for a given edge id
+	 * 
+	 * @param edge_id
+	 * 
+	 * @throws SPECCHIOFactoryException database error
+	 * 
+	 */
+	public String getEdgeValue(int edge_id) throws SPECCHIOFactoryException {
+
+		String selectedEdgeValue = new String();
+		
+		int edge_id_sql = edge_id;
+		
+		try {
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			Statement stmt = SQL.createStatement();
+			
+			String sql_query = "SELECT edge_value from uncertainty_edge where edge_id =" + edge_id_sql;
 	
+			ResultSet rs = stmt.executeQuery(sql_query);
+			
+			while (rs.next()) {
+				
+				selectedEdgeValue = rs.getString("edge_value");
+				
+			}
+			rs.close();
+			stmt.close();
+			
+			if (selectedEdgeValue == null) {
+				selectedEdgeValue = "null";
+			}
+			
+		}
+		
+		catch (SQLException ex) {
+
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+		return selectedEdgeValue;
+	}
 	
 	
 	/**
