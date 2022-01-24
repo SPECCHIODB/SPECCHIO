@@ -972,7 +972,7 @@ public class UserFactory extends SPECCHIOFactory {
 				user.setPassword((generatePassword(pw_length, pw_strength))+user.getSalt());
 				specchio_user_pw_insert = "SHA2(" + SQL.quote_string(user.getPassword()) + ", 512)" + ",";
 				salt_insert_str = ", salt";
-				salt_insert_val = " +\n" + SQL.quote_string(user.getSalt());
+				salt_insert_val = ", " + SQL.quote_string(user.getSalt());
 			}			
 			
 
