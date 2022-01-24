@@ -261,6 +261,8 @@ public class SPECCHIOApplication {
 	   public static int getJavaMinorVersion() {
 		    String version = System.getProperty("java.version");
 		    String[] tokens = version.split("_");
+		    
+		    System.out.println("Java minor version info: " + version);
 
 		    return Integer.parseInt(tokens[1]);
 		}	   	   
