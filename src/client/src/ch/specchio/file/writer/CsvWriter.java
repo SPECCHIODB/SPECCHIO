@@ -223,18 +223,22 @@ class CsvHdrWriter extends CsvWriter {
 		}
 
 		// write one row for every attribute
+		Hashtable<String, Integer> max_mp_per_attribute_LUT = new Hashtable<String, Integer>();
+		
 		for (String attributeName : attributeNames) {
 			
-			ArrayList<Integer> number_of_entries_list = new ArrayList<Integer>();
+			
 			int max_number_of_entries = 0;
 			// get number of entries 
 			for (Spectrum s : spectra) {
 				int number_of_entries = s.getMetadata().get_all_entries(attributeName).size();
-				number_of_entries_list.add(number_of_entries);
 				
 				if(number_of_entries > max_number_of_entries)
 					max_number_of_entries = number_of_entries;
 			}
+			
+			// store the number of max entries for the attribute in a lookup table
+			max_mp_per_attribute_LUT.put(attributeName, max_number_of_entries);
 			
 			// write the name of the attribute
 			for(int entry_index =0;entry_index < max_number_of_entries; entry_index++)
@@ -286,46 +290,65 @@ class CsvHdrWriter extends CsvWriter {
 			// ATTRIBUTES
 			for (String attributeName : attributeNames){
 				if(s.getMetadata().get_all_entries(attributeName).size() > 0){
-					MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(0);
-					if (mp != null && mp.getValue() != null) {
+					
+					// handle multiple entries per attribute
+					int no_of_mps = s.getMetadata().get_all_entries(attributeName).size();
+					int max_mp_per_attribute = max_mp_per_attribute_LUT.get(attributeName);
+					
+					for(int i=0; i< max_mp_per_attribute; i++)
+					{	
+						if(i < no_of_mps)
+						{
+							MetaParameter mp = s.getMetadata().get_all_entries(attributeName).get(i);
+							if (mp != null && mp.getValue() != null) {
 
-						if (mp instanceof MetaDate) {
+								if (mp instanceof MetaDate) {
 
-							// output date according to the time format setting
-							DateTime date = (DateTime) mp.getValue();
-							if (getTimeFormat() == TimeFormats.Seconds) {
-								writeField(Long.toString(date.getMillis()));
-							} else {
-								//writeField(df.format(date));
-								writeField(mp.valueAsString());
+									// output date according to the time format setting
+									DateTime date = (DateTime) mp.getValue();
+									if (getTimeFormat() == TimeFormats.Seconds) {
+										writeField(Long.toString(date.getMillis()));
+									} else {
+										//writeField(df.format(date));
+										writeField(mp.valueAsString());
+									}
+								}
+								else if (mp instanceof MetaTaxonomy)
+								{
+									Hashtable<Integer, String> hash = this.specchio_client.getTaxonomyIdToNameHash(mp.getAttributeId());
+
+
+									long id = (long) mp.getValue();
+
+									String taxonomy_field_name = hash.get((int) id);						
+									writeField(taxonomy_field_name);
+
+								} else {
+
+									// convert the value to its string form
+									writeField(mp.valueAsString());
+								}
 							}
 						}
-						else if (mp instanceof MetaTaxonomy)
+						else
 						{
-							Hashtable<Integer, String> hash = this.specchio_client.getTaxonomyIdToNameHash(mp.getAttributeId());
-							
-							
-							long id = (long) mp.getValue();
-							
-							String taxonomy_field_name = hash.get((int) id);						
-							writeField(taxonomy_field_name);
-							
-						} else {
-
-							// convert the value to its string form
-							writeField(mp.valueAsString());
+							// this spectrum has no further entries for this attribute, but some other spectrum has them within the exported set.
+							// field is just left empty
 						}
+						
+						writeFieldSeparator(); // separate each entry
 					}
 
 				}
 				else {
 					writeField("NA");
+					writeFieldSeparator();
 				}
 //				try {
 //				}catch (java.lang.IndexOutOfBoundsException e) {
 //					writeField("NA");
 //				}
-				writeFieldSeparator();
+				
 			}
 			writeField(Integer.toString(s.campaign_id));
 			writeFieldSeparator();
