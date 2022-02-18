@@ -42,7 +42,7 @@
     </init-param>   
     <init-param>
     	<param-name>USE_SALTING</param-name>
-    	<param-value>disabled</param-value>
+    	<param-value>enabled</param-value>
     </init-param>       
     <load-on-startup>1</load-on-startup>
   </servlet>

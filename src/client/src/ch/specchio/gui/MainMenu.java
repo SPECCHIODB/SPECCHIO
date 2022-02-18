@@ -327,12 +327,12 @@ private JMenuItem dbConfigmenuItem;
       public_menu_items.put(info, menuItem);
       
       // uncomment for sandbox
-      menuItem = new JMenuItem(test);
-      menuItem.addActionListener(this);
-      menu.add(menuItem);      
-      public_menu_items.put(test, menuItem);      
+//      menuItem = new JMenuItem(test);
+//      menuItem.addActionListener(this);
+//      menu.add(menuItem);      
+//      public_menu_items.put(test, menuItem);      
       
-     // menuBar.add(menu);
+      menuBar.add(menu);
    }
    
 	public static MainMenu getInstance() 

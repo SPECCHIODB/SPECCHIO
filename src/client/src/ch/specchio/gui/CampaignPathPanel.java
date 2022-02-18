@@ -235,6 +235,8 @@ public class CampaignPathPanel extends JPanel implements ActionListener, ListSel
 					account_index = 0;										
 				}
 				
+				// https://developers.dropbox.com/oauth-guide
+				
 	    		  String ACCESS_TOKEN = node.get(accounts[account_index], "");
 	    		  
 	    		  // Create Dropbox client
