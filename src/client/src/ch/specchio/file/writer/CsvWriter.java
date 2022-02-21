@@ -289,7 +289,7 @@ class CsvHdrWriter extends CsvWriter {
 
 			// ATTRIBUTES
 			for (String attributeName : attributeNames){
-				if(s.getMetadata().get_all_entries(attributeName).size() > 0){
+//				if(s.getMetadata().get_all_entries(attributeName).size() > 0){
 					
 					// handle multiple entries per attribute
 					int no_of_mps = s.getMetadata().get_all_entries(attributeName).size();
@@ -339,11 +339,11 @@ class CsvHdrWriter extends CsvWriter {
 						writeFieldSeparator(); // separate each entry
 					}
 
-				}
-				else {
-					writeField("NA");
-					writeFieldSeparator();
-				}
+//				}
+//				else {
+//					writeField("NA");
+//					writeFieldSeparator();
+//				}
 //				try {
 //				}catch (java.lang.IndexOutOfBoundsException e) {
 //					writeField("NA");
