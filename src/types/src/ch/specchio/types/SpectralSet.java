@@ -154,6 +154,35 @@ public class SpectralSet {
 	}
 	
 	/**
+	 * Set the instrument node uncertainty matrix.
+	 *
+	 * @param u_matrix
+	 */
+	public void setUncertaintyMatrix(double[][] u_matrix) {
+		
+		int columns = u_matrix[0].length;
+		int rows = u_matrix.length;	
+		
+		System.out.println("columns:" + columns);
+		System.out.println("rows:" + rows);
+		
+		u_vectors = new Float[rows][columns];
+		
+	    // store data
+	    for (int r = 0; r < rows;r++)
+	    {
+		    for (int c = 0; c < columns;c++)
+		    {	
+		    	float f = (float)(u_matrix[r][c]);
+		    	this.u_vectors[r][c] = Float.valueOf(f);		    	
+		    }	    	
+	    }	
+	    
+	    System.out.println("Injected into vectors!");
+	
+	}	
+	
+	/**
 	 * Get whether the node's uncertainty is absolute or relative.
 	 *
 	 * @return abs_rel   absolute or relative uncertainty 
