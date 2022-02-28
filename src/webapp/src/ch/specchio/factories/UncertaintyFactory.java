@@ -602,6 +602,100 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		}
 	}
 	
+	/**
+	 * 
+	 * Get all associated values for a given instrument node id including the uncertainty vector
+	 * 
+	 * @param instrument_node_id the instrument_node_id of interest
+	 * 
+	 * @throws  SPECCHIOFactoryException database error
+	 * 
+	 */
+	
+	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOFactoryException {
+		
+		InstrumentNode selectedInstrumentNode = new InstrumentNode();
+		
+		try {
+		
+		// create SQL-building objects
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		String sql_stmt = "SELECT node_description, u_vector, confidence_level, abs_rel, unit_id from spectrum_node where spectrum_node_id = ?";
+
+		PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+
+		pstmt.setInt(1, spectrum_node_id);
+		
+		ResultSet rs = pstmt.executeQuery();
+
+		//Getting information from ResultSet
+		
+		 while (rs.next()) {
+		        String node_description = rs.getString("node_description");
+		        double confidence_level = rs.getDouble("confidence_level");
+		        String abs_rel = rs.getString("abs_rel");
+		        int unit_id = rs.getInt("unit_id");
+		        	        
+		        Blob u_vector_blob = rs.getBlob("u_vector");
+		        
+		        System.out.println(node_description + ", " + confidence_level + ", " + abs_rel +
+		                           ", " + unit_id +  ", " + u_vector_blob);
+		        
+		        selectedInstrumentNode.setAbsRel(abs_rel);
+		        selectedInstrumentNode.setConfidenceLevel(confidence_level);
+		        selectedInstrumentNode.setNodeType("spectrum");
+		        selectedInstrumentNode.setUnitId(unit_id);
+		        selectedInstrumentNode.setId(spectrum_node_id);
+		        
+				InputStream binstream = u_vector_blob.getBinaryStream();
+				DataInput dis = new DataInputStream(binstream);
+
+				try {
+					int dim = binstream.available() / 4;
+					
+					System.out.println("dim of spectrum_node u_vector: " + dim);
+
+					Float[] u_vector = new Float[dim];		
+
+					for(int i = 0; i < dim; i++)
+					{
+						try {
+							Float f = dis.readFloat();
+							u_vector[i] = f.floatValue();
+						} catch (IOException e) {
+							
+							e.printStackTrace();
+						}				
+					}		
+					
+					
+					selectedInstrumentNode.setUncertaintyVector(u_vector);
+					
+
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+
+
+				try {
+					binstream.close();
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+		        
+		        
+		      }
+		
+		return selectedInstrumentNode;
+		}
+		catch (SQLException ex) {
+
+			throw new SPECCHIOFactoryException(ex);
+		}
+	}
 	
 	/**
 	 * Insert a new instrument node into the database.

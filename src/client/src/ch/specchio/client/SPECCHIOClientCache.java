@@ -1868,7 +1868,21 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Get spectrum node for a spectrum_node_id
+	 * 
+	 * @param spectrum_node_id 
+	 * 
+	 * @return a spectrum node
+	 * 
+	 */
 	
+	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOClientException {
+		
+		return realClient.getSpectrumNode(spectrum_node_id);
+		
+	}
 	
 	/**
 	 * Insert a picture of an instrument into the database.

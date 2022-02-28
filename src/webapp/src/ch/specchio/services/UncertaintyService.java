@@ -237,6 +237,34 @@ public class UncertaintyService extends SPECCHIOService {
 	}
 	
 	/**
+	 * Retrieve a spectrum node.
+	 * 
+	 * @param an spectrum_node_id
+	 * 
+	 * @return the corresponding spectrum node
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 * 
+	 */
+	
+	@GET
+	@Path("getSpectrumNode/{spectrum_node_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public InstrumentNode getSpectrumNode(
+			@PathParam("spectrum_node_id") int spectrum_node_id
+		) throws SPECCHIOFactoryException {
+		
+		System.out.println("Fetching spectrum node");
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		InstrumentNode selectedInstrumentNode  = factory.getSpectrumNode(spectrum_node_id);
+		factory.dispose();
+		return selectedInstrumentNode;
+		
+
+	}
+	
+	/**
 	 * Retrieve an uncertainty set
 	 * 
 	 * @param uncertainty_set_id

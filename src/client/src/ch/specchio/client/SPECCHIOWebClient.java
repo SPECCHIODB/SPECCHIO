@@ -2302,6 +2302,21 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Get spectrum node for a given spectrum node id
+	 * 
+	 * @param a spectrum node id
+	 * 
+	 * @return an InstrumentNode
+	 * 
+	 */
+	
+	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOWebClientException {
+		
+		return getObject(InstrumentNode.class, "uncertainty", "getSpectrumNode", Integer.toString(spectrum_node_id));
+	}
+	
 	
 	/**
 	 * Insert a picture of an instrument into the database.

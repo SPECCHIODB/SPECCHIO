@@ -1342,6 +1342,19 @@ public interface SPECCHIOClient {
 	
 	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException;
 
+	/**
+	 * 
+	 * Get spectrum node for a selected spectrum node id
+	 * 
+	 * @param a spectrum node id
+	 * 
+	 * @return an InstrumentNode
+	 * 
+	 */
+	
+	
+	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOClientException;
+
 	
 	/**
 	 * Insert a target-reference links.
