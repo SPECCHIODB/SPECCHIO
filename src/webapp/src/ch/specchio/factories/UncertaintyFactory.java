@@ -911,8 +911,8 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			else if(node_type.equals("spectrum")) {
 				
 				System.out.println("uncertainty node type: spectrum");
-				
-				// First creating a new spectrum set
+			
+				// Creating a new spectrum set
 				
 				// NB: Spectrum set id is on auto-increment
 				
@@ -950,18 +950,23 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 					
 					System.out.println("spectrum_subset_list empty");
 					
+					// Checking whether OneToMany relationship exists
+					
+					boolean is_one_to_many = isOneToMany(spectral_set);
+					System.out.println("is one to many: " + is_one_to_many);
+					
+					// if true: create 1 node then assign this to all spectrum ids in spectrum_subset
+					
+					// if false: every spectrum_id gets its own unique spectrum node id
+					
 					// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
-					// Finding length of spectrum_ids and creating a spectrum node for each
-					// Same insert statement for all spectrum ids
+					
+					// These statements are the same for both true/false:
 					
 					String spectrum_node_insert_sql = "insert into spectrum_node(node_description, confidence_level, abs_rel, unit_id, u_vector) " +
 							" values (?, ?, ?, ?, ?)";
 					
 					PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
-					
-					System.out.println("a list of spectrum ids: " + spectrum_ids);
-					
-					// Insert statement for spectrum subset 
 					
 					String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
 							" values (?, ?, ?)";
@@ -994,7 +999,11 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				
 					spectrum_subset_select_max_stmt.close();
 					
-					for(int i=0; i<spectrum_ids.size(); i++) {
+					// Here is where one-to-many and many-to-many split:
+					
+					if(is_one_to_many) {
+						
+						// insert single spectrum node
 						
 						spectrum_node_insert_stmt.setString (1, spectral_set.getNodeDescription()); 
 						spectrum_node_insert_stmt.setDouble (2, spectral_set.getConfidenceLevel());
@@ -1004,51 +1013,104 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 						byte[] temp_buf;
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						DataOutput dos = new DataOutputStream(baos);
-					
-						// Each row represents a single spectrum's uncertainty vector
 						
-						for (int j = 0; j < spectral_set.getUncertaintyVectors()[i].length; j++) {
+						for (int i = 0; i < spectral_set.getUncertaintyVector().length; i++) {
 							try {
-								//System.out.println("uncertainty_vector: "+ spectral_set.getUncertaintyVectors()[i][j]);
-								dos.writeFloat(spectral_set.getUncertaintyVectors()[i][j]);
+								dos.writeFloat(spectral_set.getUncertaintyVector()[i]);
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
 						}
 
 						temp_buf = baos.toByteArray();
-			
+				
 						InputStream vector = new ByteArrayInputStream(temp_buf);
-						
-						spectrum_node_insert_stmt.setBinaryStream(5, vector, spectral_set.getUncertaintyVectors()[i].length*4);
+							
+						spectrum_node_insert_stmt.setBinaryStream(5, vector, spectral_set.getUncertaintyVector().length * 4);
 						
 						int affectedRows_3= spectrum_node_insert_stmt.executeUpdate();
-						
 						ResultSet generatedKeys_3 = spectrum_node_insert_stmt.getGeneratedKeys();
 						
 						int spectrum_node_id = 0;
-						
+					
 						while (generatedKeys_3.next()) {
-
 							spectrum_node_id = generatedKeys_3.getInt(1);	
-						
 						}
 						
-						spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
-						spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
-						spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+						spectrum_node_insert_stmt.close();
 						
-						int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+						// insert row in spectrum_subset for each spectrum_id
 						
-						ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+						for(int i=0; i<spectrum_ids.size(); i++) {
+							
+							spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+							spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+							spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+						
+							int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+						
+							ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+							
+							
+						}
+						spectrum_subset_insert_stmt.close();
 
 					}
+					else {
+						for(int i=0; i<spectrum_ids.size(); i++) {
+						
+							spectrum_node_insert_stmt.setString (1, spectral_set.getNodeDescription()); 
+							spectrum_node_insert_stmt.setDouble (2, spectral_set.getConfidenceLevel());
+							spectrum_node_insert_stmt.setString (3, spectral_set.getAbsRel());
+							spectrum_node_insert_stmt.setInt (4, spectral_set.getUnitId());
+						
+							byte[] temp_buf;
+							ByteArrayOutputStream baos = new ByteArrayOutputStream();
+							DataOutput dos = new DataOutputStream(baos);
 					
-					spectrum_node_insert_stmt.close();
-					spectrum_subset_insert_stmt.close();
+							// Each row represents a single spectrum's uncertainty vector
+						
+							for (int j = 0; j < spectral_set.getUncertaintyVectors()[i].length; j++) {
+								try {
+									//System.out.println("uncertainty_vector: "+ spectral_set.getUncertaintyVectors()[i][j]);
+									dos.writeFloat(spectral_set.getUncertaintyVectors()[i][j]);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+
+							temp_buf = baos.toByteArray();
+			
+							InputStream vector = new ByteArrayInputStream(temp_buf);
+						
+							spectrum_node_insert_stmt.setBinaryStream(5, vector, spectral_set.getUncertaintyVectors()[i].length*4);
+						
+							int affectedRows_3= spectrum_node_insert_stmt.executeUpdate();
+						
+							ResultSet generatedKeys_3 = spectrum_node_insert_stmt.getGeneratedKeys();
+							
+							int spectrum_node_id = 0;
+						
+							while (generatedKeys_3.next()) {
+
+								spectrum_node_id = generatedKeys_3.getInt(1);	
+						
+							}
+						
+							spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+							spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+							spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+						
+							int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+						
+							ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+
+						}
 					
-					System.out.println("executed all spectrum ids");
-					
+						spectrum_node_insert_stmt.close();
+						spectrum_subset_insert_stmt.close();
+
+						}
 					
 				}
 				
@@ -1578,6 +1640,31 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 	
 	}
 	
+	/**
+ 	* Check whether spectrum_id-spectrum_node is one-to-many 
+ 	*   
+ 	* @param SpectralSet	the spectral set
+ 	* 
+ 	* @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
+ 	*/
+	
+	public boolean isOneToMany(SpectralSet spectral_set) throws SPECCHIOFactoryException {
+		
+		System.out.println("Running isOneToMany");
+		
+		// Checking whether u_vectors or u_vector is populated
+		// There is an edge case where we only have 1 spectrum id to insert. Then this could work with either u_vectors or u_vector.
+		Float[] u_vector = spectral_set.u_vector;
+		Float[][] u_vectors = spectral_set.u_vectors;
+		
+		if(u_vector != null)
+			return true;
+		else		
+			return false;
+		
+		
+	}
+
 	
 	
 }
