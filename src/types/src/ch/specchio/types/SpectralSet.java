@@ -46,6 +46,7 @@ public class SpectralSet {
 	 
 	@XmlElement public int uncertainty_node_id;
 	@XmlElement public int node_set_id;
+	@XmlElement public String uncertainty_node_description;
 	
 	// Elements to do with returning uncertainty set information
 	public ArrayList<Integer> uncertainty_node_ids;
@@ -678,6 +679,28 @@ public class SpectralSet {
 		this.node_nums = node_nums;
 	}
 	
+	
+	/** 
+	 * Get the uncertainty node description 
+	 * 
+	 * @return uncertainty_node_description the uncertainty node description
+	 */
+	@XmlElement(name = "uncertainty_node_description")
+	public String getUncertaintyNodeDescription() {
+		
+		return uncertainty_node_description;
+	}
+	
+	/**
+	 * Set the uncertainty node description
+	 *
+	 * @param uncertainty_node_description the uncertainty node description
+	 */
+	public void setUncertaintyNodeDescription(String uncertainty_node_description) {
+
+		this.uncertainty_node_description = uncertainty_node_description;
+
+	}
 	
 	
 	

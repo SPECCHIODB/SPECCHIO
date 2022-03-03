@@ -884,13 +884,14 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				
 				boolean is_spectrum = false;
 				
-				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, instrument_node_id) " +
-							"VALUES (?, ?)";
+				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, instrument_node_id, uncertainty_node_description) " +
+							"VALUES (?, ?, ?)";
 				
 				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
 				
 				pstmt_uc_node.setBoolean (1, is_spectrum); 
 				pstmt_uc_node.setInt (2, spectral_set.getInstrumentNodeId());
+				pstmt_uc_node.setString(3,  spectral_set.getUncertaintyNodeDescription());
 				
 				// Getting uncertainty node id in return
 				
@@ -1152,13 +1153,14 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 				
 				boolean is_spectrum = true; 
 				
-				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, spectrum_set_id) " +
-							"VALUES (?, ?)";
+				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, spectrum_set_id, uncertainty_node_description) " +
+							"VALUES (?, ?, ?)";
 				
 				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
 				
 				pstmt_uc_node.setBoolean (1, is_spectrum); 
 				pstmt_uc_node.setInt(2, spectral_set.getSpectrumSetId());
+				pstmt_uc_node.setString(3, spectral_set.getUncertaintyNodeDescription());
 				
 				// Getting uncertainty node id in return
 				
