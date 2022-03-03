@@ -185,16 +185,16 @@ public class SpectralSet {
 	/**
 	 * Set the instrument node uncertainty vector.
 	 *
-	 * @param u_vector_2d
+	 * @param u_vector_input
 	 */
-	public void setUncertaintyVector(double[][] u_vector_2d) {
+	public void setUncertaintyVector(double[] u_vector_input) {
 		
 		// In this case, cols should be dimension = 1
 		
-		int columns = u_vector_2d[0].length;
-		int rows = u_vector_2d.length;	
+		//int columns = u_vector_input[0].length;
+		int rows = u_vector_input.length;	
 		
-		System.out.println("columns:" + columns);
+//		System.out.println("columns:" + columns);
 		System.out.println("rows:" + rows);
 		
 		Float[] u_vector_1d = new Float[rows];
@@ -204,7 +204,7 @@ public class SpectralSet {
 	    // store data
 	    for (int r = 0; r < rows;r++)
 	    {
-	    	   u_vector_1d[r] = (float) u_vector_2d[r][0];
+	    	   u_vector_1d[r] = (float) u_vector_input[r];
 		    	float f = (float)(u_vector_1d[r]);
 		    	this.u_vector[r] = Float.valueOf(f);		    	   	
 	    }	
