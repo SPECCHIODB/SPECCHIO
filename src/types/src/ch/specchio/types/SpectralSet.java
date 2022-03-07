@@ -51,6 +51,7 @@ public class SpectralSet {
 	// Elements to do with returning uncertainty set information
 	public ArrayList<Integer> uncertainty_node_ids;
 	public ArrayList<Integer> node_nums;
+	public ArrayList<String> uncertainty_node_descriptions;
 	public AdjacencyMatrix adjacency_matrix;
 	
 	// A constructor
@@ -702,6 +703,24 @@ public class SpectralSet {
 
 	}
 	
+	/**
+	 * Get uncertainty node descriptions for an uncertainty set
+	 * 
+	 * @param uncertainty_node_descriptions a list of uncertainty set descriptions
+	 */
+	@XmlElement(name="uncertainty_node_descriptions")
+	public ArrayList<String> getUncertaintyNodeDescriptions() {
+		return uncertainty_node_descriptions;
+	}
 	
+	/**
+	 * Set the uncertainty node descriptions for a spectral set
+	 * 
+	 * @param uncertainty_node_descriptions a list of uncertainty node descriptions
+	 */
+	public void setUncertaintyNodeDescriptions(ArrayList<String> uncertainty_node_descriptions) {
+		
+		this.uncertainty_node_descriptions = uncertainty_node_descriptions;
+	}
 	
 }

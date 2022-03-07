@@ -182,7 +182,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			PreparedStatement select_uc_set_sql_pstmt = SQL.prepareStatement(select_uc_set_sql_stmt);
 			select_uc_set_sql_pstmt.setInt(1, uncertainty_set_id);
 			ResultSet select_uc_set_rs = select_uc_set_sql_pstmt.executeQuery();
-
+			
 			// Selecting data from uncertainty_node_set
 			
 			String select_uc_node_set_sql_stmt = "SELECT node_num, node_id from uncertainty_node_set where node_set_id = ?";
@@ -191,6 +191,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			// Creating some lists
 			ArrayList<Integer> node_id_list = new ArrayList<Integer>();
 			ArrayList<Integer> node_num_list = new ArrayList<Integer>();
+			ArrayList<String> node_description_list = new ArrayList<String>();
 			
 			//Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
 			
@@ -208,12 +209,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				
 				selectedUncertaintySet.setNodeSetId(node_set_id);
 				selectedUncertaintySet.setUncertaintySetDescription(uncertainty_set_description);
-				
-				// Extracting adjacency blob. Will change this to matrix form and see how this appears in MATLAB
-				
-				//Blob adjacency_blob = select_uc_set_rs.getBlob("adjacency_matrix");
-				
-				//System.out.println("adjacency_blob: " + adjacency_blob);
 		
 				// Using the node_set_id 
 				 
@@ -247,75 +242,49 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 				selectedUncertaintySet.setUncertaintyNodeIds(node_id_list);
 				selectedUncertaintySet.setNodeNums(node_num_list);
 				
-				// Finding the max of node_num list
-				//Integer max_node_num = Collections.max(node_num_list);
+				//select_uc_set_sql_pstmt.close();
+				//select_uc_node_set_sql_pstmt.close();
+				
+				// Selecting from uncertainty_node
+				
+				String select_uc_node_sql_stmt = "SELECT uncertainty_node_description from uncertainty_node where node_id = ?";
+				PreparedStatement select_uc_node_sql_pstmt = SQL.prepareStatement(select_uc_node_sql_stmt);
+				
+				for(int i=0; i<node_id_list.size(); i++) {
+				
+					int node_id = node_id_list.get(i);
+					select_uc_node_sql_pstmt.setInt(1, node_id);
 					
-				// Then need to convert this to a normal adjacency matrix but we need the highest node_num in order to create the correct dimensions
-				 
-				//int matrix_dimension = max_node_num;
-     			
-     			//System.out.println("Matrix dimension: " + matrix_dimension);
-     			
-     			//adjacency_matrix = DenseMatrix.factory.zeros(matrix_dimension,matrix_dimension);
-     			
-//     			int input_row_num = 0;
-//     			int input_col_num = 0; 
-//     			int matrix_i = 0;
-//     			
-//     			InputStream binstream = adjacency_blob.getBinaryStream();
-// 				DataInput dis = new DataInputStream(binstream);
-//
-// 				
-// 				int dim = binstream.available() / 4;	
-//
-// 					for(int i = 0; i < dim; i++)
-// 					{
-// 							matrix_i = i+1; //we are indexing matrix starting at 1 
-// 							int blob_int = dis.readInt();
-// 						
-// 							// Finding modulus of i / dim 
-// 							
-// 							int remainder = matrix_i % matrix_dimension; 
-// 							
-// 							if(remainder == 0) {
-// 								input_col_num = matrix_dimension;
-// 								
-// 							}
-// 							else {
-// 								input_col_num = remainder;
-// 								
-// 							}
-// 							
-// 							// Once we have col num we can calculate row num
-// 							
-// 							input_row_num = (matrix_i + (matrix_dimension - input_col_num))/matrix_dimension; 
-// 							
-// 							System.out.println("input col num: " + input_col_num);
-// 							System.out.println("input row num: " + input_row_num);
-// 							
-// 							//Changing back to java indexing:
-// 							
-// 							input_row_num = input_row_num - 1;
-// 							input_col_num = input_col_num - 1;
-// 							
-// 						    adjacency_matrix.setAsInt(blob_int, input_row_num, input_col_num );	
-// 					}	
-// 					
-// 					System.out.println("Retrieved adjacency matrix: " + adjacency_matrix);
-// 					selectedUncertaintySet.setAdjacencyMatrix(adjacency_matrix);
- 					
+   				    ResultSet select_uc_node_rs = select_uc_node_sql_pstmt.executeQuery();
+   				 	
+   				    String uc_node_description = new String();
+   				    
+   				    while (select_uc_node_rs.next()) {
+					 
+   				    	uc_node_description = select_uc_node_rs.getString(1);
+   				    	System.out.println("Node description: " + uc_node_description);
+   				    	node_description_list.add(uc_node_description);
+   				    	
+					 }
+					
+				}
+				
+				//select_uc_node_sql_pstmt.close();
+				
+				selectedUncertaintySet.setUncertaintyNodeDescriptions(node_description_list);
+				
+				System.out.println("node_description_list: " + node_description_list);
+				
 				}
 						
 			return selectedUncertaintySet;
 		}
 		catch(SQLException ex) {
 
+			ex.printStackTrace();
 			throw new SPECCHIOFactoryException(ex);
 		}
-//		catch (IOException ex) {
-//			
-//			throw new SPECCHIOFactoryException(ex);
-//		}	
+
 	}
 	
 	/**
@@ -1432,24 +1401,61 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			    				
 			    				else {
 			    					
-			    					System.out.println("source link description is not null");
+			    					// Checking first whether description already exists in the database
 			    					
-			    					String edge_insert_sql = "INSERT into uncertainty_edge(edge_value) " + "VALUES (?)";
-			   					 
-			    					PreparedStatement pstmt_edge_insert = SQL.prepareStatement(edge_insert_sql, Statement.RETURN_GENERATED_KEYS);
-			   						
-			    					pstmt_edge_insert.setString(1, spectral_set.getSourceLinkDescription());
-			    					
-			    					int affectedRows_6= pstmt_edge_insert.executeUpdate();
-			    					
-			    					ResultSet generatedKeys_6 = pstmt_edge_insert.getGeneratedKeys();
-			    					
-			    					while (generatedKeys_6.next()) {
+			    					String edge_value_check_sql = "select edge_id, edge_value from uncertainty_edge where edge_value = ?";
 
-			    						edge_id = generatedKeys_6.getInt(1);
-			    						System.out.println("inserted new edge with id: " + edge_id);
+			    					PreparedStatement pstmt_edge_value_check = SQL.prepareStatement(edge_value_check_sql, Statement.RETURN_GENERATED_KEYS);
 			    					
+			    					pstmt_edge_value_check.setString(1, description_of_source);
+			    					
+			    					ResultSet edge_value_check_rs = pstmt_edge_value_check.executeQuery();
+
+			    					String matched_edge_value = null;
+			    					int matched_edge_id = 0;
+			    					
+			    					while (edge_value_check_rs.next()) {
+			    						matched_edge_value = edge_value_check_rs.getString("edge_value");
+			    						matched_edge_id = edge_value_check_rs.getInt("edge_id");
 			    					}
+			    					
+			    					// If edge description doesn't currently exist
+			    					if (matched_edge_value == null) {
+			    						
+			    						 System.out.println("description of source does not already exist in uncertainty edge table");
+                                         
+			    						 // inserting new row into uncertainty edge
+
+			    						 String edge_insert_sql = "INSERT into uncertainty_edge(edge_value) " + "VALUES (?)";
+
+			    						 PreparedStatement pstmt_edge_insert = SQL.prepareStatement(edge_insert_sql, Statement.RETURN_GENERATED_KEYS);
+			    						 
+			    						 pstmt_edge_insert.setString(1, description_of_source);
+			    						 
+			    						 System.out.println("Description of source: " + description_of_source);
+			    						 
+			    						 int affectedRows_6= pstmt_edge_insert.executeUpdate();
+			    						 
+			    						 ResultSet generatedKeys_6 = pstmt_edge_insert.getGeneratedKeys();
+			    						 
+			    						 while (generatedKeys_6.next()) {
+			    							 
+			    							 edge_id = generatedKeys_6.getInt(1);
+			    							 System.out.println("inserted new edge with id: " + edge_id);
+			    							 
+			    						 }
+			    						
+			    					}
+			    					 else {
+			    						 
+			    						 System.out.println("description of source already exists");
+			    						 
+			    						 // Using edge_id that already exists for this description
+			    						 
+			    						 edge_id = matched_edge_id;
+			    						 
+			    					 }
+			    					
 			    					
 			    					
 			    				}
