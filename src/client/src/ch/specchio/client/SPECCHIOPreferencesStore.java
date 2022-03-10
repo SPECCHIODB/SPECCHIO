@@ -26,10 +26,16 @@ public class SPECCHIOPreferencesStore {
 		
 		Preferences node = specchioConfigurationPreferences.node("SPECCHIO_CLIENT_PREFERENCES");
 
-		return (node.getBoolean(name, false));
-
-	
+		return (node.getBoolean(name, false));	
 	}
+	
+	
+	public Boolean getBooleanPreference(String name, boolean default_value) throws IOException {
+		
+		Preferences node = specchioConfigurationPreferences.node("SPECCHIO_CLIENT_PREFERENCES");
+
+		return (node.getBoolean(name, default_value));	
+	}	
 	
 	
 	public void setBooleanPreference(Boolean setting, String name) throws IOException {

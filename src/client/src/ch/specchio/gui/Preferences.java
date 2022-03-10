@@ -26,6 +26,7 @@ public class Preferences extends JFrame implements ActionListener {
 	private JCheckBox asd_WR_DC;
 	private JCheckBox file_loading_verbose_level;
 	private JCheckBox db_config_file_creation_and_editing;
+	private JCheckBox ShowJavaVersionWarning;
 	private JTextField input_directory, output_directory, flox_cal_file, rox_cal_file;
 	
 	SPECCHIOPreferencesStore prefs;
@@ -70,6 +71,12 @@ public class Preferences extends JFrame implements ActionListener {
 			db_config_file_creation_and_editing.addActionListener((ActionListener) this);
 			db_config_file_creation_and_editing.setSelected(prefs.getBooleanPreference("DB_CONFIG_FILE_CREATION_AND_EDITING"));
 			db_config_file_creation_and_editing.setToolTipText("A text file will be created, containing your connection strings.");
+	
+			ShowJavaVersionWarning = new JCheckBox("Show Java version warning");
+			ShowJavaVersionWarning.setActionCommand("ShowJavaVersionWarning");
+			ShowJavaVersionWarning.addActionListener((ActionListener) this);
+			ShowJavaVersionWarning.setSelected(prefs.getBooleanPreference("SHOW_JAVA_VERSION_WARNING", true));
+			ShowJavaVersionWarning.setToolTipText("Java version warning will be shown when starting SPECCHIO.");
 			
 			
 			input_directory = new JTextField();
@@ -126,6 +133,9 @@ public class Preferences extends JFrame implements ActionListener {
 						
 			constraints.gridy++;	
 			l.insertComponent(db_config_file_creation_and_editing, constraints);
+			
+			constraints.gridy++;	
+			l.insertComponent(ShowJavaVersionWarning, constraints);			
 			
 			constraints.gridy++;	
 			l.insertComponent(new JLabel("Input Directory"), constraints);
@@ -234,7 +244,19 @@ public class Preferences extends JFrame implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		}		
+		}	
+		
+		if(e.getActionCommand().equals("ShowJavaVersionWarning"))
+		{
+			
+			try {
+				prefs.setBooleanPreference(this.ShowJavaVersionWarning.isSelected(), "SHOW_JAVA_VERSION_WARNING");				
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}			
 		
 		if(e.getActionCommand().equals("input_directory_definition"))
 		{
