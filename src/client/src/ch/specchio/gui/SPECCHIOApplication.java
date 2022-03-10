@@ -4,6 +4,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.prefs.BackingStoreException;
 
 import javax.swing.*;
 
@@ -14,6 +15,7 @@ import net.iharder.dnd.FileDrop;
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
 import ch.specchio.client.SPECCHIOClientFactory;
+import ch.specchio.client.SPECCHIOPreferencesStore;
 import ch.specchio.client.SPECCHIOServerDescriptor;
 import ch.specchio.types.Capabilities;
 
@@ -161,18 +163,34 @@ public class SPECCHIOApplication {
 	      System.out.println("Java version (major): " + getJavaVersion() + ", (minor) " + getJavaMinorVersion());
 	      
 
-	      if(getJavaVersion() != 8) {
-	    	  java_version_is_supported = false;
-	    	  JOptionPane.showMessageDialog(
-	    			  SPECCHIOApplication.getInstance().get_frame(),
-	    			  "This version of SPECCHIO is compiled for Java version 8.\n" +
-	    					  "This computer runs Java version " + getJavaVersion() + ".\n" +
-	    					  "Please install Java version 8 to avoid errors.",
-	    					  "Warning",
-	    					  JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
-	    			  );    			  
+	      SPECCHIOPreferencesStore prefs;
+		try {
+			prefs = new SPECCHIOPreferencesStore();
+			Boolean show_warning = prefs.getBooleanPreference("SHOW_JAVA_VERSION_WARNING", true);
 
-	      }
+			if(getJavaVersion() != 8  && show_warning) {
+				java_version_is_supported = false;
+				JOptionPane.showMessageDialog(
+						SPECCHIOApplication.getInstance().get_frame(),
+						"This version of SPECCHIO is compiled for Java version 8.\n" +
+								"This computer runs Java version " + getJavaVersion() + ".\n" +
+								"SPECCHIO as been partly tested with AdoptOpenJDK version 11 and 12; some bugs may remain."+ ".\n" +
+								"You can avoid this warning in future by switching it off in the SPECCHIO Preferences.",
+								"Warning",
+								JOptionPane.ERROR_MESSAGE, SPECCHIOApplication.specchio_icon
+						);    			  
+
+			}
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (HeadlessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	   }
 
 
@@ -260,11 +278,25 @@ public class SPECCHIOApplication {
 	   
 	   public static int getJavaMinorVersion() {
 		    String version = System.getProperty("java.version");
-		    String[] tokens = version.split("_");
+		    
+		    String minor_version = "";
+		    String[] tokens;
+		    
+		    if(version.contains("_")) // old java versioning
+		    {
+		    	tokens = version.split("_");		    	
+		    }
+		    else
+		    {
+		    	// new java versioning: https://openjdk.java.net/jeps/223
+		    	tokens = version.split("\\.");
+		    }
+		    		    
+		    minor_version = tokens[1];		    
 		    
 		    System.out.println("Java minor version info: " + version);
 
-		    return Integer.parseInt(tokens[1]);
+		    return Integer.parseInt(minor_version);
 		}	   	   
 
 	   public void setClient(SPECCHIOClient client) {
