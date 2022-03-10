@@ -352,7 +352,7 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 			
 			// create and add panels for each category container
 			for (MD_CategoryContainer mdcc : form.getContainers()) {
-				System.out.println(mdcc.getCategoryName());
+//				System.out.println(mdcc.getCategoryName());
 				SpectrumMetadataCategoryContainer panel = new SpectrumMetadataCategoryContainer(mdcc, this.specchioClient);
 				panel.setEditable(editable);
 				metadata_panel.add(panel);
@@ -458,7 +458,7 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 			// add fields
 			factory = new SpectrumMetadataComponentFactory(this);
 			for (MD_Field field : mdcc.getFields()) {
-				System.out.println(field.getLabel());
+//				System.out.println(field.getLabel());
 				addField(field);
 			}
 			
