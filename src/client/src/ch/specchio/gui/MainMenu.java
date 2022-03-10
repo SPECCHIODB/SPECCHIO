@@ -838,7 +838,8 @@ private JMenuItem dbConfigmenuItem;
          //  create text
          String text = "<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" +
                  "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
-                 "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()
+                 "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()+ "<br>" + "<br>" +
+                 "Java runtime version: " + System.getProperty("java.version")
                 		 + "<br><br>" +
                 		 "(c) 2006-2022 by Remote Sensing Laboratories (RSL)<br>" +
                 		 "Dept. of Geography, " +
