@@ -32,10 +32,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.freixas.jcalendar.DateEvent;
-import org.freixas.jcalendar.DateListener;
-import org.freixas.jcalendar.JCalendar;
-import org.freixas.jcalendar.JCalendarCombo;
+//import org.freixas.jcalendar.DateEvent;
+//import org.freixas.jcalendar.DateListener;
+//import org.freixas.jcalendar.JCalendar;
+//import org.freixas.jcalendar.JCalendarCombo;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;

@@ -7,10 +7,10 @@ import ch.specchio.query_builder.*;
 import ch.specchio.types.*;
 import com.jidesoft.swing.RangeSlider;
 import org.apache.commons.lang3.ObjectUtils;
-import org.freixas.jcalendar.DateEvent;
-import org.freixas.jcalendar.DateListener;
-import org.freixas.jcalendar.JCalendar;
-import org.freixas.jcalendar.JCalendarCombo;
+//import org.freixas.jcalendar.DateEvent;
+//import org.freixas.jcalendar.DateListener;
+//import org.freixas.jcalendar.JCalendar;
+//import org.freixas.jcalendar.JCalendarCombo;
 import org.w3c.dom.ranges.Range;
 
 import javax.swing.*;
