@@ -24,6 +24,8 @@ import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
+import ch.specchio.types.UncertaintyInstrumentNode;
+import ch.specchio.types.UncertaintyNode;
 import ch.specchio.types.UncertaintySourcePair;
 
 public class UncertaintyFactory extends SPECCHIOFactory {
@@ -746,6 +748,145 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	}	
 		
 	}
+	
+/**
+ * 
+ * Insert new uncertainty node into an uncertainty set
+ * 
+ * @param uc_node the uncertainty node
+ * @param uc_set_id the uncertainty_set_id
+ * 
+ * @throws SPECCHIOFactoryException the uncertainty node could not be inserted
+ * 
+ */
+	
+public void insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOFactoryException {
+	
+	// First testing whether we have instrument or spectrum node
+	
+	 String node_type = uc_node.node_type;
+	 
+	 try {
+		 
+		 SQL_StatementBuilder SQL = getStatementBuilder();
+		 
+		 if(node_type.equals("instrument")) {
+			 
+			 UncertaintyInstrumentNode instr_node = new UncertaintyInstrumentNode(uc_node);
+	
+			 System.out.println("uncertainty node type: instrument");
+		 
+			 String query = "insert into instrument_node(node_description, confidence_level, abs_rel, unit_id) " +
+						" values (?, ?, ?, ?)";
+			                                                                                        
+			PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+					
+			pstmt.setString (1, instr_node.getNodeDescription()); 
+			pstmt.setDouble (2, instr_node.getConfidenceLevel());
+			pstmt.setString (3, instr_node.getAbsRel());
+			pstmt.setInt (4, instr_node.getUnitId());
+			
+			int affectedRows = pstmt.executeUpdate();
+			
+			ResultSet generatedKeys = pstmt.getGeneratedKeys();
+					
+			while (generatedKeys.next()) {
+
+				int instrument_node_id = generatedKeys.getInt(1);
+				
+				instr_node.setInstrumentNodeId(instrument_node_id); 
+				
+				// What goes here? What are we returning?
+				// Q for Andy: do we return just an uncertainty node id?
+					
+			}
+			
+				pstmt.close();
+				
+				String update_stm = "UPDATE instrument_node set u_vector = ? where instrument_node_id = "
+						+ instr_node.getInstrumentNodeId();
+				
+				PreparedStatement statement = SQL.prepareStatement(update_stm);		
+						
+				byte[] temp_buf;
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutput dos = new DataOutputStream(baos);
+				
+				for (int i = 0; i < instr_node.getUncertaintyVector().length; i++) {
+					try {
+						dos.writeFloat(instr_node.getUncertaintyVector()[i]);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+				}
+
+				temp_buf = baos.toByteArray();
+		
+				InputStream vector = new ByteArrayInputStream(temp_buf);
+					
+				statement.setBinaryStream(1, vector, instr_node.getUncertaintyVector().length * 4);
+				statement.executeUpdate();
+
+				vector.close();
+					
+				//Next step is to create new entry in uncertainty_node
+					
+				boolean is_spectrum = false;
+					
+				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, instrument_node_id, uncertainty_node_description) " +
+								"VALUES (?, ?, ?)";
+					
+				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
+					
+				pstmt_uc_node.setBoolean (1, is_spectrum); 
+				pstmt_uc_node.setInt (2, instr_node.getInstrumentNodeId());
+				pstmt_uc_node.setString(3,  instr_node.getNodeDescription());
+					
+				// Getting uncertainty node id in return
+					
+				int affectedRows_2 = pstmt_uc_node.executeUpdate();
+					
+				ResultSet generatedKeys_2 = pstmt_uc_node.getGeneratedKeys();
+						
+				while (generatedKeys_2.next()) {
+
+					int uc_node_id = generatedKeys_2.getInt(1);
+						
+					instr_node.setUncertaintyNodeId(uc_node_id);
+					uc_node.setUncertaintyNodeId(uc_node_id);
+					
+				}
+				
+		 
+		 }
+	
+		 else if(node_type.equals("spectrum")) {
+			 System.out.println("uncertainty node type: spectrum");
+			 
+			 //UncertaintySpectrumNode spectrum_node = new UncertaintySpectrumNode(uc_node);
+			 
+			 
+			 
+			 
+			 
+			 
+		 
+		 }
+		 
+		
+	 }
+	 catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+	 }
+	 catch (IOException ex) {
+			// TODO Auto-generated catch block
+			throw new SPECCHIOFactoryException(ex);
+		}	
+	 
+ }
+	
+	
 	
 	/**
 	 * Insert a new uncertainty node into the database.

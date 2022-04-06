@@ -19,6 +19,12 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 		
 	}
 	
+	public UncertaintySpectrumNode(UncertaintyNode uc_node) {
+		
+		
+		
+	}
+	
 	/**
 	 * Set the instrument node uncertainty matrix.
 	 * @param u_matrix

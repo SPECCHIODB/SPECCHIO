@@ -1266,6 +1266,20 @@ public interface SPECCHIOClient {
 	
 	public int insertSpectrumSubset(SpectralSet spectral_set) throws SPECCHIOClientException;
 
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param uc_node an uncertainty node
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * 
+	 */
+	
+	
+	public int insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOClientException;
+
 	
 	/**
 	 * 

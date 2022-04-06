@@ -15,6 +15,17 @@ public class UncertaintyInstrumentNode extends UncertaintyNode {
 		node_type = "instrument";
 		
 	}
+	
+	public UncertaintyInstrumentNode(UncertaintyNode uc_node) {
+		
+		this.node_type = uc_node.node_type;
+		this.u_vector = uc_node.u_vector;
+		this.confidence_level = uc_node.confidence_level;
+		this.abs_rel = uc_node.abs_rel;
+		this.unit_id = uc_node.unit_id;
+		this.node_description = uc_node.node_description;
+		
+	}
 
 	/** 
 	 * Get the instrument node id

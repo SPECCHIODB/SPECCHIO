@@ -63,6 +63,17 @@ public class UncertaintyNode {
 	}
 	
 	/**
+	 * Get the instrument node uncertainty vector
+	 *
+	 * @return u_vector
+	 */
+
+	@XmlElement(name="u_vector")
+	public Float[] getUncertaintyVector() {
+		return u_vector;
+	}
+	
+	/**
 	 * Set the instrument node uncertainty vector (fast method).
 	 *
 	 * @param u_vector_input
