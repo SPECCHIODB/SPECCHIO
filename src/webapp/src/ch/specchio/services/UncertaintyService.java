@@ -18,6 +18,7 @@ import ch.specchio.types.SpectralSet;
 import ch.specchio.types.SpectralSetDescriptor;
 import ch.specchio.types.UncertaintyNode;
 import ch.specchio.types.UncertaintyNodeDescriptor;
+import ch.specchio.types.UncertaintySet;
 
 
 /**
@@ -175,6 +176,30 @@ public class UncertaintyService extends SPECCHIOService {
 		}
 		
 		return new XmlInteger(instrument_node.getId()); 
+		
+	}
+	
+	@POST
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	@Path("insertNewUncertaintySetNew")
+	public XmlInteger insertNewUncertaintySetNew(UncertaintySet uc_set) throws SPECCHIOFactoryException {
+		
+		try
+		{
+		
+			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+			factory.insertNewUncertaintySetNew(uc_set);
+			factory.dispose();
+		
+		}
+		catch(SPECCHIOFactoryException e)
+		{
+			System.out.println(e.toString());
+			throw(e);
+		}
+		
+		return new XmlInteger(uc_set.getUncertaintySetId()); 
 		
 	}
 	

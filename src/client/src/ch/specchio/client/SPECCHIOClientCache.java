@@ -2024,6 +2024,22 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
+	/**
+	 * 
+	 * Insert a new blank uncertainty set
+	 * 
+	 * @param uc_set an uncertainty set with an uncertainty set description
+	 * 
+	 * @return the id of the created uncertainty set
+	 * 
+	 */
+	
+	
+	public int insertNewUncertaintySetNew(UncertaintySet uc_set) throws SPECCHIOClientException{
+		
+		return realClient.insertNewUncertaintySetNew(uc_set);
+		
+	}
 	
 	/**
 	 * 

@@ -26,6 +26,7 @@ import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
 import ch.specchio.types.UncertaintyInstrumentNode;
 import ch.specchio.types.UncertaintyNode;
+import ch.specchio.types.UncertaintySet;
 import ch.specchio.types.UncertaintySourcePair;
 
 public class UncertaintyFactory extends SPECCHIOFactory {
@@ -58,6 +59,92 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 		
 		super(factory);
 		
+	}
+	
+	/** 
+	*
+	* Insert and create new uncertainty set. This creates a new uncertainty set id, a blank adjacency matrix
+	* 
+	* @param uc_set the uncertainty set to be created
+	* 
+	* @throws SPECCHIOFactoryException
+	* 
+ 	*/
+	
+	public void insertNewUncertaintySetNew(UncertaintySet uc_set) {
+		
+		try {
+			
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			
+			// Finding max of uncertainty_node_ids in uncertainty_node table
+			
+			String max_query = "SELECT MAX(node_set_id) from uncertainty_node_set";
+			
+			PreparedStatement max_pstmt = SQL.prepareStatement(max_query);
+			
+			ResultSet max_rs = max_pstmt.executeQuery();
+			
+			 while (max_rs.next()) {
+			        int last_node_set_id = max_rs.getInt(1);
+			        
+			        int new_node_set_id = last_node_set_id + 1;
+			        
+			        uc_set.node_set_id = new_node_set_id;
+			              
+			 }
+			 
+			max_pstmt.close();
+			
+			String uc_set_query = "insert into uncertainty_set(uncertainty_set_description, node_set_id) " +
+					" values (?, ?)";
+		
+			PreparedStatement uc_set_pstmt = SQL.prepareStatement(uc_set_query, Statement.RETURN_GENERATED_KEYS);
+					
+			uc_set_pstmt.setString (1, uc_set.getUncertaintySetDescription());
+			uc_set_pstmt.setInt(2, uc_set.getNodeSetId());
+			
+			int affectedRows = uc_set_pstmt.executeUpdate();
+			
+			ResultSet generatedKeys = uc_set_pstmt.getGeneratedKeys();
+			
+			
+			while (generatedKeys.next()) {
+
+				int uc_set_id = generatedKeys.getInt(1);
+				
+				System.out.println("inserted id: " + uc_set_id);
+				
+				uc_set.setUncertaintySetId(uc_set_id);
+				
+				
+			}
+			
+			uc_set_pstmt.close();
+			
+			// The first node gets id = null
+			// There is a foreign key constraint on 'node_id' but because this column is nullable, we can use null
+			
+			String node_set_query = "insert into uncertainty_node_set(node_set_id, node_num) " +
+					"values (?, ?)";
+			
+			PreparedStatement node_set_pstmt = SQL.prepareStatement(node_set_query, Statement.RETURN_GENERATED_KEYS);
+			
+			int node_num = 1;
+			
+			node_set_pstmt.setInt(1, uc_set.getNodeSetId());
+			node_set_pstmt.setInt(2, node_num);
+			
+			node_set_pstmt.executeUpdate();
+			
+			node_set_pstmt.close();
+			
+			}
+			catch (SQLException ex) {
+				// bad SQL
+				throw new SPECCHIOFactoryException(ex);
+			}
+
 	}
 	
 	/** 
