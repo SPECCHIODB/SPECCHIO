@@ -2435,16 +2435,16 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	
-	public int insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOClientException {
+	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException {
 		
 		// This is why we need a descriptor!
 		// postForInteger needs to take arguments: String, String, Object
 		// We have 2 input arguments
 		// To combine these into one object create UncertaintyNode...descriptor (not sure on naming!)
 		
-		UncertaintyNodeDescriptor und = new UncertaintyNodeDescriptor(uc_node, uc_set_id);
+		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_set_id);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNodeNew", und);
+		return postForInteger("uncertainty", "insertUncertaintyNodeNew", usnd);
 		
 		
 		

@@ -19,6 +19,8 @@ import ch.specchio.types.SpectralSetDescriptor;
 import ch.specchio.types.UncertaintyNode;
 import ch.specchio.types.UncertaintyNodeDescriptor;
 import ch.specchio.types.UncertaintySet;
+import ch.specchio.types.UncertaintySpectrumNode;
+import ch.specchio.types.UncertaintySpectrumNodeDescriptor;
 
 
 /**
@@ -80,20 +82,16 @@ public class UncertaintyService extends SPECCHIOService {
 	@Consumes(MediaType.APPLICATION_XML)
 	@Path("insertUncertaintyNodeNew")
 	
-	public XmlInteger insertUncertaintyNodeNew(UncertaintyNodeDescriptor und) throws SPECCHIOFactoryException {
+	public XmlInteger insertUncertaintyNodeNew(UncertaintySpectrumNodeDescriptor usnd) throws SPECCHIOFactoryException {
 	
-		// Do we need a descriptor here? Not yet!
-		// Returning still type XmlInteger
-		
-		// SpectralSet spectral_set = ssd.getSpectralSet();
-		UncertaintyNode uc_node = und.getUcNode();
-		int uc_set_id = und.getUcSetId();
+		UncertaintySpectrumNode uc_spectrum_node = usnd.getUcSpectrumNode();
+		int uc_set_id = usnd.getUcSetId();
 		
 		try
 		{
 				
 			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-			factory.insertUncertaintyNodeNew(uc_node, uc_set_id);
+			factory.insertUncertaintyNodeNew(uc_spectrum_node, uc_set_id);
 			factory.dispose();
 	
 		}
@@ -103,7 +101,7 @@ public class UncertaintyService extends SPECCHIOService {
 			throw(e);
 		}
 	
-		return new XmlInteger(uc_node.getUncertaintyNodeId()); 
+		return new XmlInteger(uc_spectrum_node.getUncertaintyNodeId()); 
 	
 	}
 	
@@ -187,7 +185,7 @@ public class UncertaintyService extends SPECCHIOService {
 		
 		try
 		{
-		
+			
 			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
 			factory.insertNewUncertaintySetNew(uc_set);
 			factory.dispose();

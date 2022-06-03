@@ -20,6 +20,8 @@ public class UncertaintyNode {
 	
 	@XmlElement public Boolean is_spectrum;
 	
+	@XmlElement public String uncertainty_node_description;
+	
 	public UncertaintyNode() {
 		
 	}
@@ -195,6 +197,28 @@ public class UncertaintyNode {
 	
 	public void setIsSpectrum(Boolean is_spectrum) {
 		this.is_spectrum = is_spectrum;
+	}
+	
+	/** 
+	 * Get the uncertainty node description 
+	 * 
+	 * @return uncertainty_node_description the uncertainty node description
+	 */
+	@XmlElement(name = "uncertainty_node_description")
+	public String getUncertaintyNodeDescription() {
+		
+		return uncertainty_node_description;
+	}
+	
+	/**
+	 * Set the uncertainty node description
+	 *
+	 * @param uncertainty_node_description the uncertainty node description
+	 */
+	public void setUncertaintyNodeDescription(String uncertainty_node_description) {
+
+		this.uncertainty_node_description = uncertainty_node_description;
+
 	}
 	
 	

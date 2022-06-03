@@ -17,6 +17,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	
 	@XmlElement public ArrayList<Integer> spectrum_ids;
 	@XmlElement public int spectrum_subset_id;
+	@XmlElement public ArrayList<Integer> spectrum_subset_ids;
 	@XmlElement public int spectrum_set_id;
 	@XmlElement public String spectrum_set_description;
 	
@@ -38,6 +39,8 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 		
 		
 	}
+	
+	
 	
 	/**
 	 * Set the instrument node uncertainty matrix.
@@ -67,6 +70,17 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	    System.out.println("Injected into vectors!");
 	
 	}	
+	
+	/**
+	 * Get the instrument node uncertainty vector
+	 *
+	 * @return u_vectors
+	 */
+
+	@XmlElement(name="u_vectors")
+	public Float[][] getUncertaintyVectors() {
+		return u_vectors;
+	}
 	
 	/** 
 	 * Get the spectrum node id
@@ -172,6 +186,26 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 
 		this.spectrum_set_description = spectrum_set_description;
 
+	}
+	
+	/**
+	 * Get the spectrum subset ids for a spectrum level uncertainty node
+	 * 
+	 * @param spectrum_subset_ids a list of spectrum subset ids
+	 */
+	@XmlElement(name="spectrum_subset_ids")
+	public ArrayList<Integer> getSpectrumSubsetIds() {
+		return spectrum_subset_ids;
+	}
+	
+	/**
+	 * Set the spectrum subset ids for a spectrum level uncertainty node
+	 * 
+	 * @param spectrum_subset_ids a list of spectrum subset ids
+	 */
+	public void setSpectrumSubsetIds(ArrayList<Integer> spectrum_subset_ids) {
+		
+		this.spectrum_subset_ids = spectrum_subset_ids;
 	}
 	
 }

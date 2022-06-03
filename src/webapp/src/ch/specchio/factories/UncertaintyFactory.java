@@ -20,6 +20,9 @@ import java.util.Collections;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.matrix.DenseMatrix;
 
+// New imports here!
+import org.ujmp.core.util.SerializationUtil;
+
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
@@ -28,6 +31,7 @@ import ch.specchio.types.UncertaintyInstrumentNode;
 import ch.specchio.types.UncertaintyNode;
 import ch.specchio.types.UncertaintySet;
 import ch.specchio.types.UncertaintySourcePair;
+import ch.specchio.types.UncertaintySpectrumNode;
 
 public class UncertaintyFactory extends SPECCHIOFactory {
 	
@@ -835,143 +839,418 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	}	
 		
 	}
+
+
 	
-/**
- * 
- * Insert new uncertainty node into an uncertainty set
- * 
- * @param uc_node the uncertainty node
- * @param uc_set_id the uncertainty_set_id
- * 
- * @throws SPECCHIOFactoryException the uncertainty node could not be inserted
- * 
- */
 	
-public void insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOFactoryException {
+public void insertUncertaintyNodeNew(UncertaintyInstrumentNode instr_node, int uc_set_id) throws SPECCHIOFactoryException {	
 	
-	// First testing whether we have instrument or spectrum node
+	// When we are inserting instrumentNode our node_type is "instrument"
 	
-	 String node_type = uc_node.node_type;
-	 
-	 try {
+	// Copy code from below
+	
+	// We move after that into another function which can be used in both insertUncertaintyNode functions
+	
+	// Matrix stuff will be its own function
+	
+	String node_type = instr_node.node_type;
+	
+	try {
 		 
 		 SQL_StatementBuilder SQL = getStatementBuilder();
-		 
-		 if(node_type.equals("instrument")) {
-			 
-			 UncertaintyInstrumentNode instr_node = new UncertaintyInstrumentNode(uc_node);
-	
-			 System.out.println("uncertainty node type: instrument");
-		 
-			 String query = "insert into instrument_node(node_description, confidence_level, abs_rel, unit_id) " +
-						" values (?, ?, ?, ?)";
-			                                                                                        
-			PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-					
-			pstmt.setString (1, instr_node.getNodeDescription()); 
-			pstmt.setDouble (2, instr_node.getConfidenceLevel());
-			pstmt.setString (3, instr_node.getAbsRel());
-			pstmt.setInt (4, instr_node.getUnitId());
-			
-			int affectedRows = pstmt.executeUpdate();
-			
-			ResultSet generatedKeys = pstmt.getGeneratedKeys();
-					
-			while (generatedKeys.next()) {
+		
+		 System.out.println("uncertainty node type: instrument");
+	 
+		 String query = "insert into instrument_node(node_description, confidence_level, abs_rel, unit_id) " +
+					" values (?, ?, ?, ?)";
+		                                                                                        
+		 PreparedStatement pstmt = SQL.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+				
+		 pstmt.setString (1, instr_node.getNodeDescription()); 
+		 pstmt.setDouble (2, instr_node.getConfidenceLevel());
+		 pstmt.setString (3, instr_node.getAbsRel());
+		 pstmt.setInt (4, instr_node.getUnitId());
+		
+		 int affectedRows = pstmt.executeUpdate();
+		
+		 ResultSet generatedKeys = pstmt.getGeneratedKeys();
+				
+		 while (generatedKeys.next()) {
 
-				int instrument_node_id = generatedKeys.getInt(1);
-				
-				instr_node.setInstrumentNodeId(instrument_node_id); 
-				
-				// What goes here? What are we returning?
-				// Q for Andy: do we return just an uncertainty node id?
-					
-			}
+			 int instrument_node_id = generatedKeys.getInt(1);
 			
-				pstmt.close();
+			 instr_node.setInstrumentNodeId(instrument_node_id); 
+			
+			 // What goes here? What are we returning?
+			 // Q for Andy: do we return just an uncertainty node id?
 				
-				String update_stm = "UPDATE instrument_node set u_vector = ? where instrument_node_id = "
-						+ instr_node.getInstrumentNodeId();
+		 }
+		
+			pstmt.close();
+			
+			String update_stm = "UPDATE instrument_node set u_vector = ? where instrument_node_id = "
+					+ instr_node.getInstrumentNodeId();
+			
+			PreparedStatement statement = SQL.prepareStatement(update_stm);		
+					
+			byte[] temp_buf;
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutput dos = new DataOutputStream(baos);
+			
+			for (int i = 0; i < instr_node.getUncertaintyVector().length; i++) {
+				try {
+					dos.writeFloat(instr_node.getUncertaintyVector()[i]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+			}
+
+			temp_buf = baos.toByteArray();
+	
+			InputStream vector = new ByteArrayInputStream(temp_buf);
 				
-				PreparedStatement statement = SQL.prepareStatement(update_stm);		
-						
-				byte[] temp_buf;
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				DataOutput dos = new DataOutputStream(baos);
+			statement.setBinaryStream(1, vector, instr_node.getUncertaintyVector().length * 4);
+			statement.executeUpdate();
+
+			vector.close();
 				
-				for (int i = 0; i < instr_node.getUncertaintyVector().length; i++) {
-					try {
-						dos.writeFloat(instr_node.getUncertaintyVector()[i]);
+			//Next step is to create new entry in uncertainty_node
+				
+			boolean is_spectrum = false;
+				
+			String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, instrument_node_id, uncertainty_node_description) " +
+							"VALUES (?, ?, ?)";
+				
+			PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
+				
+			pstmt_uc_node.setBoolean (1, is_spectrum); 
+			pstmt_uc_node.setInt (2, instr_node.getInstrumentNodeId());
+			pstmt_uc_node.setString(3,  instr_node.getNodeDescription());
+				
+			// Getting uncertainty node id in return
+				
+			int affectedRows_2 = pstmt_uc_node.executeUpdate();
+				
+			ResultSet generatedKeys_2 = pstmt_uc_node.getGeneratedKeys();
+					
+			while (generatedKeys_2.next()) {
+
+				int uc_node_id = generatedKeys_2.getInt(1);
+					
+				instr_node.setUncertaintyNodeId(uc_node_id);
+				
+			}
+	
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+	 	catch (IOException ex) {
+	 		// TODO Auto-generated catch block
+			throw new SPECCHIOFactoryException(ex);
+		}	
+	
+	
+	
+	
+	
+	}
+
+
+public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int uc_set_id) throws SPECCHIOFactoryException {
+
+	
+	 String node_type = spectrum_node.node_type;
+	 
+	 ArrayList<Integer> spectrum_subset_list = new ArrayList<Integer>();
+	
+	 spectrum_subset_list = spectrum_node.getSpectrumSubsetIds();
+		
+	 // Let's inspect spectrum subset list and see where we're going wrong
+	 
+	System.out.println("spectrum subset list: " + spectrum_subset_list);
+	
+	System.out.println("spectrum subset list size: " + spectrum_subset_list.size());
+	 
+	 try {
+	 
+		 SQL_StatementBuilder SQL = getStatementBuilder();
+		 
+		 String spectrum_set_query = "insert into spectrum_set(spectrum_set_description) " +
+				" values (?)";
+	
+	 
+		 PreparedStatement spectrum_set_pstmt = SQL.prepareStatement(spectrum_set_query, Statement.RETURN_GENERATED_KEYS);
+				
+		 spectrum_set_pstmt.setString (1, spectrum_node.getSpectrumSetDescription());
+		
+		 int affectedRows = spectrum_set_pstmt.executeUpdate();
+		
+		 ResultSet generatedKeys = spectrum_set_pstmt.getGeneratedKeys();
+		
+		
+		 while (generatedKeys.next()) {
+
+			 int spectrum_set_id = generatedKeys.getInt(1);
+			
+			 spectrum_node.setSpectrumSetId(spectrum_set_id);
+								
+		 }
+		
+		 spectrum_set_pstmt.close(); 
+		 
+		 ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
+		 spectrum_ids = spectrum_node.getSpectrumIds();
+		 
+		 if (spectrum_subset_list.size() == 0) {
+				
+				System.out.println("spectrum_subset_list empty");
+				
+				// Checking whether OneToMany relationship exists
+				
+				boolean is_one_to_many = isOneToMany(spectrum_node);
+				System.out.println("is one to many: " + is_one_to_many);
+				
+				// if true: create 1 node then assign this to all spectrum ids in spectrum_subset
+				
+				// if false: every spectrum_id gets its own unique spectrum node id
+				
+				// The order for creating spectrum branch of schema: spectrum nodes, spectrum subset, spectrum set map
+				
+				// These statements are the same for both true/false:
+				
+				String spectrum_node_insert_sql = "insert into spectrum_node(node_description, confidence_level, abs_rel, unit_id, u_vector) " +
+						" values (?, ?, ?, ?, ?)";
+				
+				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
+						" values (?, ?, ?)";
+				
+				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				// Getting next spectrum_subset_id. One spectrum_subset_id for all spectrum_ids 
+				
+				String spectrum_subset_select_max_sql = "select max(spectrum_subset_id) from spectrum_subset;";
+				
+				PreparedStatement spectrum_subset_select_max_stmt = SQL.prepareStatement(spectrum_subset_select_max_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				// Find max spectrum_subset_id 
+				
+				ResultSet subset_max_rs = spectrum_subset_select_max_stmt.executeQuery();
+				
+				int max_spectrum_subset_id = 0;
+				
+				while (subset_max_rs.next()) {
+
+					max_spectrum_subset_id = subset_max_rs.getInt(1);	
+				
+				}
+				
+				int spectrum_subset_id = max_spectrum_subset_id + 1;
+				
+				System.out.println("Max spectrum subset id: " + max_spectrum_subset_id);
+				
+				spectrum_subset_list.add(spectrum_subset_id);
+			
+				spectrum_subset_select_max_stmt.close();
+				
+				// Here is where one-to-many and many-to-many split:
+				
+				if(is_one_to_many) {
+					
+					// insert single spectrum node
+					
+					spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
+					spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
+					spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
+					spectrum_node_insert_stmt.setInt (4, spectrum_node.getUnitId());
+					
+					byte[] temp_buf;
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					DataOutput dos = new DataOutputStream(baos);
+					
+					for (int i = 0; i < spectrum_node.getUncertaintyVector().length; i++) {
+						try {
+							dos.writeFloat(spectrum_node.getUncertaintyVector()[i]);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-				}
+					}
 
-				temp_buf = baos.toByteArray();
-		
-				InputStream vector = new ByteArrayInputStream(temp_buf);
-					
-				statement.setBinaryStream(1, vector, instr_node.getUncertaintyVector().length * 4);
-				statement.executeUpdate();
-
-				vector.close();
-					
-				//Next step is to create new entry in uncertainty_node
-					
-				boolean is_spectrum = false;
-					
-				String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, instrument_node_id, uncertainty_node_description) " +
-								"VALUES (?, ?, ?)";
-					
-				PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
-					
-				pstmt_uc_node.setBoolean (1, is_spectrum); 
-				pstmt_uc_node.setInt (2, instr_node.getInstrumentNodeId());
-				pstmt_uc_node.setString(3,  instr_node.getNodeDescription());
-					
-				// Getting uncertainty node id in return
-					
-				int affectedRows_2 = pstmt_uc_node.executeUpdate();
-					
-				ResultSet generatedKeys_2 = pstmt_uc_node.getGeneratedKeys();
+					temp_buf = baos.toByteArray();
+			
+					InputStream vector = new ByteArrayInputStream(temp_buf);
 						
-				while (generatedKeys_2.next()) {
-
-					int uc_node_id = generatedKeys_2.getInt(1);
-						
-					instr_node.setUncertaintyNodeId(uc_node_id);
-					uc_node.setUncertaintyNodeId(uc_node_id);
+					spectrum_node_insert_stmt.setBinaryStream(5, vector, spectrum_node.getUncertaintyVector().length * 4);
 					
-				}
+					int affectedRows_3= spectrum_node_insert_stmt.executeUpdate();
+					ResultSet generatedKeys_3 = spectrum_node_insert_stmt.getGeneratedKeys();
+					
+					int spectrum_node_id = 0;
 				
-		 
-		 }
-	
-		 else if(node_type.equals("spectrum")) {
-			 System.out.println("uncertainty node type: spectrum");
-			 
-			 //UncertaintySpectrumNode spectrum_node = new UncertaintySpectrumNode(uc_node);
-			 
-			 
-			 
-			 
-			 
-			 
-		 
-		 }
-		 
+					while (generatedKeys_3.next()) {
+						spectrum_node_id = generatedKeys_3.getInt(1);	
+					}
+					
+					spectrum_node_insert_stmt.close();
+					
+					// insert row in spectrum_subset for each spectrum_id
+					
+					for(int i=0; i<spectrum_ids.size(); i++) {
+						
+						spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+						spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+						spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+					
+						int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+					
+						ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+						
+						
+					}
+					spectrum_subset_insert_stmt.close();
+
+				}
+				else {
+					for(int i=0; i<spectrum_ids.size(); i++) {
+					
+						spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
+						spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
+						spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
+						spectrum_node_insert_stmt.setInt (4, spectrum_node.getUnitId());
+					
+						byte[] temp_buf;
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						DataOutput dos = new DataOutputStream(baos);
+				
+						// Each row represents a single spectrum's uncertainty vector
+					
+						for (int j = 0; j < spectrum_node.getUncertaintyVectors()[i].length; j++) {
+							try {
+								//System.out.println("uncertainty_vector: "+ spectral_set.getUncertaintyVectors()[i][j]);
+								dos.writeFloat(spectrum_node.getUncertaintyVectors()[i][j]);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+
+						temp_buf = baos.toByteArray();
 		
-	 }
-	 catch (SQLException ex) {
+						InputStream vector = new ByteArrayInputStream(temp_buf);
+					
+						spectrum_node_insert_stmt.setBinaryStream(5, vector, spectrum_node.getUncertaintyVectors()[i].length*4);
+					
+						int affectedRows_3= spectrum_node_insert_stmt.executeUpdate();
+					
+						ResultSet generatedKeys_3 = spectrum_node_insert_stmt.getGeneratedKeys();
+						
+						int spectrum_node_id = 0;
+					
+						while (generatedKeys_3.next()) {
+
+							spectrum_node_id = generatedKeys_3.getInt(1);	
+					
+						}
+					
+						spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+						spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+						spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+					
+						int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+					
+						ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+
+					}
+				
+					spectrum_node_insert_stmt.close();
+					spectrum_subset_insert_stmt.close();
+
+					}
+				
+			}
+			
+			else {
+				
+				System.out.println("spectrum_subset_list not empty");
+				// This means that spectrum subset insertion has already occurred in a previous step in MATLAB 
+
+			}
+		 
+		 	// Now using list of spectrum_subset_ids to populate spectrum_set_map
+			
+			String spectrum_set_sql = "INSERT into spectrum_set_map(spectrum_set_id, spectrum_subset_id) " +
+					"VALUES (?, ?)";
+			
+			PreparedStatement pstmt_spectrum_set = SQL.prepareStatement(spectrum_set_sql);
+			
+			// Looping over all spectrum subset ids
+			for(int i = 0; i < spectrum_subset_list.size(); i++)
+			{
+			    int current_spectrum_subset_id = spectrum_subset_list.get(i);
+			    
+				pstmt_spectrum_set.setInt(1, spectrum_node.getSpectrumSetId());
+			    pstmt_spectrum_set.setInt(2, current_spectrum_subset_id);
+			    
+			    //batch here 
+			    pstmt_spectrum_set.addBatch();
+			    
+			}
+			
+			pstmt_spectrum_set.executeBatch();
+			pstmt_spectrum_set.close();
+			
+			// Now we can create an uncertainty set id which is needed for instrument/spectrum shared section below
+			// Same as instrument except that is_spectrum is true and we have an associated spectrum set id rather than an instrument node id
+			
+			boolean is_spectrum = true; 
+			
+			String uc_node_sql = "INSERT into uncertainty_node(is_spectrum, spectrum_set_id, uncertainty_node_description) " +
+						"VALUES (?, ?, ?)";
+			
+			PreparedStatement pstmt_uc_node = SQL.prepareStatement(uc_node_sql, Statement.RETURN_GENERATED_KEYS);
+			
+			pstmt_uc_node.setBoolean (1, is_spectrum); 
+			pstmt_uc_node.setInt(2, spectrum_node.getSpectrumSetId());
+			pstmt_uc_node.setString(3, spectrum_node.getUncertaintyNodeDescription());
+			
+			// Getting uncertainty node id in return
+			
+			int affectedRows_5 = pstmt_uc_node.executeUpdate();
+			
+			ResultSet generatedKeys_5 = pstmt_uc_node.getGeneratedKeys();
+			
+			int uc_node_id = 0;
+			
+			while (generatedKeys_5.next()) {
+
+				uc_node_id = generatedKeys_5.getInt(1);
+			
+				System.out.println("inserted uncertainty node id: " + uc_node_id);	
+				
+				spectrum_node.setUncertaintyNodeId(uc_node_id);
+			
+			}
+		
+		 updateNodeSet(uc_set_id, uc_node_id);	
+		
+		 Matrix adjacency_matrix = getAdjacencyMatrixNewMethod(uc_set_id);
+		 
+		 // Next we need to update the adjacency matrix
+		 
+		 
+		 
+		 
+	  }
+	 
+		catch (SQLException ex) {
 			// bad SQL
 			throw new SPECCHIOFactoryException(ex);
-	 }
-	 catch (IOException ex) {
-			// TODO Auto-generated catch block
-			throw new SPECCHIOFactoryException(ex);
-		}	
-	 
- }
+		}
+	
+	
+	}
 	
 	
 	
@@ -1900,7 +2179,253 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 		
 		
 	}
+	
+	/**
+ 	* Check whether spectrum_id-spectrum_node is one-to-many 
+ 	*   
+ 	* @param SpectralSet	the spectral set
+ 	* 
+ 	* @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
+ 	*/
+	
+	public boolean isOneToMany(UncertaintySpectrumNode spectrum_node) throws SPECCHIOFactoryException {
+		
+		System.out.println("Running isOneToMany");
+		
+		// Checking whether u_vectors or u_vector is populated
+		// There is an edge case where we only have 1 spectrum id to insert. Then this could work with either u_vectors or u_vector.
+		Float[] u_vector = spectrum_node.u_vector;
+		Float[][] u_vectors = spectrum_node.u_vectors;
+		
+		if(u_vector != null)
+			return true;
+		else		
+			return false;
+		
+		
+	}
+	
+	/**
+ 	* Update NodeSet for a given uncertainty set id
+ 	*   
+ 	* @param UncertaintySetId	the uncertainty set id
+ 	* 
+ 	* @throws SPECCHIOFactoryException
+ 	*/
+	
+	public void updateNodeSet(int uc_set_id, int uc_node_id) throws SPECCHIOFactoryException {
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		int current_node_set_id = 0;
+		
+		try {
+		
+			current_node_set_id = getNodeSetId(uc_set_id); // function in UncertaintyFactory
 
+			// Checking corresponding row in uncertainty_node_set. If null then populating, if not then new node_num!
+
+			// Breaking this into two steps:
+			
+			int max_node_num = getMaxNodeNum(current_node_set_id);
+
+			String find_last_node_id_sql = "SELECT node_id from uncertainty_node_set where node_set_id = ? AND node_num =?";
+			
+			PreparedStatement pstmt_find_last_node_id = SQL.prepareStatement(find_last_node_id_sql);
+		 
+			pstmt_find_last_node_id.setInt(1, current_node_set_id);
+			pstmt_find_last_node_id.setInt(2, max_node_num);
+		 
+			ResultSet find_last_node_id_rs = pstmt_find_last_node_id.executeQuery();
+		 
+			int last_node_id = 0;
+		 
+			while (find_last_node_id_rs.next()) {
+			 
+				last_node_id = find_last_node_id_rs.getInt(1);
+			 
+			}
+		 
+			pstmt_find_last_node_id.close();
+		 
+			int input_node_num;
+			PreparedStatement pstmt_node_set;
+		 
+		 
+			if (last_node_id == 0) {
+				input_node_num = max_node_num;
+			 
+				String node_set_sql = "UPDATE uncertainty_node_set set node_id = ? where node_set_id = ? and node_num = ?";
+			 
+				pstmt_node_set = SQL.prepareStatement(node_set_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				pstmt_node_set.setInt (1, uc_node_id); 
+				pstmt_node_set.setInt (2, current_node_set_id);
+				pstmt_node_set.setInt (3, input_node_num);
+			 
+			}
+			else {
+				input_node_num = max_node_num + 1;
+			 
+				String node_set_sql = "INSERT into uncertainty_node_set(node_set_id, node_num, node_id) " + "VALUES (?, ?, ?)";
+			 
+				pstmt_node_set = SQL.prepareStatement(node_set_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				pstmt_node_set.setInt (1, current_node_set_id); 
+				pstmt_node_set.setInt (2, input_node_num);
+				pstmt_node_set.setInt (3, uc_node_id);
+			 
+			}
+		 
+		 pstmt_node_set.executeUpdate();
+		 
+		 pstmt_node_set.close();
+		
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+			} 	
+		}
+
+	/**
+ 	* Get node set id for a given uncertainty set id
+ 	*   
+ 	* @param UncertaintySetId	the uncertainty set id
+ 	* 
+ 	* @throws SPECCHIOFactoryException
+ 	*/
+	public int getNodeSetId(int uc_set_id) throws SPECCHIOFactoryException {
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		try {
+		
+		int node_set_id = 0;
+		String node_set_id_sql = "SELECT node_set_id from uncertainty_set where uncertainty_set_id = ?";
+		PreparedStatement pstmt_node_set_id = SQL.prepareStatement(node_set_id_sql);
+		pstmt_node_set_id.setInt(1, uc_set_id);
+		ResultSet uc_set_rs = pstmt_node_set_id.executeQuery();
+	
+		while (uc_set_rs.next()) {
+		 
+	        node_set_id = uc_set_rs.getInt(1);
+	           
+		}
+
+		pstmt_node_set_id.close();
+		
+		return node_set_id; 
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+	}
+	
+	/**
+ 	* Get max node num for a given node set id
+ 	*   
+ 	* @param node_set_id	the node set id
+ 	* 
+ 	* @throws SPECCHIOFactoryException
+ 	*/
+	public int getMaxNodeNum(int node_set_id) throws SPECCHIOFactoryException {
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		try {	
+			
+			String find_last_node_num_sql = "SELECT max(node_num) from uncertainty_node_set where node_set_id = ?";
+			
+			PreparedStatement pstmt_find_last_node_num = SQL.prepareStatement(find_last_node_num_sql);
+		 
+			pstmt_find_last_node_num.setInt(1, node_set_id);
+		 
+			ResultSet find_last_node_num_rs = pstmt_find_last_node_num.executeQuery();
+		 
+			int max_node_num = 0;
+		 
+			while (find_last_node_num_rs.next()) {
+			 
+				max_node_num = find_last_node_num_rs.getInt(1);
+			 
+			}
+		 
+			pstmt_find_last_node_num.close();
+
+			return max_node_num;
+			
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+	}
+	
+	/**
+	 * Get adjacency matrix for a given uncertainty set id
+	 * 
+	 * @param uc_set_id the uncertainty set id
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	public Matrix getAdjacencyMatrixNewMethod(int uc_set_id) throws SPECCHIOFactoryException {
+		
+		// This method uses ujmp SerializationUtil 
+		// Should be better because we don't have to try and reconstruct the matrix using dimensions
+		
+		Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
+		
+		// Create query
+		// Create resultset
+		// Try to deserialize the binstream (magic)
+		// Try a test here somewhere with printStackTrace()
+		
+		try {
+			
+			// create SQL-building objects
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+			pstmt.setInt(1, uc_set_id);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				Blob blob = rs.getBlob(1);
+				InputStream binstream = blob.getBinaryStream();
+				
+				adjacency_matrix = (Matrix)SerializationUtil.deserialize(binstream);
+				
+				
+			}
+			
+			rs.close();
+			
+			// Check here the matrix size
+			long[] adj_matrix_size = adjacency_matrix.getSize(); 
+			
+			System.out.println(adj_matrix_size);
+			
+		} catch (SQLException ex) {
+
+		throw new SPECCHIOFactoryException(ex);
+		}
+		catch (IOException ex2) {
+			ex2.printStackTrace();
+		}
+		catch (ClassNotFoundException ex3) {
+			ex3.printStackTrace();
+		}
+		
+		return adjacency_matrix;
+
+		
+	}
 	
 	
 }

@@ -1278,7 +1278,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOClientException;
+	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException;
 
 	
 	/**

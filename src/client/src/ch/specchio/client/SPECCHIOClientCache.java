@@ -1997,10 +1997,10 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertUncertaintyNodeNew(UncertaintyNode uc_node, int uc_set_id) throws SPECCHIOClientException {
+	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException {
 		
 		
-		return realClient.insertUncertaintyNodeNew(uc_node, uc_set_id);
+		return realClient.insertUncertaintyNodeNew(uc_spectrum_node, uc_set_id);
 		
 		
 	}
