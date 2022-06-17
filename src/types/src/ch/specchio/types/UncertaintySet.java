@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+//import org.ujmp.core.Matrix;
+import org.ujmp.core.matrix.DenseMatrix;
+
 /**
  * This class represents an uncertainty set
  */
@@ -18,7 +21,8 @@ public class UncertaintySet {
 	
 	@XmlElement public ArrayList<Integer> uncertainty_node_ids;
 	@XmlElement public ArrayList<Integer> node_nums;
-	@XmlElement public AdjacencyMatrix adjacency_matrix;
+	//@XmlElement public AdjacencyMatrix adjacency_matrix;
+	@XmlElement public DenseMatrix adjacency_matrix;
 	
 	// So an uncertainty set will contain a list of node_nums and node_ids
 	// Alternatively it could contain an object of type 'uc_node_set' which has a list of node nums and node_ids?
@@ -93,6 +97,28 @@ public class UncertaintySet {
 	public void setNodeSetId(int node_set_id) {
 
 		this.node_set_id = node_set_id;
+
+	}
+	
+	/** 
+	 * Get the adjacency matrix
+	 * 
+	 * @return adjacency_matrix the adjacency matrix of type Matrix
+	 */
+	@XmlElement(name = "adjacency_matrix")
+	public DenseMatrix getAdjacencyMatrix() {
+		
+		return adjacency_matrix;
+	}
+	
+	/**
+	 * Set the adjacency matrix
+	 *
+	 * @param adjacency_matrix  an adjacency matrix of type Matrix
+	 */
+	public void setAdjacencyMatrix(DenseMatrix adjacency_matrix) {
+
+		this.adjacency_matrix = adjacency_matrix;
 
 	}
 	

@@ -16,6 +16,8 @@ import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
 import ch.specchio.types.SpectralSetDescriptor;
+import ch.specchio.types.UncertaintyInstrumentNode;
+import ch.specchio.types.UncertaintyInstrumentNodeDescriptor;
 import ch.specchio.types.UncertaintyNode;
 import ch.specchio.types.UncertaintyNodeDescriptor;
 import ch.specchio.types.UncertaintySet;
@@ -80,18 +82,20 @@ public class UncertaintyService extends SPECCHIOService {
 	@POST
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
-	@Path("insertUncertaintyNodeNew")
+	@Path("insertUncertaintyNodeNewSpectrum")
 	
-	public XmlInteger insertUncertaintyNodeNew(UncertaintySpectrumNodeDescriptor usnd) throws SPECCHIOFactoryException {
+	public XmlInteger insertUncertaintyNodeNewSpectrum(UncertaintySpectrumNodeDescriptor usnd) throws SPECCHIOFactoryException {
 	
 		UncertaintySpectrumNode uc_spectrum_node = usnd.getUcSpectrumNode();
 		int uc_set_id = usnd.getUcSetId();
+		ArrayList<Integer> uc_spectrum_ids = usnd.getUcSpectrumIds();
+		ArrayList<Integer> uc_spectrum_subset_ids = usnd.getUcSpectrumSubsetIds();
 		
 		try
 		{
 				
 			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-			factory.insertUncertaintyNodeNew(uc_spectrum_node, uc_set_id);
+			factory.insertUncertaintyNodeNew(uc_spectrum_node, uc_set_id, uc_spectrum_ids, uc_spectrum_subset_ids);
 			factory.dispose();
 	
 		}
@@ -103,6 +107,48 @@ public class UncertaintyService extends SPECCHIOService {
 	
 		return new XmlInteger(uc_spectrum_node.getUncertaintyNodeId()); 
 	
+	}
+	
+	/**
+	 * Insert instrument node.
+	 * 
+	 * @param an InstrumentNode object
+	 * 
+	 * @return the id of the new instrument node
+	 * 
+	 */
+	
+	@POST
+	@Produces(MediaType.APPLICATION_XML)
+	@Consumes(MediaType.APPLICATION_XML)
+	@Path("insertUncertaintyNodeNewInstrument")
+	public XmlInteger insertUncertaintyNodeNewInstrument(UncertaintyInstrumentNodeDescriptor uind) throws SPECCHIOFactoryException {
+		
+		System.out.println("UncertaintyService: insertUncertaintyNodeNew for type instrument node");
+		
+		UncertaintyInstrumentNode uc_instrument_node = uind.getUcInstrumentNode();
+		int uc_set_id = uind.getUcSetId();
+		
+		System.out.println("uind get statements, uc_set_id: " + uc_set_id);
+		
+		try
+		{
+		
+			System.out.println("Creating factory = new UncertaintyFactory");
+			
+			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.insertUncertaintyNodeNew(uc_instrument_node, uc_set_id);
+		factory.dispose();
+		
+		}
+		catch(SPECCHIOFactoryException e)
+		{
+			System.out.println(e.toString());
+			throw(e);
+		}
+		
+		return new XmlInteger(uc_instrument_node.getUncertaintyNodeId()); 
+		
 	}
 	
 	/**

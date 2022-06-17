@@ -16,18 +16,28 @@ public class UncertaintySpectrumNodeDescriptor {
 	private UncertaintySpectrumNode uc_spectrum_node;
 	private int uc_set_id;
 	private ArrayList<Integer> uc_spectrum_subset_ids;
+	private ArrayList<Integer> uc_spectrum_ids;
 	
 	/** mandatory to have no arg default constructor */
 	public UncertaintySpectrumNodeDescriptor() {
+		this.uc_spectrum_subset_ids = new ArrayList<Integer>();
 		
 	}
 	
-	public UncertaintySpectrumNodeDescriptor(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id, ArrayList<Integer> uc_spectrum_subset_ids) {
+	public UncertaintySpectrumNodeDescriptor(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) {
 		
 		this.uc_spectrum_node = uc_spectrum_node;
 		this.uc_set_id = uc_set_id;
-		this.uc_spectrum_subset_ids = uc_spectrum_subset_ids;
+		
+	}
 	
+	public UncertaintySpectrumNodeDescriptor(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id,ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids) {
+		
+		this.uc_spectrum_node = uc_spectrum_node;
+		this.uc_set_id = uc_set_id;
+		this.uc_spectrum_ids = uc_spectrum_ids;
+		this.uc_spectrum_subset_ids = uc_spectrum_subset_ids;
+		
 	}
 	
 	@XmlElement(name="uc_spectrum_node")
@@ -42,5 +52,8 @@ public class UncertaintySpectrumNodeDescriptor {
 	public ArrayList<Integer> getUcSpectrumSubsetIds() { return this.uc_spectrum_subset_ids; }
 	public void setUcSpectrumSubsetIds(ArrayList<Integer> uc_spectrum_subset_ids) { this.uc_spectrum_subset_ids = uc_spectrum_subset_ids; }
 	
+	@XmlElement(name="uc_spectrum_ids")
+	public ArrayList<Integer> getUcSpectrumIds() { return this.uc_spectrum_ids; }
+	public void setUcSpectrumIds(ArrayList<Integer> uc_spectrum_ids) { this.uc_spectrum_ids = uc_spectrum_ids; }
 
 }

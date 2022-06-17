@@ -1990,7 +1990,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * Insert an uncertainty node
 	 * 
-	 * @param uc_node an uncertainty node
+	 * @param uc_spectrum_node an uncertainty node of type spectrum
 	 * 
 	 * @return the id of the created node
 	 * 
@@ -2001,6 +2001,26 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 		
 		return realClient.insertUncertaintyNodeNew(uc_spectrum_node, uc_set_id);
+		
+		
+	}
+	
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param uc_instrument_node an uncertainty node of type instrument
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * 
+	 */
+	
+	public int insertUncertaintyNodeNew(UncertaintyInstrumentNode uc_instrument_node, int uc_set_id) throws SPECCHIOClientException {
+		
+		System.out.println("SpecchioClientCache: insertUncertaintyInstrumentNode");
+		
+		return realClient.insertUncertaintyNodeNew(uc_instrument_node, uc_set_id);
 		
 		
 	}

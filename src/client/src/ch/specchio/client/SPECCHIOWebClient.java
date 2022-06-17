@@ -2442,11 +2442,28 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		// We have 2 input arguments
 		// To combine these into one object create UncertaintyNode...descriptor (not sure on naming!)
 		
-		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_set_id);
+		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_set_id, uc_spectrum_node.spectrum_ids, uc_spectrum_node.spectrum_subset_ids);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNodeNew", usnd);
+		return postForInteger("uncertainty", "insertUncertaintyNodeNewSpectrum", usnd);
 		
+	}
+	
+	/**
+	 * Insert instrument node.
+	 * 
+	 * @param an InstrumentNode object
+	 * 
+	 * @return the id of the new instrument node
+	 * 
+	 */
+	
+	public int insertUncertaintyNodeNew(UncertaintyInstrumentNode instrument_node, int uc_set_id) throws SPECCHIOClientException {
 		
+		System.out.println("SpecchioWebClient for UncertaintyInstrumentNode - updated");
+		
+		UncertaintyInstrumentNodeDescriptor uind = new UncertaintyInstrumentNodeDescriptor(instrument_node, uc_set_id);
+		
+		return postForInteger("uncertainty", "insertUncertaintyNodeNewInstrument", uind);
 		
 	}
 	

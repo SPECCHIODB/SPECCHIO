@@ -1270,7 +1270,7 @@ public interface SPECCHIOClient {
 	 * 
 	 * Insert an uncertainty node
 	 * 
-	 * @param uc_node an uncertainty node
+	 * @param uc_spectrum_node an uncertainty node of type spectrum
 	 * 
 	 * @return the id of the created node
 	 * 
@@ -1279,6 +1279,21 @@ public interface SPECCHIOClient {
 	
 	
 	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException;
+
+	
+	/**
+	 * 
+	 * Insert an uncertainty node
+	 * 
+	 * @param uc_instrument_node an uncertainty node of type instrument
+	 * 
+	 * @return the id of the created node
+	 * 
+	 * 
+	 */
+	
+	
+	public int insertUncertaintyNodeNew(UncertaintyInstrumentNode uc_instrument_node, int uc_set_id) throws SPECCHIOClientException;
 
 	
 	/**

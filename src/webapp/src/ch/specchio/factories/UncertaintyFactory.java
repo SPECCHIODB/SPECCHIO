@@ -958,20 +958,24 @@ public void insertUncertaintyNodeNew(UncertaintyInstrumentNode instr_node, int u
 	}
 
 
-public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int uc_set_id) throws SPECCHIOFactoryException {
-
+public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int uc_set_id, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids) throws SPECCHIOFactoryException {
+	
+	// Re-assigning arraylists
+	
+	spectrum_node.setSpectrumIds(uc_spectrum_ids);
+	spectrum_node.setSpectrumSubsetIds(uc_spectrum_subset_ids);
 	
 	 String node_type = spectrum_node.node_type;
 	 
+	 // not sure if we need these explicitly:
 	 ArrayList<Integer> spectrum_subset_list = new ArrayList<Integer>();
-	
 	 spectrum_subset_list = spectrum_node.getSpectrumSubsetIds();
-		
-	 // Let's inspect spectrum subset list and see where we're going wrong
 	 
-	System.out.println("spectrum subset list: " + spectrum_subset_list);
-	
-	System.out.println("spectrum subset list size: " + spectrum_subset_list.size());
+	 ArrayList<Integer> spectrum_ids_list = new ArrayList<Integer>();
+	 spectrum_ids_list = spectrum_node.getSpectrumIds();
+		
+	 System.out.println("spectrum id list: " + spectrum_ids_list);
+	 System.out.println("spectrum subset list: " + spectrum_subset_list);
 	 
 	 try {
 	 
@@ -1061,6 +1065,7 @@ public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int 
 				if(is_one_to_many) {
 					
 					// insert single spectrum node
+					System.out.println("one-to-many spectrum node");
 					
 					spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
 					spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
@@ -1114,6 +1119,9 @@ public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int 
 
 				}
 				else {
+					
+					System.out.println("many to many spectrum node");
+					
 					for(int i=0; i<spectrum_ids.size(); i++) {
 					
 						spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
@@ -1233,14 +1241,170 @@ public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int 
 			
 			}
 		
-		 updateNodeSet(uc_set_id, uc_node_id);	
+		 int node_num = updateNodeSet(uc_set_id, uc_node_id);	
 		
-		 Matrix adjacency_matrix = getAdjacencyMatrixNewMethod(uc_set_id);
+		 // Maybe this should actually return an uncertainty_set?
+		 // Then we can return current_adjacency_matrix as well as node_set_id
+		 
+		 UncertaintySet uc_set = getUncertaintySetNew(uc_set_id);
+		 
+		 Matrix current_adjacency_matrix = uc_set.getAdjacencyMatrix();
+		 int node_set_id = uc_set.getNodeSetId();
+		 
+		 
 		 
 		 // Next we need to update the adjacency matrix
+		 System.out.println("node_num: " + node_num);
 		 
+		 long columns = current_adjacency_matrix.getSize(0);
+		 long lines = current_adjacency_matrix.getSize(1);	
 		 
+		System.out.println("current_adjacency_matrix columns:" + columns);
+		System.out.println("current_adjacency_matrix lines:" + lines);
+
+		Matrix final_adjacency_matrix; 
+		
 		 
+		 if (node_num == 1) {
+			
+			// Don't need to do any updates to the adjacency matrix if node_num = 1
+			
+			 final_adjacency_matrix = current_adjacency_matrix;
+			
+			
+		 }
+		else {
+			
+			// Here the current matrix_dimension is 1 less than the node num
+			
+			int current_matrix_dimension = node_num - 1;
+			int final_matrix_dimension = node_num;
+			
+			System.out.println("New matrix dimension: " + final_matrix_dimension);
+			
+			// Function here to update matrix? 
+			// Before we extracted all the values but now we just want to add a row and col? 
+			// Is this possible? Or can we iterate over each value and do it this way? 
+			
+			final_adjacency_matrix = DenseMatrix.factory.zeros(final_matrix_dimension, final_matrix_dimension);
+			
+			for(int i= 0; 1<current_matrix_dimension; i++) {
+				
+				for(int j= 0; 1<current_matrix_dimension; j++) {
+					
+					final_adjacency_matrix.setAsDouble(current_adjacency_matrix.getAsDouble(i, j), i, j);
+					
+				}
+
+			}
+			
+			// Now need to check for uncertainty_source_pairs
+			
+			
+			ArrayList<UncertaintySourcePair> uncertainty_source_pairs = spectrum_node.getUncertaintySourcePairs();
+			
+			if (uncertainty_source_pairs.size() > 0) {
+				
+				System.out.println("One or more uncertainty sources exist");
+				System.out.println("The number of uncertainty source pairs is:" + uncertainty_source_pairs.size());
+			
+				for(int i = 0; i < uncertainty_source_pairs.size(); i++) {
+					
+					// Getting individual values of source pair
+					
+					UncertaintySourcePair source_pair = uncertainty_source_pairs.get(i);
+					
+					int node_id_of_source = source_pair.getSourceId();
+					String description_of_source = source_pair.getSourceLinkDescription();
+					
+					int source_node_num  = getNodeNum(node_set_id, node_id_of_source);
+					
+					int edge_id = 0;
+    				
+   				    // If source link description is null then it's a 'simple' edge and edge value = 1
+    				if (description_of_source == null) {
+    					
+    					edge_id = 1;
+    				
+    				}
+    				
+    				else {
+    					
+    					// Checking whether the edge value exists in the database
+    					
+    					String edge_value_check_sql = "select edge_id, edge_value from uncertainty_edge where edge_value = ?";
+
+    					PreparedStatement pstmt_edge_value_check = SQL.prepareStatement(edge_value_check_sql, Statement.RETURN_GENERATED_KEYS);
+    					
+    					pstmt_edge_value_check.setString(1, description_of_source);
+    					
+    					ResultSet edge_value_check_rs = pstmt_edge_value_check.executeQuery();
+
+    					String matched_edge_value = null;
+    					int matched_edge_id = 0;
+    					
+    					while (edge_value_check_rs.next()) {
+    						matched_edge_value = edge_value_check_rs.getString("edge_value");
+    						matched_edge_id = edge_value_check_rs.getInt("edge_id");
+    					}
+    					
+    					// If edge description doesn't currently exist
+    					if (matched_edge_value == null) {
+    						
+    						 System.out.println("description of source does not already exist in uncertainty edge table");
+                             
+    						 // inserting new row into uncertainty edge
+
+    						 String edge_insert_sql = "INSERT into uncertainty_edge(edge_value) " + "VALUES (?)";
+
+    						 PreparedStatement pstmt_edge_insert = SQL.prepareStatement(edge_insert_sql, Statement.RETURN_GENERATED_KEYS);
+    						 
+    						 pstmt_edge_insert.setString(1, description_of_source);
+    						 
+    						 System.out.println("Description of source: " + description_of_source);
+    						 
+    						 int affectedRows_6= pstmt_edge_insert.executeUpdate();
+    						 
+    						 ResultSet generatedKeys_6 = pstmt_edge_insert.getGeneratedKeys();
+    						 
+    						 while (generatedKeys_6.next()) {
+    							 
+    							 edge_id = generatedKeys_6.getInt(1);
+    							 System.out.println("inserted new edge with id: " + edge_id);
+    							 
+    						 }
+    						
+    					}
+    					 else {
+    						 
+    						 System.out.println("description of source already exists");
+    						 
+    						 // Using edge_id that already exists for this description
+    						 
+    						 edge_id = matched_edge_id;
+    						 
+    					 }
+    					
+    				}
+    				
+    				System.out.println("Coordinates of adjacency matrix change: " + source_node_num + "," + node_num);
+   				    
+    				 // minus 1 for java indexing
+    				final_adjacency_matrix.setAsInt(edge_id, source_node_num-1, node_num-1);	
+    				
+			
+				}
+			}
+			
+			System.out.println("New adjacency matrix: " + final_adjacency_matrix);
+			
+			// Input new matrix into sql
+			//insertAdjacencyMatrix(final_adjacency_matrix, uc_set_id);
+			
+			
+			
+		}
+
 		 
 	  }
 	 
@@ -2213,11 +2377,12 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
  	* @throws SPECCHIOFactoryException
  	*/
 	
-	public void updateNodeSet(int uc_set_id, int uc_node_id) throws SPECCHIOFactoryException {
+	public int updateNodeSet(int uc_set_id, int uc_node_id) throws SPECCHIOFactoryException {
 		
 		SQL_StatementBuilder SQL = getStatementBuilder();
 		
 		int current_node_set_id = 0;
+		int input_node_num;
 		
 		try {
 		
@@ -2248,7 +2413,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 		 
 			pstmt_find_last_node_id.close();
 		 
-			int input_node_num;
+			
 			PreparedStatement pstmt_node_set;
 		 
 		 
@@ -2286,6 +2451,9 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			// bad SQL
 			throw new SPECCHIOFactoryException(ex);
 			} 	
+		
+		return input_node_num;
+		
 		}
 
 	/**
@@ -2378,7 +2546,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 		// This method uses ujmp SerializationUtil 
 		// Should be better because we don't have to try and reconstruct the matrix using dimensions
 		
-		Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);;
+		Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
 		
 		// Create query
 		// Create resultset
@@ -2396,20 +2564,41 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			
 			while (rs.next()) {
 				
-				Blob blob = rs.getBlob(1);
-				InputStream binstream = blob.getBinaryStream();
+				Blob adjacency_blob = rs.getBlob(1);
+				
+				// If blob is null we need to deal with this scenario
+				if (adjacency_blob == null) {
+        		
+					System.out.println("adjacency matrix is empty");
+					
+				
+				}
+				
+				else {
+			
+				InputStream binstream = adjacency_blob.getBinaryStream();
 				
 				adjacency_matrix = (Matrix)SerializationUtil.deserialize(binstream);
 				
+				}
 				
 			}
 			
 			rs.close();
 			
 			// Check here the matrix size
-			long[] adj_matrix_size = adjacency_matrix.getSize(); 
+			//long[] adj_matrix_size = adjacency_matrix.getSize(); 
 			
-			System.out.println(adj_matrix_size);
+			long[] cube_size = adjacency_matrix.getSize();
+			int dimensions = cube_size.length;
+			//int[] size = new int[dimensions];
+			
+			//for (int i = 0;1<dimensions;i++) {
+			//	size[i] = (int) cube_size[i];
+ 				
+			//}
+			System.out.println(dimensions);
+			
 			
 		} catch (SQLException ex) {
 
@@ -2424,6 +2613,143 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 		
 		return adjacency_matrix;
 
+		
+	}
+	
+	/**
+	 * Get adjacency matrix for a given uncertainty set id
+	 * 
+	 * @param uc_set_id the uncertainty set id
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	public UncertaintySet getUncertaintySetNew(int uc_set_id) throws SPECCHIOFactoryException {
+		
+		UncertaintySet uc_set = new UncertaintySet();
+		
+		// This method uses ujmp SerializationUtil 
+		// Should be better because we don't have to try and reconstruct the matrix using dimensions
+		
+		DenseMatrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
+		
+		// Create query
+		// Create resultset
+		// Try to deserialize the binstream (magic)
+		// Try a test here somewhere with printStackTrace()
+		
+		try {
+			
+			// create SQL-building objects
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+			pstmt.setInt(1, uc_set_id);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				Blob adjacency_blob = rs.getBlob("adjacency_matrix");
+				int node_set_id = rs.getInt("node_set_id");
+				String uncertainty_set_description = rs.getString("uncertainty_set_description");
+						
+				uc_set.setNodeSetId(node_set_id);
+				uc_set.setUncertaintySetDescription(uncertainty_set_description);
+				uc_set.setUncertaintySetId(uc_set_id);
+				
+				// If blob is null we need to deal with this scenario
+				if (adjacency_blob == null) {
+        		
+					System.out.println("adjacency matrix is empty");
+					
+				
+				}
+				
+				else {
+			
+				InputStream binstream = adjacency_blob.getBinaryStream();
+				
+				adjacency_matrix = (DenseMatrix)SerializationUtil.deserialize(binstream);
+				
+				}
+				
+			}
+			
+			rs.close();
+			
+			uc_set.setAdjacencyMatrix(adjacency_matrix);
+			
+			
+			// Check here the matrix size
+			//long[] adj_matrix_size = adjacency_matrix.getSize(); 
+			
+			long[] cube_size = adjacency_matrix.getSize();
+			int dimensions = cube_size.length;
+			//int[] size = new int[dimensions];
+			
+			//for (int i = 0;1<dimensions;i++) {
+			//	size[i] = (int) cube_size[i];
+ 				
+			//}
+			System.out.println(dimensions);
+			
+			
+		} catch (SQLException ex) {
+
+		throw new SPECCHIOFactoryException(ex);
+		}
+		catch (IOException ex2) {
+			ex2.printStackTrace();
+		}
+		catch (ClassNotFoundException ex3) {
+			ex3.printStackTrace();
+		}
+		
+		return uc_set;
+
+		
+	}
+	
+	/**
+ 	* Get node num for a given node set id
+ 	*   
+ 	* @param node_set_id	the node set id
+ 	* @param node_id 		the nodeid
+ 	* 
+ 	* @throws SPECCHIOFactoryException
+ 	*/
+	public int getNodeNum(int node_set_id, int node_id) throws SPECCHIOFactoryException {
+		
+		SQL_StatementBuilder SQL = getStatementBuilder();
+		
+		try {	
+			
+			String find_node_num_sql = "SELECT node_num from uncertainty_node_set where node_set_id = ? and node_id = ?";
+			
+			PreparedStatement pstmt_find_node_num = SQL.prepareStatement(find_node_num_sql);
+		 
+			pstmt_find_node_num.setInt(1, node_set_id);
+			pstmt_find_node_num.setInt(2,  node_id);
+		 
+			ResultSet find_node_num_rs = pstmt_find_node_num.executeQuery();
+		 
+			int node_num = 0;
+		 
+			while (find_node_num_rs.next()) {
+			 
+				node_num = find_node_num_rs.getInt(1);
+			 
+			}
+		 
+			pstmt_find_node_num.close();
+
+			return node_num;
+			
+		}
+		catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
 		
 	}
 	

@@ -1,5 +1,7 @@
 package ch.specchio.types;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -22,7 +24,11 @@ public class UncertaintyNode {
 	
 	@XmlElement public String uncertainty_node_description;
 	
+	@XmlElement public ArrayList<UncertaintySourcePair> uncertainty_source_pairs;
+	
 	public UncertaintyNode() {
+	
+		UncertaintySourcePair source_pair = new UncertaintySourcePair();
 		
 	}
 	
@@ -221,5 +227,53 @@ public class UncertaintyNode {
 
 	}
 	
+	/**
+	 * Set the arraylist of type UncertaintySourcePair which is a set of source ids and source descriptions
+	 * 
+	 * @param uncertainty_source_pairs		an arraylist of type UncertaintySourcePair		
+	 * 
+	 */
+	
+	public void setUncertaintySourcePairs(ArrayList<UncertaintySourcePair> uncertainty_source_pairs) {
+		
+		this.uncertainty_source_pairs = uncertainty_source_pairs;
+		
+	}
+	
+
+	/**
+	 * Getting uncertainty source pairs
+	 * 
+	 * @return uncertainty_source_pairs a list of type UncertaintySourcePair
+	 * 
+	 */
+	
+	@XmlElement(name = "uncertainty_source_pairs")
+	public ArrayList<UncertaintySourcePair> getUncertaintySourcePairs() {
+		
+		return uncertainty_source_pairs;
+	}
+	
+	/**
+	 * Set the id and the edge value (source_link_description) of a linked uncertainty source
+	 * 
+	 * @param input_source_id		the uncertainty node id of the linked node 
+	 * @param input_source_link_description	the description of how this source links to the current node			
+	 * 
+	 */
+	public void add_uncertainty_source_by_id(int input_source_id, String input_source_link_description) {
+		
+		// Adding source information to uncertainty pair
+		
+		UncertaintySourcePair source_pair = new UncertaintySourcePair();
+		
+		source_pair.setSourceId(input_source_id);
+		source_pair.setSourceLinkDescription(input_source_link_description);
+		
+		// adding this source pair to arraylist of source pairs
+		
+		uncertainty_source_pairs.add(source_pair);
+		
+	}
 	
 }
