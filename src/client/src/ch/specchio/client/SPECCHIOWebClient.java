@@ -2427,6 +2427,23 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 	
 	/**
+	 * Insert a spectrum subset
+	 * 
+	 * @param uc_spectrum_node a spectrum node
+	 * @return the id of the created spectrum subset
+	 * 
+	 * @throws SPECCHIOClientException
+	 */
+	
+	public int insertSpectrumSubsetNew(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException {
+		
+		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_spectrum_node.spectrum_ids);
+		
+		return postForInteger("uncertainty", "insertSpectrumSubsetNew", usnd);
+		
+	}
+	
+	/**
 	 * Insert an uncertainty node
 	 * 
 	 * @param uc_node a uc_node

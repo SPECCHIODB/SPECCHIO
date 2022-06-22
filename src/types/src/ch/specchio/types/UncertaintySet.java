@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
-//import org.ujmp.core.Matrix;
-import org.ujmp.core.matrix.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 /**
  * This class represents an uncertainty set
@@ -22,7 +22,7 @@ public class UncertaintySet {
 	@XmlElement public ArrayList<Integer> uncertainty_node_ids;
 	@XmlElement public ArrayList<Integer> node_nums;
 	//@XmlElement public AdjacencyMatrix adjacency_matrix;
-	@XmlElement public DenseMatrix adjacency_matrix;
+	@XmlTransient public Matrix adjacency_matrix;
 	
 	// So an uncertainty set will contain a list of node_nums and node_ids
 	// Alternatively it could contain an object of type 'uc_node_set' which has a list of node nums and node_ids?
@@ -101,26 +101,27 @@ public class UncertaintySet {
 	}
 	
 	/** 
-	 * Get the adjacency matrix
+	 * Get the node set id - a node set is a collection of nodes within an uncertainty set
 	 * 
-	 * @return adjacency_matrix the adjacency matrix of type Matrix
+	 * @return node_set_id node set identifier
 	 */
-	@XmlElement(name = "adjacency_matrix")
-	public DenseMatrix getAdjacencyMatrix() {
+	@XmlTransient
+	public Matrix getAdjacencyMatrix() {
 		
 		return adjacency_matrix;
 	}
 	
 	/**
-	 * Set the adjacency matrix
+	 * Set the node set id
 	 *
-	 * @param adjacency_matrix  an adjacency matrix of type Matrix
+	 * @param node_set_id  unique node set id
 	 */
-	public void setAdjacencyMatrix(DenseMatrix adjacency_matrix) {
+	public void setAdjacencyMatrix(Matrix adjacency_matrix) {
 
 		this.adjacency_matrix = adjacency_matrix;
 
 	}
+	
 	
 	
 	

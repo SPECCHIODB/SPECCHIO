@@ -1268,6 +1268,21 @@ public interface SPECCHIOClient {
 
 	/**
 	 * 
+	 * Insert a spectrum subset
+	 * 
+	 * @param spectrum node a spectrum node 
+	 * 
+	 * @return the id of the created spectrum subset
+	 * 
+	 * 
+	 */
+	
+	
+	public int insertSpectrumSubsetNew(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException;
+
+	
+	/**
+	 * 
 	 * Insert an uncertainty node
 	 * 
 	 * @param uc_spectrum_node an uncertainty node of type spectrum

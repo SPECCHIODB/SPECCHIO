@@ -28,7 +28,7 @@ public class UncertaintyNode {
 	
 	public UncertaintyNode() {
 	
-		UncertaintySourcePair source_pair = new UncertaintySourcePair();
+		this.uncertainty_source_pairs = new ArrayList<UncertaintySourcePair>();
 		
 	}
 	

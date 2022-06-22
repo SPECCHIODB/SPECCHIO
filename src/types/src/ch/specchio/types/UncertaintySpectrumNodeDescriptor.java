@@ -40,6 +40,13 @@ public class UncertaintySpectrumNodeDescriptor {
 		
 	}
 	
+	public UncertaintySpectrumNodeDescriptor(UncertaintySpectrumNode uc_spectrum_node, ArrayList<Integer> uc_spectrum_ids) {
+		
+		this.uc_spectrum_node = uc_spectrum_node;
+		this.uc_spectrum_ids = uc_spectrum_ids;
+	
+	}
+	
 	@XmlElement(name="uc_spectrum_node")
 	public UncertaintySpectrumNode getUcSpectrumNode() { return this.uc_spectrum_node; }
 	public void setUcSpectrumNode(UncertaintySpectrumNode uc_spectrum_node) { this.uc_spectrum_node = uc_spectrum_node; }
