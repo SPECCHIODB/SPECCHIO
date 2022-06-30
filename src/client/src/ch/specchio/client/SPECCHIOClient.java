@@ -1126,7 +1126,17 @@ public interface SPECCHIOClient {
 	 * 
 	 */
 	
-	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException;
+	public SpectralSet getUncertaintySetOld(int uncertainty_set_id) throws SPECCHIOClientException;
+	
+	/**
+	 * 
+	 * Get details of an uncertainty set
+	 * 
+	 * @param uncertainty_set_id, the desired uncertainty_set_id of the uncertainty set
+	 * 
+	 */
+	
+	public UncertaintySet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException;
 	
 	
 	/**
@@ -1264,7 +1274,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertSpectrumSubset(SpectralSet spectral_set) throws SPECCHIOClientException;
+	public int insertSpectrumSubsetOld(SpectralSet spectral_set) throws SPECCHIOClientException;
 
 	/**
 	 * 
@@ -1278,7 +1288,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertSpectrumSubsetNew(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException;
+	public int insertSpectrumSubset(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException;
 
 	
 	/**
@@ -1293,7 +1303,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException;
+	public int insertUncertaintyNode(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException;
 
 	
 	/**
@@ -1308,7 +1318,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertUncertaintyNodeNew(UncertaintyInstrumentNode uc_instrument_node, int uc_set_id) throws SPECCHIOClientException;
+	public int insertUncertaintyNode(UncertaintyInstrumentNode uc_instrument_node, int uc_set_id) throws SPECCHIOClientException;
 
 	
 	/**
@@ -1323,7 +1333,7 @@ public interface SPECCHIOClient {
 	 */
 	
 	
-	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException;
+	public int insertUncertaintyNodeOld(SpectralSet spectral_set) throws SPECCHIOClientException;
 
 	
 	/**
@@ -1336,7 +1346,7 @@ public interface SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertNewUncertaintySetNew(UncertaintySet uc_set) throws SPECCHIOClientException;	
+	public int insertNewUncertaintySet(UncertaintySet uc_set) throws SPECCHIOClientException;	
 	
 	
 	/**
@@ -1349,7 +1359,7 @@ public interface SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException;	
+	public int insertNewUncertaintySetOld(SpectralSet spectral_set) throws SPECCHIOClientException;	
 	
 
 

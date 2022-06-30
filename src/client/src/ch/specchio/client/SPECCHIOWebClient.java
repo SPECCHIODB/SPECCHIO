@@ -2111,14 +2111,29 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 	
 	 */
 	
-	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException {
+	public SpectralSet getUncertaintySetOld(int uncertainty_set_id) throws SPECCHIOClientException {
 		
 		
-		return getObject(SpectralSet.class, "uncertainty", "getUncertaintySet", Integer.toString(uncertainty_set_id));
+		return getObject(SpectralSet.class, "uncertainty", "getUncertaintySetOld", Integer.toString(uncertainty_set_id));
 
 		
 	}
 	
+	/**
+	 * 
+	 * Get uncertainty set
+	 * 
+	 * @param uncertainty_set_id the uncertainty set id of the desired uncertainty set
+	 * 	
+	 */
+	
+	public UncertaintySet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOClientException {
+		
+		
+		return getObject(UncertaintySet.class, "uncertainty", "getUncertaintySet", Integer.toString(uncertainty_set_id));
+
+		
+	}
 	
 	/**
 	 * Import a campaign.
@@ -2418,11 +2433,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	
-	public int insertSpectrumSubset(SpectralSet spectral_set) throws SPECCHIOClientException {
+	public int insertSpectrumSubsetOld(SpectralSet spectral_set) throws SPECCHIOClientException {
 		
 		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.spectrum_ids, spectral_set);
 		
-		return postForInteger("uncertainty", "insertSpectrumSubset", ssd);
+		return postForInteger("uncertainty", "insertSpectrumSubsetOld", ssd);
 		
 	}
 	
@@ -2435,11 +2450,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	
-	public int insertSpectrumSubsetNew(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException {
+	public int insertSpectrumSubset(UncertaintySpectrumNode uc_spectrum_node) throws SPECCHIOClientException {
 		
 		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_spectrum_node.spectrum_ids);
 		
-		return postForInteger("uncertainty", "insertSpectrumSubsetNew", usnd);
+		return postForInteger("uncertainty", "insertSpectrumSubset", usnd);
 		
 	}
 	
@@ -2452,16 +2467,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	
-	public int insertUncertaintyNodeNew(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException {
-		
-		// This is why we need a descriptor!
-		// postForInteger needs to take arguments: String, String, Object
-		// We have 2 input arguments
-		// To combine these into one object create UncertaintyNode...descriptor (not sure on naming!)
-		
+	public int insertUncertaintyNode(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) throws SPECCHIOClientException {
+
 		UncertaintySpectrumNodeDescriptor usnd = new UncertaintySpectrumNodeDescriptor(uc_spectrum_node, uc_set_id, uc_spectrum_node.spectrum_ids, uc_spectrum_node.spectrum_subset_ids);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNodeNewSpectrum", usnd);
+		return postForInteger("uncertainty", "insertUncertaintyNodeSpectrum", usnd);
 		
 	}
 	
@@ -2474,13 +2484,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertUncertaintyNodeNew(UncertaintyInstrumentNode instrument_node, int uc_set_id) throws SPECCHIOClientException {
-		
-		System.out.println("SpecchioWebClient for UncertaintyInstrumentNode - updated");
+	public int insertUncertaintyNode(UncertaintyInstrumentNode instrument_node, int uc_set_id) throws SPECCHIOClientException {
 		
 		UncertaintyInstrumentNodeDescriptor uind = new UncertaintyInstrumentNodeDescriptor(instrument_node, uc_set_id);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNodeNewInstrument", uind);
+		return postForInteger("uncertainty", "insertUncertaintyNodeInstrument", uind);
 		
 	}
 	
@@ -2493,11 +2501,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	
-	public int insertUncertaintyNode(SpectralSet spectral_set) throws SPECCHIOClientException {
+	public int insertUncertaintyNodeOld(SpectralSet spectral_set) throws SPECCHIOClientException {
 		
 		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.uncertainty_source_pairs, spectral_set.uncertainty_source_ids, spectral_set.spectrum_ids, spectral_set.spectrum_subset_ids, spectral_set);
 		
-		return postForInteger("uncertainty", "insertUncertaintyNode", ssd);
+		return postForInteger("uncertainty", "insertUncertaintyNodeOld", ssd);
 		
 	}
  	
@@ -2513,9 +2521,9 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertNewUncertaintySetNew(UncertaintySet uc_set) throws SPECCHIOClientException {
+	public int insertNewUncertaintySet(UncertaintySet uc_set) throws SPECCHIOClientException {
 		
-		return postForInteger("uncertainty", "insertNewUncertaintySetNew", uc_set);
+		return postForInteger("uncertainty", "insertNewUncertaintySet", uc_set);
 		
 		
 	}
@@ -2532,9 +2540,9 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 */
 	
-	public int insertNewUncertaintySet(SpectralSet spectral_set) throws SPECCHIOClientException {
+	public int insertNewUncertaintySetOld(SpectralSet spectral_set) throws SPECCHIOClientException {
 		
-		return postForInteger("uncertainty", "insertNewUncertaintySet", spectral_set);
+		return postForInteger("uncertainty", "insertNewUncertaintySetOld", spectral_set);
 		
 		
 	}

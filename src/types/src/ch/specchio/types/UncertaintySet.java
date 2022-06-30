@@ -21,13 +21,9 @@ public class UncertaintySet {
 	
 	@XmlElement public ArrayList<Integer> uncertainty_node_ids;
 	@XmlElement public ArrayList<Integer> node_nums;
-	//@XmlElement public AdjacencyMatrix adjacency_matrix;
+	@XmlElement public ArrayList<String> uncertainty_node_descriptions;
 	@XmlTransient public Matrix adjacency_matrix;
-	
-	// So an uncertainty set will contain a list of node_nums and node_ids
-	// Alternatively it could contain an object of type 'uc_node_set' which has a list of node nums and node_ids?
-	// Going with option 1 for the time being
-	
+	@XmlElement public int[][] adjacency_matrix_as_int_array;
 	
 	public UncertaintySet() {
 
@@ -121,8 +117,84 @@ public class UncertaintySet {
 		this.adjacency_matrix = adjacency_matrix;
 
 	}
+	/**
+	 * Get uncertainty node descriptions for an uncertainty set
+	 * 
+	 * @return uncertainty_node_descriptions a list of uncertainty set descriptions
+	 */
+	public ArrayList<String> getUncertaintyNodeDescriptions() {
+		return uncertainty_node_descriptions;
+	}
 	
+	/**
+	 * Set the uncertainty node descriptions for an uncertainty set
+	 * 
+	 * @param uncertainty_node_descriptions a list of uncertainty node descriptions
+	 */
+	public void setUncertaintyNodeDescriptions(ArrayList<String> uncertainty_node_descriptions) {
+		
+		this.uncertainty_node_descriptions = uncertainty_node_descriptions;
+	}
 	
+	/**
+	 * Get the uncertainty node numbers for an uncertainty set
+	 * 
+	 * @return node_nums a list of uncertainty node numbers
+	 */
 	
+	@XmlElement(name="node_num")
+	public ArrayList<Integer> getNodeNums() {
+		return node_nums;
+	}
+	
+	/**
+	 * Set the uncertainty node numbers for an uncertainty set
+	 * 
+	 * @param node_nums a list of uncertainty node numbers
+	 */
+	
+	public void setNodeNums(ArrayList<Integer> node_nums) {
+		this.node_nums = node_nums;
+	}
+	
+	/**
+	 * Get the uncertainty node ids for an uncertainty set
+	 * 
+	 * @return uncertainty_node_ids a list of uncertainty node ids for an uncertainty set
+	 */
+	
+	@XmlElement(name="uncertainty_node_ids")
+	public ArrayList<Integer> getUncertaintyNodeIds() {
+		return uncertainty_node_ids;
+	}
+	
+	/**
+	 * Set the uncertainty node ids for an uncertainty set
+	 * 
+	 * @param uncertainty_set_node_ids a list of uncertainty node ids
+	 */
+	
+	public void setUncertaintyNodeIds(ArrayList<Integer> uncertainty_node_ids) {
+		this.uncertainty_node_ids = uncertainty_node_ids;
+	}
+	
+	/**
+	 * Get the adjacency matrix as an integer array for an uncertainty set
+	 * 
+	 * @return adjacency matrix as a 2d integer array
+	 */
+	  public int[][] getAdjacencyMatrixAsIntArray() { return
+	  adjacency_matrix_as_int_array; }
+	  
+	/**
+	 * Set the adjacency matrix as an integer array for an uncertainty set
+	 * 
+	 * @param adjacency matrix as a 2d integer array
+	*/
+	  public void setAdjacencyMatrixAsIntArray(int[][]
+	  adjacency_matrix_as_int_array) { this.adjacency_matrix_as_int_array =
+	  adjacency_matrix_as_int_array; }
+	
+	  
 	
 }

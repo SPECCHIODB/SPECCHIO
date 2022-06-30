@@ -75,7 +75,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	* 
  	*/
 	
-	public void insertNewUncertaintySetNew(UncertaintySet uc_set) {
+	public void insertNewUncertaintySet(UncertaintySet uc_set) {
 		
 		try {
 			
@@ -161,7 +161,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	* 
  	*/
 	
-	public void insertNewUncertaintySet(SpectralSet spectral_set) {
+	public void insertNewUncertaintySetOld(SpectralSet spectral_set) {
 		
 		try {
 		
@@ -249,7 +249,7 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 	 */
 	
 	
-	public SpectralSet getUncertaintySet(int uncertainty_set_id) throws SPECCHIOFactoryException {
+	public SpectralSet getUncertaintySetOld(int uncertainty_set_id) throws SPECCHIOFactoryException {
 		
 		
 		SpectralSet selectedUncertaintySet = new SpectralSet();
@@ -843,15 +843,9 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 
 	
 	
-public void insertUncertaintyNodeNew(UncertaintyInstrumentNode instr_node, int uc_set_id) throws SPECCHIOFactoryException {	
+public void insertUncertaintyNode(UncertaintyInstrumentNode instr_node, int uc_set_id) throws SPECCHIOFactoryException {	
 	
 	// When we are inserting instrumentNode our node_type is "instrument"
-	
-	// Copy code from below
-	
-	// We move after that into another function which can be used in both insertUncertaintyNode functions
-	
-	// Matrix stuff will be its own function
 	
 	String node_type = instr_node.node_type;
 	
@@ -1029,7 +1023,7 @@ public void insertUncertaintyNodeNew(UncertaintyInstrumentNode instr_node, int u
 	}
 
 
-public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int uc_set_id, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids) throws SPECCHIOFactoryException {
+public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_set_id, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids) throws SPECCHIOFactoryException {
 	
 	// Re-assigning arraylists
 	
@@ -1422,7 +1416,7 @@ public void insertUncertaintyNodeNew(UncertaintySpectrumNode spectrum_node, int 
 	 * @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
 	 */
 	
-public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , ArrayList<Integer> uc_source_ids, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
+public void insertUncertaintyNodeOld(ArrayList<UncertaintySourcePair> uc_pairs , ArrayList<Integer> uc_source_ids, ArrayList<Integer> uc_spectrum_ids, ArrayList<Integer> uc_spectrum_subset_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
 		 
 		// Re-assigning arraylists
 		
@@ -2194,7 +2188,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
  	* @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
  	*/
 
-	public void insertSpectrumSubset(ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
+	public void insertSpectrumSubsetOld(ArrayList<Integer> uc_spectrum_ids, SpectralSet spectral_set) throws SPECCHIOFactoryException {
 
 		// Re-assigning arraylists
 		
@@ -2323,7 +2317,7 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
  	* @throws SPECCHIOFactoryException	the uncertainty node could not be inserted
  	*/
 
-	public void insertSpectrumSubsetNew(ArrayList<Integer> uc_spectrum_ids, UncertaintySpectrumNode spectrum_node) throws SPECCHIOFactoryException {
+	public void insertSpectrumSubset(ArrayList<Integer> uc_spectrum_ids, UncertaintySpectrumNode spectrum_node) throws SPECCHIOFactoryException {
 
 		// Re-assigning arraylists
 		
@@ -2816,6 +2810,155 @@ public void insertUncertaintyNode(ArrayList<UncertaintySourcePair> uc_pairs , Ar
 			//	size[i] = (int) cube_size[i];
  				
 			//}
+			
+			
+		} catch (SQLException ex) {
+
+		throw new SPECCHIOFactoryException(ex);
+		}
+		catch (IOException ex2) {
+			ex2.printStackTrace();
+		}
+		catch (ClassNotFoundException ex3) {
+			ex3.printStackTrace();
+		}
+		
+		return uc_set;
+
+		
+	}
+	
+	/**
+	 * Get adjacency matrix for a given uncertainty set id
+	 * 
+	 * @param uc_set_id the uncertainty set id
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	public UncertaintySet getUncertaintySet(int uc_set_id) throws SPECCHIOFactoryException {
+		
+		// This function gets all the data needed in order to populate digraph in MATLAB
+		
+		UncertaintySet uc_set = new UncertaintySet();
+		
+		// This method uses ujmp SerializationUtil 
+		Matrix adjacency_matrix = DenseMatrix.factory.zeros(1, 1);
+		
+		// Creating some empty lists
+		ArrayList<Integer> node_id_list = new ArrayList<Integer>();
+		ArrayList<Integer> node_num_list = new ArrayList<Integer>();
+		ArrayList<String> node_description_list = new ArrayList<String>();
+		
+		
+		try {
+			
+			// create SQL-building objects
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			String sql_stmt = "SELECT adjacency_matrix, node_set_id, uncertainty_set_description from uncertainty_set where uncertainty_set_id = ?";
+			PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+			pstmt.setInt(1, uc_set_id);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				Blob adjacency_blob = rs.getBlob("adjacency_matrix");
+				int node_set_id = rs.getInt("node_set_id");
+				String uncertainty_set_description = rs.getString("uncertainty_set_description");
+						
+				uc_set.setNodeSetId(node_set_id);
+				uc_set.setUncertaintySetDescription(uncertainty_set_description);
+				uc_set.setUncertaintySetId(uc_set_id);
+				
+				// If blob is null we need to deal with this scenario
+				if (adjacency_blob == null) {
+        		
+					System.out.println("adjacency matrix is empty");
+					
+				
+				}
+				
+				else {
+			
+				InputStream binstream = adjacency_blob.getBinaryStream();
+				
+				adjacency_matrix = (DenseMatrix)SerializationUtil.deserialize(binstream);
+				
+				}
+				
+			}
+			
+			rs.close();
+			
+			uc_set.setAdjacencyMatrix(adjacency_matrix);
+			
+			// Now we have uc_set data, getting node nums and descriptions
+			
+			String select_node_set_sql_stmt = "SELECT node_num, node_id from uncertainty_node_set where node_set_id = ?";
+			PreparedStatement select_node_set_sql_pstmt = SQL.prepareStatement(select_node_set_sql_stmt);
+			
+			select_node_set_sql_pstmt.setInt(1, uc_set.getNodeSetId());
+			ResultSet select_node_set_rs = select_node_set_sql_pstmt.executeQuery();
+			
+			int j = 1; // a counter
+			while (select_node_set_rs.next()) {
+				
+				System.out.println("i in select_node_set_rs is: " + j);
+				
+				int node_id = select_node_set_rs.getInt("node_id");
+				int node_num = select_node_set_rs.getInt("node_num");
+				
+				// Extract node_num and node_id
+				
+				node_id_list.add(node_id);
+				node_num_list.add(node_num);
+				
+				j = j + 1;
+				
+			}
+			select_node_set_rs.close();
+			
+			uc_set.setUncertaintyNodeIds(node_id_list);
+			uc_set.setNodeNums(node_num_list);
+			
+			// Now we have populated node_id_list going to use these ids to populate node_description_list
+			
+			String select_uc_node_sql_stmt = "SELECT uncertainty_node_description from uncertainty_node where node_id = ?";
+			PreparedStatement select_uc_node_sql_pstmt = SQL.prepareStatement(select_uc_node_sql_stmt);
+			
+			for(int i=0; i<node_id_list.size(); i++) {
+				
+				int node_id = node_id_list.get(i);
+				select_uc_node_sql_pstmt.setInt(1, node_id);
+				
+				    ResultSet select_uc_node_rs = select_uc_node_sql_pstmt.executeQuery();
+				 	
+				    String uc_node_description = new String();
+				    
+				    while (select_uc_node_rs.next()) {
+				 
+				    	uc_node_description = select_uc_node_rs.getString(1);
+				    	node_description_list.add(uc_node_description);
+				    	
+				 }
+				
+			}
+			
+			
+			uc_set.setUncertaintyNodeDescriptions(node_description_list);
+
+			System.out.println("node_description_list: " + node_description_list);
+			
+			// New adjacency matrix retrieval
+			
+			int [][] adjacency_matrix_as_int_array = adjacency_matrix.toIntArray();
+			
+			System.out.println("adjacency_matrix_as_int_array");
+			System.out.println(Arrays.deepToString(adjacency_matrix_as_int_array));
+			
+			// Assigning integer array to uncertainty set
+			
+			uc_set.setAdjacencyMatrixAsIntArray(adjacency_matrix_as_int_array);
 			
 			
 		} catch (SQLException ex) {
