@@ -464,8 +464,10 @@ public abstract class MDE_Controller implements MD_ChangeListener {
 		
 	}
 
-	public void clearRemoved_fields(int level) {
-		
+	public int clearRemoved_fields(int level) {
+
+		int number_of_removed_fields = removed_fields.size();
+
 		// use iterator to remove fields from list
 		Iterator<MD_Field> it = removed_fields.iterator();
 		
@@ -474,7 +476,8 @@ public abstract class MDE_Controller implements MD_ChangeListener {
 			MD_Field f = it.next();
 			if(f.getLevel() == level) it.remove();
 		}				
-		
+
+		return number_of_removed_fields;
 	}
 	
 	

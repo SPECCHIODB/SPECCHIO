@@ -508,8 +508,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 				shared_decision_dialog.setVisible(true);
 				shared_spectrum_field_opt = shared_decision_dialog.getSelectedAction();
 			}
-			
-			removeFieldsBasedOnDecision(mdec, shared_spectrum_field_opt, MetaParameter.SPECTRUM_LEVEL);
+
+			no_of_removed_fields = no_of_removed_fields + removeFieldsBasedOnDecision(mdec, shared_spectrum_field_opt, MetaParameter.SPECTRUM_LEVEL);
 			
 			int shared_hierarchy_field_opt = SharedMD_Dialog.APPLY_TO_ALL;
 			if (shared_hierarchy_fields.size() > 0) {
@@ -518,10 +518,10 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 				shared_decision_dialog.setVisible(true);
 				shared_hierarchy_field_opt = shared_decision_dialog.getSelectedAction();
 			}
-						
-			removeFieldsBasedOnDecision(mdec, shared_hierarchy_field_opt, MetaParameter.HIERARCHY_LEVEL);
 
-			no_of_removed_fields = no_of_removed_fields + mdec.getRemoved_fields().size();
+			no_of_removed_fields = no_of_removed_fields + removeFieldsBasedOnDecision(mdec, shared_hierarchy_field_opt, MetaParameter.HIERARCHY_LEVEL);
+
+			//no_of_removed_fields = no_of_removed_fields + mdec.getRemoved_fields().size();
 
 		}
 		
@@ -538,8 +538,10 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 	}	
 	
 	
-	public void removeFieldsBasedOnDecision(MDE_Controller mdec, int shared_field_opt, int level)
+	public int removeFieldsBasedOnDecision(MDE_Controller mdec, int shared_field_opt, int level)
 	{
+		int no_of_removed_fields = 0;
+
 		if (shared_field_opt != SharedMD_Dialog.APPLY_TO_NONE) {
 			for (MD_Field field : mdec.getRemoved_fields(level)) {
 
@@ -568,11 +570,11 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 			}
 
 			// reset the list of deleted fields
-			mdec.clearRemoved_fields(level);
+			no_of_removed_fields = no_of_removed_fields +  mdec.clearRemoved_fields(level);
 
 		}		
 		
-		
+		return no_of_removed_fields;
 	}
 	
 	
