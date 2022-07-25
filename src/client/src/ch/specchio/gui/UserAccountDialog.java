@@ -121,7 +121,9 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 		rootPanel.setLayout(new BoxLayout(rootPanel, BoxLayout.Y_AXIS));
 		JScrollPane scroll_pane = new JScrollPane(rootPanel);
 		getContentPane().add(scroll_pane);
-		
+
+		boolean show_read_only_checkbox = false;
+
 		if (specchio_client == null) {
 			// add a panel for connecting to the server
 			JPanel serverConnectionPanel = new JPanel();
@@ -144,6 +146,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 			
 			if(specchio_client.getLoggedInUser().isInRole("admin") && user == null)
 			{
+				show_read_only_checkbox = true;
 				JPanel serverConnectionPanel = new JPanel();
 				JTextArea info_text = new JTextArea("You are logged in as admin.\n"
 						+ "This scenario will allow you to create a new user on the current system: "
@@ -156,7 +159,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 		}
 		
 		// add user account panel
-		userAccountPanel = new UserAccountPanel(this, user);
+		userAccountPanel = new UserAccountPanel(this, user, show_read_only_checkbox);
 		userAccountPanel.setBorder(
 				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "User Account Details")
 			);
@@ -486,13 +489,7 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 					);
 				error.setVisible(true);
 			} catch (IOException ex) {
-				// TODO Auto-generated catch block
-				ErrorDialog error = new ErrorDialog(
-						(Frame)getOwner(),
-						"User update failed",
-						ex.getMessage(),
-						ex
-					);
+				ErrorDialog error = new ErrorDialog((Frame)getOwner(), "User update failed", ex.getMessage(), ex);
 				error.setVisible(true);
 			}
 			endOperation();
@@ -612,7 +609,14 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 		private JLabel userpasswordLabel;
 
 		private JTextField userpasswordField;
-		
+
+		/** label for the read only user role */
+		private JLabel readonlyUserLabel;
+		/** tickbox for the read only user role */
+		private JCheckBox readonly_role_CheckBox;
+
+		private boolean read_only_selection;
+
 		
 		/**
 		 * Constructor.
@@ -621,7 +625,21 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 		 * @param user	the user account with which to initialise the dialogue (may be null)
 		 */
 		public UserAccountPanel(UserAccountDialog owner, User user) {
-			
+
+			this(owner, user, false);
+
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param owner	the dialogue of which this panel is a part
+		 * @param user	the user account with which to initialise the dialogue (may be null)
+		 * @param read_only_selection show a checkbox to allow a selection of the read only user role
+		 */
+		public UserAccountPanel(UserAccountDialog owner, User user, boolean read_only_selection) {
+
+			this.read_only_selection = read_only_selection;
 			// set up the panel with a grid bag layout
 			setLayout(new GridBagLayout());
 			constraints = new GridBagConstraints();
@@ -730,6 +748,16 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 			descriptionField.setMinimumSize(getPreferredSize());
 			add(new JScrollPane(descriptionField), constraints);
 			constraints.gridy++;
+
+			// add checkbox for read only user
+			if(read_only_selection) {
+				constraints.gridx = 0;
+				readonlyUserLabel = new JLabel("Read-Only Role:");
+				add(readonlyUserLabel, constraints);
+				constraints.gridx = 1;
+				readonly_role_CheckBox = new JCheckBox();
+				add(readonly_role_CheckBox, constraints);
+			}
 			
 			// create ANDS panel but do not add it yet
 			andsInformationPanel = new AndsInformationPanel(
@@ -814,7 +842,15 @@ public class UserAccountDialog extends JDialog implements ActionListener {
 			user.setEmailAddress(emailField.getText());
 			user.setWwwAddress(wwwField.getText());
 			user.setDescription(descriptionField.getText());
-			user.setRole(UserRoles.USER);
+			if(read_only_selection && this.readonly_role_CheckBox.isSelected())
+			{
+				user.setRole(UserRoles.READ_ONLY_USER);
+			}
+			else
+			{
+				user.setRole(UserRoles.USER);
+			}
+
 			if (andsInformationPanel != null) {
 				user.setExternalId(andsInformationPanel.getPartyId());
 			}

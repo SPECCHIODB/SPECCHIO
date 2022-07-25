@@ -54,7 +54,7 @@ public class UserService extends SPECCHIOService {
 		// create a user factory to do the work
 //		UserFactory factory = new UserFactory(getDataSourceName());
 		try {
-			if (getServerCapability("CREATE_READ_ONLY_USERS_BY_DEFAULT") != null) {
+			if (getServerCapability("CREATE_READ_ONLY_USERS_BY_DEFAULT") != null && getServerCapability("CREATE_READ_ONLY_USERS_BY_DEFAULT").equals("enabled")) {
 			
 				user.setRole(UserRoles.READ_ONLY_USER);
 			}

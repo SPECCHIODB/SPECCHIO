@@ -1068,7 +1068,7 @@ public class UserFactory extends SPECCHIOFactory {
 			if (user.isInRole(UserRoles.ADMIN)) {
 				grantAdminRights(user);
 			}
-			else if (user.isInRole(UserRoles.READ_ONLY_USER))
+				else if (user.isInRole(UserRoles.READ_ONLY_USER))
 			{
 				this.grantReadOnlyUserRights(user);
 			}
