@@ -534,7 +534,8 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		try {
 			Statement stmt = getStatementBuilder().createStatement();
 		
-			String query = "select distinct spectrum_x_eav.spectrum_id, eav.string_val from spectrum_x_eav, eav where spectrum_x_eav.eav_id = eav.eav_id and eav.string_val like '" + search_str + "'";
+			//String query = "select distinct spectrum_x_eav.spectrum_id, eav.string_val from spectrum_x_eav, eav where spectrum_x_eav.eav_id = eav.eav_id and eav.string_val like '" + search_str + "'";
+			String query = "select distinct spectrum_x_eav.spectrum_id from spectrum_x_eav, eav where spectrum_x_eav.eav_id = eav.eav_id and eav.string_val like '" + search_str + "'";
 			
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
