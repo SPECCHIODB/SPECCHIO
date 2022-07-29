@@ -7,10 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Properties;
 
 import ch.specchio.eav_db.AVSorter;
 import ch.specchio.eav_db.EAVDBServices;
@@ -519,7 +517,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 
 
 	/**																																																																																																												/**
-	 * Get the identifiers of all spectra that match a full text search.
+	 * Get the identifiers of all spectra that match a full text search, including both strings at spectrum and hierarchy level
 	 * 
 	 * @param search_str		the search string
 	 * 
@@ -550,14 +548,27 @@ public class SpectrumFactory extends SPECCHIOFactory {
 			// database error
 			System.out.println(ex.toString());
 			throw new SPECCHIOFactoryException(ex);
-		}			
+		}
+
+		// add hierarchy based search data as well
+		ArrayList<Integer> hierarchy_based_ids = this.getSpectrumIdsMatchingFullTextSearchUsingHierarchy(search_str);
+
+		Iterator<Integer> h_it = hierarchy_based_ids.iterator();
+		while(h_it.hasNext())
+		{
+			Integer id = h_it.next();
+			if(!ids.contains(id))
+			{
+				ids.add(id);
+			}
+		}
 		
 		return ids;
 		
 	}	
 	
 	/**																																																																																																												/**
-	 * Get the identifiers of all spectra that match a full text search for metadata hierarchy.
+	 * Get the identifiers of all spectra that match a full text search for metadata hierarchy only.
 	 * 
 	 * @param search_str		the search string
 	 * 
@@ -572,9 +583,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 		try {
 			Statement stmt = getStatementBuilder().createStatement();
 		
-			//String query = "select distinct spectrum_x_eav.spectrum_id, eav.string_val from spectrum_x_eav, eav where spectrum_x_eav.eav_id = eav.eav_id and eav.string_val like '" + search_str + "'";
-			
-			String query = "select distinct hierarchy_level_x_spectrum.spectrum_id, eav.string_val from eav inner join hierarchy_x_eav USING (eav_id) inner join hierarchy_level_x_spectrum USING (hierarchy_level_id) where string_val like '" + search_str + "'";
+			String query = "select distinct hierarchy_level_x_spectrum.spectrum_id from eav inner join hierarchy_x_eav USING (eav_id) inner join hierarchy_level_x_spectrum USING (hierarchy_level_id) where string_val like '" + search_str + "'";
 			
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
