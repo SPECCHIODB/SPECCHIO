@@ -8,6 +8,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -79,7 +81,7 @@ public class EAVDBServices extends Thread {
 	
 	public void getMetadataInsertData(int campaign_id, Metadata md) throws SQLException
 	{
-		
+		md.redundancy_coding = new ArrayList<Boolean>();
 		ArrayList<String> value_strings = new ArrayList<String>();
 		double reduction_count = 0;
 		
@@ -94,15 +96,17 @@ public class EAVDBServices extends Thread {
 			MetaParameter e2;
 			e2 = this.reduce_redundancy(e);
 
-			if(!e.equals(e2))
-			{					
-
-				value_strings.add(get_metaparameter_value_string(campaign_id, e));			
-
-			}
-			else
+			if(e2.getEavId() == 0) // we need insert a new metaparameter
 			{
-				eav_ids.add(e.getEavId());
+				md.redundancy_coding.add(false);
+				value_strings.add(get_metaparameter_value_string(campaign_id, e));
+				// these are the metaparameters that need inserting and then updating with their eav_id to keep the known metaparameters list functioning
+			}
+			else // value exists, thus, only store the eav_id to reference
+			{
+				md.redundancy_coding.add(true);
+				eav_ids.add(e2.getEavId());
+				e.setEavId(e2.getEavId());
 				reduction_count++;
 			}
 		}		
@@ -110,7 +114,7 @@ public class EAVDBServices extends Thread {
 
 		md.insert_value_strings = value_strings;
 		md.redundancy_reduced_eav_ids = eav_ids;
-		
+
 	}
 	
 	
@@ -128,50 +132,25 @@ public class EAVDBServices extends Thread {
 		
 		// prepare insert statement
 		String query = "insert into eav_view (campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) values";
-		ArrayList<String> value_strings = new ArrayList<String>();
-		double reduction_count = 0;
-		
+
+//		double reduction_count = 0;
+
 		ArrayList<Integer> eav_ids = new ArrayList<Integer>();
-//		ArrayList<MetaParameter> multi_insert_eavs = new ArrayList<MetaParameter>();
-			// loop through all entries
-			ListIterator<MetaParameter> li = md.getEntries().listIterator();
-		
-			while(li.hasNext())
-			{
-				MetaParameter e =  li.next();
-				
-				e = this.reduce_redundancy(e);
-				
-				if(e.getEavId() == 0)
-				{					
-					
-					value_strings.add(get_metaparameter_value_string(campaign_id, e));			
-//					multi_insert_eavs.add(e);	
-					
-					// check if multi insert is possible
-//					if(e.allows_multi_insert())
-//					{
-//						value_strings.add(get_metaparameter_value_string(campaign_id, e));			
-//						multi_insert_eavs.add(e);
-//					}
-//					else
-//					{
-//						int id = insert_metaparameter_into_db(campaign_id, e, false, is_admin); // redundancy is already reduced
-//						eav_ids.add(id);
-//					}
-				}
-				else
-				{
-					eav_ids.add(e.getEavId());
-					reduction_count++;
-				}
-			}
+		Integer[] eav_ids_array = new Integer[md.getEntries().size()];
 			
-			if(value_strings.size() > 0)
+			if(md.insert_value_strings.size() > 0)
 			{
+				// first get indices for inserted and linked-only parameters
+				// https://www.techiedelight.com/find-all-occurrences-of-value-list-java/
+				List<Integer> redundant_indices = IntStream.range(0, md.redundancy_coding.size())
+						.filter(i -> Objects.equals(md.redundancy_coding.get(i), Boolean.TRUE)).boxed().collect(Collectors.toList());
+
+				List<Integer> non_redundant_indices = IntStream.range(0, md.redundancy_coding.size())
+						.filter(i -> Objects.equals(md.redundancy_coding.get(i), Boolean.FALSE)).boxed().collect(Collectors.toList());
+
 			
 				// carry out the multi insert statement
-				query = query + SQL.conc_cols(value_strings);
+				query = query + SQL.conc_cols(md.insert_value_strings);
 				stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
 				ResultSet rs = stmt.getGeneratedKeys();
 								
@@ -179,17 +158,39 @@ public class EAVDBServices extends Thread {
 			    int cnt = 0;
 			    while (rs.next()) {
 			    	_eav_id = rs.getInt(1);
-//			    	multi_insert_eavs.get(cnt++).setEavId(_eav_id);
-			    	eav_ids.add(_eav_id);
+			    	md.getEntry(non_redundant_indices.get(cnt)).setEavId(_eav_id); // update the eav_id for the metaparameters, thus updating the known metaparameter list
+
+					// insert at correct index to keep sequence of eav_ids, otherwise the linking process (spectrum to eav) will fail later on
+					eav_ids_array[non_redundant_indices.get(cnt++)] = _eav_id;
+
 			    }		
-				
-			    
+
 			    rs.close();
-			
+
+				// add eav ids that only need linking
+				if(redundant_indices.size()>0) {
+					ListIterator<Integer> r_it = redundant_indices.listIterator();
+					ListIterator<Integer> md_it = md.redundancy_reduced_eav_ids.listIterator();
+					while (r_it.hasNext()) {
+						int index = r_it.next();
+						int value = md_it.next();
+						eav_ids_array[index] = value;
+					}
+				}
+
+				eav_ids = new ArrayList<>(Arrays.asList(eav_ids_array));
+			}
+			else
+			{
+				eav_ids.addAll(md.redundancy_reduced_eav_ids); // add eav ids that only need linking
 			}
 			
 //			System.out.println("Redundancy reduction = " + (reduction_count / eav_ids.size() *100) + "%");
-		
+
+
+		// iterate over metaparameter entries to keep , either a
+
+
 		
 		return eav_ids;
 	}	
@@ -650,7 +651,7 @@ public class EAVDBServices extends Thread {
 		if(known_metaparameters == null)
 		{
 			known_metaparameters = new ArrayList<MetaParameter>();
-			known_metaparameters.add(mp);
+			//known_metaparameters.add(mp);
 			known_metaparameters_hash.put(mp.getAttributeId(), known_metaparameters);
 		}
 		
@@ -683,7 +684,7 @@ public class EAVDBServices extends Thread {
 		}
 		else
 		{
-			known_metaparameters.add(mp);
+			known_metaparameters.add(mp); // add to list of known parameters
 			return mp;
 		}
 	}	
