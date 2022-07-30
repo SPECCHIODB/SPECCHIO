@@ -106,32 +106,9 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 */
 	public int getIdForFileFormat(String file_format_name) throws SPECCHIOFactoryException {
 		
-		Integer file_format_id = -1;
+		Integer file_format_id = -1; // initialise to "not found"
 		
 		try {
-		// initialise to "not found"
-//		int file_format_id = -1;
-//		
-//		try {
-//		
-//			String query = "SELECT file_format_id from file_format where name = '" + file_format_name + "'";
-//			Statement stmt = getStatementBuilder().createStatement();
-//			ResultSet rs = stmt.executeQuery(query);	
-//			while (rs.next())
-//			{
-//				file_format_id = rs.getInt(1);
-//			}
-//			rs.close();
-//			stmt.close();
-//			
-//		}
-//		catch (SQLException ex) {
-//			// bad SQL
-//			throw new SPECCHIOFactoryException(ex);
-//		}
-//		
-//		return file_format_id;
-		
 			file_format_id = this.getDataCache().get_file_format_id(file_format_name);
 			System.out.println(file_format_name);
 		}
@@ -232,20 +209,15 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			
 			boolean contains_targets_and_references = false;
 			boolean contains_several_units = false;
-			
-			HashSet<Integer> hs = new HashSet<Integer>();
-			hs.addAll(spec_file.getMeasurementUnits());
-			
+
+			HashSet<Integer> hs = new HashSet<Integer>(spec_file.getMeasurementUnits());
+
 			if(hs.size() > 1)
-			{
 				contains_several_units = true;
-			}
 			
 			// contains targets and references if there are duplication of units
 			if(hs.size() < spec_file.getMeasurementUnits().size())
-			{
 				contains_targets_and_references = true;
-			}
 			
 			if (contains_several_units || contains_targets_and_references)
 			{
@@ -378,28 +350,28 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			}			
 
 		}
-		
+
 		if (spec_file.getCreateUnitFolderForasdOldFiles() == true) {
-			
+
 			if (spec_file.getMeasurementUnits(0).equals(MeasurementUnit.Reflectance)) {
 				getSubHierarchyId(subhierarchies, hierarchy_id, "Reflectance");
 			}
-			
+
 			if (spec_file.getMeasurementUnits(0).equals(MeasurementUnit.Radiance)) {
 				getSubHierarchyId(subhierarchies, hierarchy_id, "Radiance");
 			}
-			
+
 			if (spec_file.getMeasurementUnits(0).equals(MeasurementUnit.DN)) {
 				getSubHierarchyId(subhierarchies, hierarchy_id, "DN");
 			}
-			
+
 			if (spec_file.getMeasurementUnits(0).equals(MeasurementUnit.Irradiance)) {
 				getSubHierarchyId(subhierarchies, hierarchy_id, "Irradiance");
-			}			
+			}
 
-			
+
 		}
-		
+
 		return subhierarchies;
 	}
 	
@@ -1082,11 +1054,14 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			 insert_result.setSpectrumIds(spectrum_ids);
 
 			 //------------
-			 // step 2 AND step 3: insert metaparameters AND insert links between spectra and eav entries
+			 // step 2 AND step 3: insert metaparameters
 			 //------------
 
 			 Metadata md = new Metadata();
 			 md.setEntries(spec_file.getUniqueMetaParameters());
+			 // processing of EAV data: get value strings and redundancy reduced eav_ids, stored in md object
+			 getEavServices().getMetadataInsertData(campaign.getId(), md);
+
 			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), md, this.Is_admin(), stmt);
 
 
@@ -1263,7 +1238,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 * 
 	 * @param spec_file		the spectral file from which the spectrum will be drawn
 	 * @param spec_no		the index of the spectrum in the file
-	 * @param hierarchy_existence_data info on existence of the spectra of this file within the hierarchy
+	 * @param exists_struct info on existence of the spectra of this file within the hierarchy
 	 * 
 	 * @return the identifier of the new spectrum
 	 * 
@@ -1286,16 +1261,11 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				Integer id = 0;
 				
 				SpectralFileInsertStruct insert_struct = getSpectrumInsertStruct(spec_file, spec_no, exists_struct);
-				ArrayList<SpectralFileInsertStruct> spec_file_insert_structs = new ArrayList<SpectralFileInsertStruct>();
-				spec_file_insert_structs.add(insert_struct);
 
-
-				ListIterator<SpectralFileInsertStruct> li = spec_file_insert_structs.listIterator();
 				StringBuffer valueStatement = new StringBuffer();
-				while(li.hasNext()){
-					getValueString(valueStatement, li.next());
-				}
+				getValueString(valueStatement, insert_struct);
 				String valueString = valueStatement.toString();
+
 				ArrayList<Integer> spectrum_ids = insert_spectrum_rows(valueString, stmt);
 				
 				id = spectrum_ids.get(0);	
@@ -1342,14 +1312,13 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	
 	
 	/**
-	 * Insert a spectrum into the database.
+	 * Create an insert structure for a spectrum.
 	 * 
 	 * @param spec_file		the spectral file from which the spectrum will be drawn
 	 * @param spec_no		the index of the spectrum in the file
-	 * @param insert_result 
-	 * @param hierarchy_existence_data info on existence of the spectra of this file within the hierarchy
+	 * @param exists_struct 	info on existence of the spectra of this file within the hierarchy
 	 * 
-	 * @return the identifier of the new spectrum
+	 * @return SpectralFileInsertStruct 	the insert structure for this spectrum
 	 * 
 	 * @throws SPECCHIOFactoryException	could not insert the spectrum
 	 */
@@ -1708,7 +1677,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 * 
 	 * @param spec_file		the spectral file to be inserted
 	 * @param spec_no		the index of the spectrum to be inserted
-	 * @param hierachy_and_exists_struct	contains the identifier of the hierarchy node into which to insert and booleans indicating if this spectrum already exists or not (used to ensure that all calls first do a spectrum exists check, preferably as a multiple file call to save time)	
+	 * @param exists_struct	contains the identifier of the hierarchy node into which to insert and booleans indicating if this spectrum already exists or not (used to ensure that all calls first do a spectrum exists check, preferably as a multiple file call to save time)
 	 * 
 	 * @return insert result descriptor of the new spectrum
 	 * 
@@ -1736,8 +1705,8 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	 * 
 	 * @param spec_file		the spectral file to be inserted
 	 * @param spec_no		the index of the spectrum to be inserted
-	 * @param hierarchy_id	the identifier of the hierarchy node into which to insert
-	 * @param recusion_break_at_parent_id   id of a hierarchy where to break the recursive insert (deprecated)
+	 * @param exists_struct	info on hierarchy existence
+	 * @param recursion_break_at_hierarchy_id   id of a hierarchy where to break the recursive insert (deprecated)
 	 * 
 	 * @return insert result descriptor of the new spectrum
 	 * 
@@ -1764,7 +1733,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	/**
 	 * Test for the existence of a given spectral file in the database.
 	 * 
-	 * @param descriptor	the descriptor of the file to be tested for
+	 * @param spec_file	the descriptor of the file to be tested for
 	 * 
 	 * @return true if the file exists in the database, and false otherwise
 	 */
@@ -1799,7 +1768,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 	/**
 	 * Test for the existence of given spectral files in the database.
 	 * 
-	 * @param descriptor	list of spectral files
+	 * @param spectral_file_list	list of spectral files
 	 * 
 	 * @return list of existence per file encoded as 0/1, order of the files in the input list is equal to boolean indicator order
 	 */
