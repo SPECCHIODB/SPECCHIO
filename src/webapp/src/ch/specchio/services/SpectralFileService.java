@@ -156,7 +156,7 @@ public class SpectralFileService extends SPECCHIOService {
 		Instant start = Instant.now();
 		SpectralFileInsertResult insert_result = factory.insertSpectralFile(spec_file, spec_file.getHierarchyId());
 		Instant end = Instant.now();
-		insert_result.addError(new SpecchioMessage("Total insert time on server: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO) );
+		insert_result.addError(new SpecchioMessage("Total insert time on server: " + Duration.between(start, end).toMillis() + " [ms]", SpecchioMessage.INFO) );
 		
 		factory.dispose();
 		

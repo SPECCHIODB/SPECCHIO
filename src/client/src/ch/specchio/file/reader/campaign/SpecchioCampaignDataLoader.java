@@ -460,7 +460,7 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 							
 							Instant end = Instant.now();
 							 
-							insert_result.addError(new SpecchioMessage("time for client side during insert_spectral_file: " + Duration.between(start, end).getSeconds(), SpecchioMessage.INFO)); 
+							insert_result.addError(new SpecchioMessage("time for client side during insert_spectral_file: " + Duration.between(start, end).toMillis() + " [ms]", SpecchioMessage.INFO));
 							
 
 							spectrum_counter += insert_result.getSpectrumIds().size();
