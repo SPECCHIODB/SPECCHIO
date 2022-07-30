@@ -18,6 +18,7 @@ public class Metadata {
 	private ArrayList<Integer> entry_ids;
 	public ArrayList<String> insert_value_strings;
 	public ArrayList<Integer> redundancy_reduced_eav_ids;
+	public ArrayList<Boolean> redundancy_coding;
 	
 	
 	public Metadata()
