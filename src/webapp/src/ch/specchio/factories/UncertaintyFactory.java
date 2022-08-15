@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1135,7 +1136,15 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 					spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
 					spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
 					spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
-					spectrum_node_insert_stmt.setInt (4, spectrum_node.getUnitId());
+					
+					int unit_id = spectrum_node.getUnitId();
+					
+					// If no unit_id is specified then input at NULL in SQL
+					if (unit_id == 0) {
+						spectrum_node_insert_stmt.setNull(4, Types.INTEGER);
+						} else {
+							spectrum_node_insert_stmt.setInt(4, unit_id);
+						}
 					
 					byte[] temp_buf;
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1188,12 +1197,22 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 					System.out.println("many to many spectrum node");
 					
 					for(int i=0; i<spectrum_ids.size(); i++) {
+						
+	
 					
 						spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
 						spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
 						spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
-						spectrum_node_insert_stmt.setInt (4, spectrum_node.getUnitId());
-					
+						
+						int unit_id = spectrum_node.getUnitId();
+						
+						// If no unit_id is specified then input at NULL in SQL
+						if (unit_id == 0) {
+							spectrum_node_insert_stmt.setNull(4, Types.INTEGER);
+							} else {
+								spectrum_node_insert_stmt.setInt(4, unit_id);
+							}
+						
 						byte[] temp_buf;
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						DataOutput dos = new DataOutputStream(baos);
@@ -2374,7 +2393,15 @@ public void insertUncertaintyNodeOld(ArrayList<UncertaintySourcePair> uc_pairs ,
 				spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription());
 				spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
 				spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
-				spectrum_node_insert_stmt.setInt (4, spectrum_node.getUnitId());
+				
+				int unit_id = spectrum_node.getUnitId();
+				
+				// If no unit_id is specified then input at NULL in SQL
+				if (unit_id == 0) {
+					spectrum_node_insert_stmt.setNull(4, Types.INTEGER);
+					} else {
+						spectrum_node_insert_stmt.setInt(4, unit_id);
+					}
 				
 				byte[] temp_buf;
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
