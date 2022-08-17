@@ -2103,21 +2103,6 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * 
-	 * Get uncertainty set
-	 * 
-	 * @param uncertainty_set_id the uncertainty set id of the desired uncertainty set
-	 * 	
-	 */
-	
-	public SpectralSet getUncertaintySetOld(int uncertainty_set_id) throws SPECCHIOClientException {
-		
-		
-		return getObject(SpectralSet.class, "uncertainty", "getUncertaintySetOld", Integer.toString(uncertainty_set_id));
-
-		
-	}
 	
 	/**
 	 * 
@@ -2424,22 +2409,6 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * Insert a spectrum subset
-	 * 
-	 * @param spectrum_subset a spectrum subset
-	 * @return the id of the created spectrum subset
-	 * 
-	 * @throws SPECCHIOClientException
-	 */
-	
-	public int insertSpectrumSubsetOld(SpectralSet spectral_set) throws SPECCHIOClientException {
-		
-		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.spectrum_ids, spectral_set);
-		
-		return postForInteger("uncertainty", "insertSpectrumSubsetOld", ssd);
-		
-	}
 	
 	/**
 	 * Insert a spectrum subset
@@ -2492,22 +2461,6 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * Insert an uncertainty node
-	 * 
-	 * @param spectral_set a spectral set
-	 * @return the id of the created node
-	 * 
-	 * @throws SPECCHIOClientException
-	 */
-	
-	public int insertUncertaintyNodeOld(SpectralSet spectral_set) throws SPECCHIOClientException {
-		
-		SpectralSetDescriptor ssd = new SpectralSetDescriptor(spectral_set.uncertainty_source_pairs, spectral_set.uncertainty_source_ids, spectral_set.spectrum_ids, spectral_set.spectrum_subset_ids, spectral_set);
-		
-		return postForInteger("uncertainty", "insertUncertaintyNodeOld", ssd);
-		
-	}
  	
 	/**
 	 * 
@@ -2528,24 +2481,6 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * 
-	 * Insert new uncertainty set
-	 * 
-	 * @param spectral_set a spectral set with an uncertainty_set_description
-	 * 
-	 * @return the id of the created uncertainty set
-	 * 
-	 * @throws SPECCHIOClientException
-	 * 
-	 */
-	
-	public int insertNewUncertaintySetOld(SpectralSet spectral_set) throws SPECCHIOClientException {
-		
-		return postForInteger("uncertainty", "insertNewUncertaintySetOld", spectral_set);
-		
-		
-	}
 	
 	
 	

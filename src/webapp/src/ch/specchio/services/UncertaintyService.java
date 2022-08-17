@@ -34,42 +34,7 @@ import ch.specchio.types.UncertaintySpectrumNodeDescriptor;
 
 public class UncertaintyService extends SPECCHIOService {
 	
-	/**
-	 * Insert an uncertainty node.
-	 * 
-	 * @param spectral set descriptor
-	 * 
-	 * @return the id of the new uncertainty node (can be spectrum or instrument)
-	 * 
-	 */
-	
-	@POST
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
-	@Path("insertUncertaintyNodeOld")
-	
-	public XmlInteger insertUncertaintyNodeOld(SpectralSetDescriptor ssd) throws SPECCHIOFactoryException {
-	
-		SpectralSet spectral_set = ssd.getSpectralSet();
-		
-		try
-		{
-				
-			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-			factory.insertUncertaintyNodeOld(ssd.getUcSourcePairs(), ssd.getUcSourceIds(), ssd.getUcSpectrumIds(), ssd.getUcSpectrumSubsetIds(), spectral_set);
-			factory.dispose();
-	
-		}
-		catch(SPECCHIOFactoryException e)
-		{
-			System.out.println(e.toString());
-			throw(e);
-		}
-	
-		return new XmlInteger(spectral_set.getUncertaintyNodeId()); 
-	
-	}
-	
+
 	/**
 	 * Insert an uncertainty node.
 	 * 
@@ -146,41 +111,6 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 	
-	/**
-	 * Insert a spectrum subset.
-	 * 
-	 * @param spectral set descriptor
-	 * 
-	 * @return the id of the new spectrum subset
-	 * 
-	 */
-	
-	@POST
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
-	@Path("insertSpectrumSubsetOld")
-	
-	public XmlInteger insertSpectrumSubsetOld(SpectralSetDescriptor ssd) throws SPECCHIOFactoryException {
-	
-		SpectralSet spectral_set = ssd.getSpectralSet();
-		
-		try
-		{
-				
-			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-			factory.insertSpectrumSubsetOld(ssd.getUcSpectrumIds(), spectral_set);
-			factory.dispose();
-	
-		}
-		catch(SPECCHIOFactoryException e)
-		{
-			System.out.println(e.toString());
-			throw(e);
-		}
-	
-		return new XmlInteger(spectral_set.getSpectrumSubsetId()); 
-	
-	}
 	
 	/**
 	 * Insert a spectrum subset.
@@ -279,32 +209,6 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 	
-	@POST
-	@Produces(MediaType.APPLICATION_XML)
-	@Consumes(MediaType.APPLICATION_XML)
-	@Path("insertNewUncertaintySetOld")
-	public XmlInteger insertNewUncertaintySetOld(SpectralSet spectral_set) throws SPECCHIOFactoryException {
-		
-		System.out.println("Uncertainty service: Inserting new uncertainty set");
-		
-		try
-		{
-		
-			UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		factory.insertNewUncertaintySetOld(spectral_set);
-		factory.dispose();
-		
-		}
-		catch(SPECCHIOFactoryException e)
-		{
-			System.out.println(e.toString());
-			throw(e);
-		}
-		
-		return new XmlInteger(spectral_set.getUncertaintySetId()); 
-		
-	}
-
 	
 	/**
 	 * Get the adjacency matrix for an uncertainty set
@@ -408,29 +312,6 @@ public class UncertaintyService extends SPECCHIOService {
 
 	}
 	
-	/**
-	 * Retrieve an uncertainty set
-	 * 
-	 * @param uncertainty_set_id
-	 * 
-	 * @return SpectralSet 
-	 * 
-	 * @throws SPECCHIOFactoryException
-	 */
-	
-	@GET
-	@Path("getUncertaintySetOld/{uncertainty_set_id}")
-	public SpectralSet getUncertaintySetOld(
-			@PathParam("uncertainty_set_id") int uncertainty_set_id
-		) throws SPECCHIOFactoryException {
-		
-		
-		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		SpectralSet selectedUncertaintySet  = factory.getUncertaintySetOld(uncertainty_set_id);
-		factory.dispose();
-		return selectedUncertaintySet;
-		
-	}
 	
 	/**
 	 * Retrieve an uncertainty set

@@ -1687,20 +1687,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getTaxonomyIdToNameHash(attribute_id);		
 	}	
 	
-	/**
-	 * 
-	 * Get an uncertainty set
-	 * 
-	 * @param uncertainty_set_id the uncertainty_set_id for the desired uncertainty set
-	 * 
-	 */
-	
-	public SpectralSet getUncertaintySetOld(int uncertainty_set_id) throws SPECCHIOClientException {
-		
-		return realClient.getUncertaintySetOld(uncertainty_set_id);
-		
-	}
-	
+
 	/**
 	 * 
 	 * Get an uncertainty set
@@ -1983,22 +1970,6 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * 
-	 * Insert an uncertainty node
-	 * 
-	 * @param spectral_subset a spectrum subset
-	 * 
-	 * @return the id of the created spectrum subset
-	 * 
-	 * 
-	 */
-	
-	public int insertSpectrumSubsetOld(SpectralSet spectral_set) throws SPECCHIOClientException {
-		
-		return realClient.insertSpectrumSubsetOld(spectral_set);
-		
-	}
 	
 	/**
 	 * 
@@ -2054,24 +2025,6 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		
 	}
 	
-	/**
-	 * 
-	 * Insert an uncertainty node
-	 * 
-	 * @param spectral_set a spectral set
-	 * 
-	 * @return the id of the created node
-	 * 
-	 * 
-	 */
-	
-	public int insertUncertaintyNodeOld(SpectralSet spectral_set) throws SPECCHIOClientException {
-		
-		
-		return realClient.insertUncertaintyNodeOld(spectral_set);
-		
-		
-	}
 	
 	/**
 	 * 
@@ -2089,24 +2042,6 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.insertNewUncertaintySet(uc_set);
 		
 	}
-	
-	/**
-	 * 
-	 * Insert a new blank uncertainty set
-	 * 
-	 * @param spectral_set a spectral set with an uncertainty set description
-	 * 
-	 * @return the id of the created uncertainty set
-	 * 
-	 */
-	
-	
-	public int insertNewUncertaintySetOld(SpectralSet spectral_set) throws SPECCHIOClientException{
-		
-		return realClient.insertNewUncertaintySetOld(spectral_set);
-		
-	}
-	
 	
 	
 	/**
