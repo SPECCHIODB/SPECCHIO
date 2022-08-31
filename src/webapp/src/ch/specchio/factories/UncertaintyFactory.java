@@ -1879,6 +1879,56 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 	}
 	
 	/**
+	 * Get the ids of uncertainty sets that contain a particular spectrum id
+	 * 
+	 * @param spectrum_id a spectrum id
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	public ArrayList<Integer> getUncertaintySetIds(int spectrum_id) throws SPECCHIOFactoryException {
+
+		ArrayList<Integer> uc_set_id_list = new ArrayList<Integer>();
+		
+		try {
+			
+			SQL_StatementBuilder SQL = getStatementBuilder();
+			
+			String sql_stmt = "\n" + 
+					"SELECT DISTINCT us.uncertainty_set_id \n" + 
+					"FROM spectrum_subset ss \n" + 
+					"INNER JOIN spectrum_set_map ssm \n" + 
+					"	ON ss.spectrum_subset_id = ssm.spectrum_subset_id \n" + 
+					"	AND ss.spectrum_id = ? \n" + 
+					"INNER JOIN uncertainty_node un \n" + 
+					"	ON un.spectrum_set_id = ssm.spectrum_set_id\n" + 
+					"INNER JOIN uncertainty_node_set uns\n" + 
+					"	ON uns.node_id = un.node_id\n" + 
+					"INNER JOIN uncertainty_set us\n" + 
+					"	ON us.node_set_id = uns.node_set_id;\n" + 
+					"";
+			PreparedStatement pstmt = SQL.prepareStatement(sql_stmt);
+			pstmt.setInt(1, spectrum_id);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				int uc_set_id = rs.getInt("uncertainty_set_id");
+				
+				uc_set_id_list.add(uc_set_id);
+				
+			}
+			
+		} catch (SQLException ex) {
+
+			throw new SPECCHIOFactoryException(ex);
+		}
+		
+		return uc_set_id_list;
+		
+	}
+	
+	/**
  	* Get node num for a given node set id
  	*   
  	* @param node_set_id	the node set id

@@ -2121,6 +2121,31 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	}
 	
 	/**
+	 * 
+	 * Get ids of uncertainty sets that contain a spectrum id
+	 * 
+	 * @param spectrum_id the desired spectrum id
+	 * 	
+	 */
+	
+	public ArrayList<Integer> getUncertaintySetIds(int spectrum_id) throws SPECCHIOClientException {
+		
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		
+		Integer[] id_array = adapter.unmarshalArray(postForArray(XmlInteger.class, "uncertainty", "getUncertaintySetIds", new XmlInteger(spectrum_id)));
+
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		
+		for (int id : id_array) {
+			ids.add(id);
+		}	
+
+		return ids;		
+
+		
+	}
+	
+	/**
 	 * Import a campaign.
 	 * 
 	 * @param user_id	the identifier of the user to whom the campaign will belong

@@ -1703,6 +1703,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 	
 	/**
+	 * 
+	 * Get ids of uncertainty sets that contain a spectrum id
+	 * 
+	 * @param spectrum_id the desired spectrum id
+	 * 
+	 */
+	
+	public ArrayList<Integer> getUncertaintySetIds(int spectrum_id) throws SPECCHIOClientException {
+		
+		return realClient.getUncertaintySetIds(spectrum_id);
+		
+	}
+	
+	/**
 	 * Get a list of all of the users in the database.
 	 * 
 	 * @return an array of User objects

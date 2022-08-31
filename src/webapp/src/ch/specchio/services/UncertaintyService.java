@@ -9,9 +9,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
 import ch.specchio.constants.UserRoles;
+import ch.specchio.factories.MetadataFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.factories.UncertaintyFactory;
 import ch.specchio.jaxb.XmlInteger;
+import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
@@ -337,5 +339,31 @@ public class UncertaintyService extends SPECCHIOService {
 		
 	}
 	
+	/**
+	 * Retrieve uncertainty set ids where a spectrum id can be found
+	 * 
+	 * @param spectrum_id
+	 * 
+	 * @return an arraylist of uncertainty set ids 
+	 * 
+	 * @throws SPECCHIOFactoryException
+	 */
+	
+	@POST
+	@Path("getUncertaintySetIds")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] getUncertaintySetIds(XmlInteger spectrum_id
+		) throws SPECCHIOFactoryException {
+		
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		
+		ArrayList<Integer> ids = factory.getUncertaintySetIds(spectrum_id.getInteger());
+		factory.dispose();
+		
+		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
+		return adapter.marshalArray(ids);	
+		
+	}
 	
 }
