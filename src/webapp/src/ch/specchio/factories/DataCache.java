@@ -1525,7 +1525,7 @@ public class DataCache {
 	public MeasurementUnit get_measurement_unit(int ASD_coding)
 	{	
 		MeasurementUnit s = null;
-			// search through sensor list
+			// search through measurement unit list
 			ListIterator<MeasurementUnit> li = measurement_units.listIterator();
 
 			while(li.hasNext())
@@ -1537,11 +1537,27 @@ public class DataCache {
 		
 		return s;
 	}
+
+	public MeasurementUnit get_measurement_unit(String unit_name)
+	{
+		MeasurementUnit s = null;
+		// search through measurement unit list
+		ListIterator<MeasurementUnit> li = measurement_units.listIterator();
+
+		while(li.hasNext())
+		{
+			s = li.next();
+			if(s.getUnitName().equals(unit_name))
+				break;
+		}
+
+		return s;
+	}
 	
 	public MeasurementUnit get_measurement_unit_via_id(int measurement_unit_id)
 	{	
 		MeasurementUnit s = null;
-			// search through sensor list
+			// search through measurement unit list
 			ListIterator<MeasurementUnit> li = measurement_units.listIterator();
 
 			while(li.hasNext())

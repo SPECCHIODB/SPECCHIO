@@ -17,12 +17,7 @@ import java.util.ListIterator;
 import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.plots.GonioPosition;
 import ch.specchio.plots.GonioSamplingPoints;
-import ch.specchio.spaces.MeasurementUnit;
-import ch.specchio.spaces.RefPanelCalSpace;
-import ch.specchio.spaces.ReferenceSpaceStruct;
-import ch.specchio.spaces.SensorAndInstrumentSpace;
-import ch.specchio.spaces.Space;
-import ch.specchio.spaces.SpectralSpace;
+import ch.specchio.spaces.*;
 import ch.specchio.types.Instrument;
 import ch.specchio.types.Sensor;
 
@@ -171,6 +166,47 @@ public class SpaceFactory extends SPECCHIOFactory {
 		ss.add_unique_spectrum_id(spectrum_id);
 		
 	}
+
+	/**
+	 * Add an uncertainty vector to a space.
+	 */
+	private void addSpectrumToSpace(
+			ArrayList<Space> spaces,
+			int spectrum_id,
+			int sensor_id,
+			int instrument_id,
+			int calibration_id,
+			int measurement_type_id,
+			int uncertainty_set_id
+	) throws SPECCHIOFactoryException {
+
+		boolean space_exists = false;
+		Space ss = null;
+
+		// check if there is already a space that matches the sensor, instrument and calibration, the measurement unit and the uncertainty set
+		ListIterator<Space> li = spaces.listIterator();
+		while(li.hasNext() && space_exists == false)
+		{
+			ss = li.next();
+			if(((UncertaintySpace)ss).matches(instrument_id, sensor_id, calibration_id, measurement_type_id, uncertainty_set_id))
+			{
+				space_exists = true;
+			}
+		}
+
+		if(space_exists == false)
+		{
+			// create a new space
+			MeasurementUnit mu = getMeasurementUnit(measurement_type_id);
+			ss = this.createUncertaintySpace(sensor_id, instrument_id, calibration_id, mu, uncertainty_set_id);
+
+			// add new space to space list
+			spaces.add(ss);
+		}
+
+		ss.add_unique_spectrum_id(spectrum_id);
+
+	}
 	
 	
 	/**
@@ -249,6 +285,38 @@ public class SpaceFactory extends SPECCHIOFactory {
 		RefPanelCalSpace rpcs = new RefPanelCalSpace(sensor_id, mu);
 		setSensorAndInstrumentInSpace(rpcs);
 		return rpcs;		
+	}
+
+
+	/**
+	 * Create a new uncertainty space.
+	 *
+	 * @param sensor_id			the sensor identifier
+	 * @param instrument_id		the instrument identifier (0 to create a reference panel calibration space)
+	 * @param calibration_id	the calibration identifier
+	 * @param mu				the measurement unit
+	 * @param uncertainty_set_id	the identifier of the uncertainty set
+	 *
+	 * @return a new UncertaintySpace object
+	 *
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	private UncertaintySpace createUncertaintySpace(
+			int sensor_id,
+			int instrument_id,
+			int calibration_id,
+			MeasurementUnit mu,
+			int uncertainty_set_id) throws SPECCHIOFactoryException {
+
+		UncertaintySpace s;
+
+		s = new UncertaintySpace(sensor_id, instrument_id, calibration_id, mu, uncertainty_set_id);
+		s.setOrderBy(this.order_by);
+
+		setSensorAndInstrumentInSpace(s);
+
+		return s;
+
 	}
 	
 	
@@ -338,7 +406,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 	 * @param ssi_list
 	 * @param ids		the spectrum identifiers
 	 * 
-	 * @return a list of spae_sorting_ident_struct objects
+	 * @return a list of space_sorting_ident_struct objects
 	 * 
 	 * @throws SPECCHIOFactoryException	could not connect to the database
 	 */
@@ -802,8 +870,89 @@ public class SpaceFactory extends SPECCHIOFactory {
 		return spaces;
 		
 	}
-	
-	
+
+
+
+	/**
+	 * Get Space objects for a given set of spectra and uncertainty_sets: these are collections of uncertainty vectors
+	 *
+	 * @param spectrum_ids	a list of spectrum identifiers
+	 * @param uncertainty_set_ids	a list of uncertainty_set identifiers
+	 *
+	 * @return an array of Space objects corresponding to the given identifiers, grouped by sensor, instrument, measurement unit and uncertainty set id
+	 *
+	 * @throws SPECCHIOFactoryException	could not access the database
+	 */
+	public ArrayList<Space> getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOFactoryException {
+
+		ArrayList<Space> spaces = new ArrayList<Space>();
+		ArrayList<space_sorting_ident_struct> ssi_list = new ArrayList<space_sorting_ident_struct>();
+
+		try {
+
+			SQL_StatementBuilder SQL = getStatementBuilder();
+
+			// create a query string
+			String columns[] = new String[] {
+					"spectrum_id",
+					"sensor_id",
+					"instrument_id",
+					"measurement_unit_id",
+					"calibration_id"
+			};
+
+			// TODO: add here a query that selects the uncertainty set id as well
+			String query = buildSpaceQuery("spectrum", "spectrum_id", columns, spectrum_ids, this.order_by);
+
+			// get the spectra from the database
+			Statement stmt = SQL.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				space_sorting_ident_struct ssi = new space_sorting_ident_struct();
+				ssi.spectrum_id = rs.getInt(1);
+				ssi.sensor_id = rs.getInt(2);
+				ssi.instrument_id = rs.getInt(3);
+				int spectrum_measurement_unit_id = rs.getInt(4);
+				ssi.calibration_id = rs.getInt(5);
+				ssi.uncertainty_set_id = 1; // TODO: this is the uncertainty set id for this spectrum_id
+				String uncertainty_unit = "abs or rel"; // TODO: select unit from uncertainty
+
+				// this is the unit of the uncertainty (absolute: in this case it should be equivalent to spectrum_measurement_unit_id | relative: in this case it should be percentage)
+				if(uncertainty_unit.equals("abs"))
+				{
+					ssi.measurement_unit_id = spectrum_measurement_unit_id;
+				}
+				else
+				{
+					MeasurementUnit mu = getDataCache().get_measurement_unit("Percent");
+					ssi.measurement_unit_id = mu.getUnitId();
+				}
+
+
+				ssi_list.add(ssi);
+			}
+			rs.close();
+			stmt.close();
+
+
+		} catch (SQLException ex) {
+			// bad SQL
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		ListIterator<space_sorting_ident_struct> li = ssi_list.listIterator();
+		while(li.hasNext())
+		{
+			space_sorting_ident_struct ssi = li.next();
+			addSpectrumToSpace(spaces, ssi.spectrum_id, ssi.sensor_id, ssi.instrument_id, ssi.calibration_id, ssi.measurement_unit_id, ssi.uncertainty_set_id);
+
+		}
+
+		return spaces;
+
+	}
+
+
 	/**
 	 * Get a set of spaces corresponding to instrumentation factors.
 	 * 
@@ -868,7 +1017,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 
             // build query
             String table;
-            String id_column;
+            String id_column = "";
             String order_by;
             String conc_ids = SQL.conc_ids(space.getSpectrumIds());
             
@@ -877,7 +1026,12 @@ public class SpaceFactory extends SPECCHIOFactory {
                 table = "instrumentation_factors";
                 id_column = "instrumentation_factors_id";
                 order_by = null;
-            } else {
+            }
+			else if (space instanceof UncertaintySpace) {
+				// load uncertainty vectors
+				table = "TODO: enter here the uncertainty table";
+			}
+			else {
                 // load spectral data
                 table = "spectrum";
                 id_column = "spectrum_id";
@@ -921,6 +1075,14 @@ public class SpaceFactory extends SPECCHIOFactory {
 				System.out.println("instrumentaton_factors query" + query);
 				
 			}
+			else if(table.equals("TODO: enter here the uncertainty table")) {
+
+				// select here the uncertainty vectors for the spectrum_ids and the uncertainty_set_id of this space
+				// TODO: write query ...
+				query = "SELECT  = " + conc_ids;
+				System.out.println("uncertainty vectors query" + query);
+
+			}
 			
 			ResultSet rs = stmt.executeQuery(query);
             Instant endexecuteQuery = Instant.now();
@@ -934,6 +1096,9 @@ public class SpaceFactory extends SPECCHIOFactory {
 
             int cnt = 0;
             Instant startReadBlobs = Instant.now();
+
+			// TODO: this may adapting depending on how the vectors are stored in the uncertainty table
+
             while (rs.next())
             {
 
