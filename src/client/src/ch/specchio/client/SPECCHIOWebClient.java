@@ -1924,6 +1924,20 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return ids;
 	}
 	
+	/**
+	 * Get the uncertainty spaces for a set of spectra and uncertainty set ids.
+	 * 
+	 * @param spectrum_ids	the spectrum identifiers
+	 * @param uncertainty_set_ids 
+	 * 
+	 * @return an array of Space objects
+	 */
+	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOWebClientException {
+		
+		SpaceQueryDescriptor query_d = new SpaceQueryDescriptor(spectrum_ids, uncertainty_set_ids);
+		return postForArray(Space.class, "uncertainty", "getUncertaintySpaces", query_d);
+		
+	}
 
 	/**
 	 * Get the identifiers of all spectra that match a full text search.

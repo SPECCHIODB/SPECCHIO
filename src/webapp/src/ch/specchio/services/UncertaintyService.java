@@ -11,9 +11,12 @@ import javax.ws.rs.core.*;
 import ch.specchio.constants.UserRoles;
 import ch.specchio.factories.MetadataFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
+import ch.specchio.factories.SpaceFactory;
 import ch.specchio.factories.UncertaintyFactory;
 import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.jaxb.XmlIntegerAdapter;
+import ch.specchio.spaces.Space;
+import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
@@ -364,6 +367,27 @@ public class UncertaintyService extends SPECCHIOService {
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		return adapter.marshalArray(ids);	
 		
+	}
+	
+	/**
+	 * Get Space objects that represent uncertainty sets
+	 * 
+	 * @param query_d	the query descriptor
+	 * 
+	 * @return an array of Space objects representing the uncertainty information
+	 * 
+	 * @throws SPECCHIOFactoryException	database error
+	 */
+	@POST
+	@Path("getUncertaintySpaces")
+	@Produces(MediaType.APPLICATION_XML)
+	public Space[] getUncertaintySpaces(SpaceQueryDescriptor query_d) throws SPECCHIOFactoryException {
+		
+		SpaceFactory factory = new SpaceFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<Space> spaces = factory.getUncertaintySpaces(query_d.spectrum_ids, query_d.uncertainty_set_ids);
+		factory.dispose();
+		
+		return spaces.toArray(new Space[spaces.size()]);
 	}
 	
 }

@@ -902,6 +902,15 @@ public class SpaceFactory extends SPECCHIOFactory {
 			};
 
 			// TODO: add here a query that selects the uncertainty set id as well
+			
+
+			//SELECT DISTINCT ucs.uncertainty_set_id FROM spectrum_subset ss 
+			//INNER JOIN spectrum_set_map ssm ON ss.spectrum_subset_id = ssm.spectrum_subset_id 
+			//INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id
+			//INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id
+			//INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id
+			//WHERE ss.spectrum_id in (34807, 34808);
+			
 			String query = buildSpaceQuery("spectrum", "spectrum_id", columns, spectrum_ids, this.order_by);
 
 			// get the spectra from the database

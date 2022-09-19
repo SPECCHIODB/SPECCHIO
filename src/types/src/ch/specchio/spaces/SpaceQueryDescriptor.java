@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.*;
 public class SpaceQueryDescriptor {
 	
 	@XmlElement public ArrayList<Integer> spectrum_ids;
+	@XmlElement public ArrayList<Integer> uncertainty_set_ids;
 	@XmlElement public Boolean split_spaces_by_sensor = false;
 	@XmlElement public Boolean split_spaces_by_sensor_and_unit = false;
 	@XmlElement public String order_by = "date";
@@ -27,6 +28,14 @@ public class SpaceQueryDescriptor {
 		this.spectrum_ids = spectrum_ids;
 		
 	}
+	
+	public SpaceQueryDescriptor(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) {
+		
+		this.spectrum_ids = spectrum_ids;
+		this.uncertainty_set_ids = uncertainty_set_ids;
+		
+	}
+	
 	
 	
 	public SpaceQueryDescriptor(ArrayList<Integer> spectrum_ids, Boolean split_spaces_by_sensor, Boolean split_spaces_by_sensor_and_unit) {

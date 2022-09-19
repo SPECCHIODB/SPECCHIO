@@ -1717,6 +1717,20 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	}
 	
 	/**
+	 * Get the uncertainty spaces for a set of spectra.
+	 * 
+	 * @param spectrum_ids	the spectrum identifiers
+	 * @param uncertainty_set_ids the uncertainty set ids
+	 * 
+	 * @return an array of Space objects
+	 */
+	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOClientException {
+		
+		return realClient.getUncertaintySpaces(spectrum_ids, uncertainty_set_ids);
+		
+	}
+	
+	/**
 	 * Get a list of all of the users in the database.
 	 * 
 	 * @return an array of User objects

@@ -1139,6 +1139,17 @@ public interface SPECCHIOClient {
 	
 	public ArrayList<Integer> getUncertaintySetIds(int spectrum_id) throws SPECCHIOClientException;
 	
+	/**
+	 * Get the uncertainty spaces for a set of spectra and uncertainty set ids.
+	 * 
+	 * @param spectrum_ids	the spectrum identifiers
+	 * @param uncertainty_set_ids uncertainty set ids 
+	 * 
+	 * @return an array of Space objects
+	 */
+	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOClientException;
+	
+	
 	
 	/**
 	 * Get a list of all of the users in the database.
