@@ -900,31 +900,116 @@ public class SpaceFactory extends SPECCHIOFactory {
 					"measurement_unit_id",
 					"calibration_id"
 			};
-
-			// TODO: add here a query that selects the uncertainty set id as well
 			
-
-			//SELECT DISTINCT ucs.uncertainty_set_id FROM spectrum_subset ss 
-			//INNER JOIN spectrum_set_map ssm ON ss.spectrum_subset_id = ssm.spectrum_subset_id 
-			//INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id
-			//INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id
-			//INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id
-			//WHERE ss.spectrum_id in (34807, 34808);
+			// Removing rows from uc_spectrum_temp, spectrum_temp
 			
-			String query = buildSpaceQuery("spectrum", "spectrum_id", columns, spectrum_ids, this.order_by);
+			String rm_uc_query = "DELETE FROM uc_spectrum_temp;";
+			
+			PreparedStatement rm_uc_pstmt = SQL.prepareStatement(rm_uc_query);
+			
+			rm_uc_pstmt.executeUpdate();
+			
+			String rm_spectrum_query = "DELETE FROM spectrum_temp;";
+			
+			PreparedStatement rm_spectrum_pstmt = SQL.prepareStatement(rm_spectrum_query);
+			
+			rm_spectrum_pstmt.executeUpdate();
+			
+			// Selecting uncertainty information for spectrum_ids
+		
+			String uc_select_query = "SELECT DISTINCT ucs.uncertainty_set_id, ss.spectrum_id, sn.abs_rel\n" + 
+					"FROM spectrum_subset ss\n" + 
+					"INNER JOIN spectrum_node sn ON sn.spectrum_node_id = ss.spectrum_node_id\n" +
+					"INNER JOIN spectrum_set_map ssm ON ss.spectrum_subset_id = ssm.spectrum_subset_id\n" + 
+					"INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id\n" + 
+					"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" + 
+					"INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id\n" + 
+					"WHERE ss.spectrum_id in ("  + getStatementBuilder().conc_ids(spectrum_ids) + ");";
+			
+			PreparedStatement uc_select_pstmt = SQL.prepareStatement(uc_select_query);
+			
+			System.out.println("Uc query:" + uc_select_query);
+			ResultSet rsc = uc_select_pstmt.executeQuery();
+			
+			String insert_uc_spectrum_query = "insert into uc_spectrum_temp(uc_set_id, spectrum_id, abs_rel) " +
+					" values (?, ?, ?)";
+			
+			PreparedStatement insert_uc_spectrum_pstmt = SQL.prepareStatement(insert_uc_spectrum_query);
+			
+			while (rsc.next()) {
+				
+				int uc_set_id = rsc.getInt(1);
+				int spectrum_id = rsc.getInt(2);
+				String abs_rel = rsc.getString(3);
 
-			// get the spectra from the database
-			Statement stmt = SQL.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
-			while (rs.next()) {
+				// Now inserting these values in SQL
+				
+				insert_uc_spectrum_pstmt.setInt(1, uc_set_id);
+				insert_uc_spectrum_pstmt.setInt(2, spectrum_id);
+				insert_uc_spectrum_pstmt.setString(3, abs_rel);
+
+				insert_uc_spectrum_pstmt.executeUpdate();
+				
+			}
+			
+			// Selecting spectrum information
+			
+			String spectrum_query = buildSpaceQuery("spectrum", "spectrum_id", columns, spectrum_ids, this.order_by);
+			
+			PreparedStatement select_spectrum_pstmt = SQL.prepareStatement(spectrum_query);
+			
+			ResultSet rss = select_spectrum_pstmt.executeQuery();
+			
+			String insert_spectrum_query = "insert into spectrum_temp(spectrum_id, sensor_id, instrument_id, spectrum_measurement_unit_id, calibration_id) " +
+					" values (?, ?, ?, ?, ?)";
+			
+			PreparedStatement insert_spectrum_pstmt = SQL.prepareStatement(insert_spectrum_query);
+			
+			while (rss.next()) {
+				
+				int spectrum_id = rss.getInt(1);
+				int sensor_id = rss.getInt(2);
+				int instrument_id = rss.getInt(3);
+				int spectrum_measurement_unit_id = rss.getInt(4);
+				int calibration_id = rss.getInt(5);
+				
+				// Now inserting these values into temporary table in SQL
+				
+				insert_spectrum_pstmt.setInt(1, spectrum_id);
+				insert_spectrum_pstmt.setInt(2, sensor_id);
+				insert_spectrum_pstmt.setInt(3, instrument_id);
+				insert_spectrum_pstmt.setInt(4, spectrum_measurement_unit_id);
+				insert_spectrum_pstmt.setInt(5, calibration_id);
+				
+				insert_spectrum_pstmt.executeUpdate();
+				
+			}
+			
+			// Left join of tables to retrieve spectrum and uncertainty information in one place
+			
+			String join_query = "SELECT uc.uc_set_id, uc.spectrum_id, uc.abs_rel, sp.sensor_id, sp.instrument_id, sp.spectrum_measurement_unit_id, sp.calibration_id \n" + 
+					"FROM uc_spectrum_temp uc\n" + 
+					"LEFT JOIN spectrum_temp sp\n" + 
+					"ON uc.spectrum_id = sp.spectrum_id;";
+			
+			PreparedStatement join_pstmt = SQL.prepareStatement(join_query);
+			
+			// Then get results back out
+			ResultSet rsj = join_pstmt.executeQuery();
+			
+			while (rsj.next()) {
+				
+				// Now we populate the structure needed below:
 				space_sorting_ident_struct ssi = new space_sorting_ident_struct();
-				ssi.spectrum_id = rs.getInt(1);
-				ssi.sensor_id = rs.getInt(2);
-				ssi.instrument_id = rs.getInt(3);
-				int spectrum_measurement_unit_id = rs.getInt(4);
-				ssi.calibration_id = rs.getInt(5);
-				ssi.uncertainty_set_id = 1; // TODO: this is the uncertainty set id for this spectrum_id
-				String uncertainty_unit = "abs or rel"; // TODO: select unit from uncertainty
+				
+				ssi.uncertainty_set_id = rsj.getInt(1);
+				ssi.spectrum_id  = rsj.getInt(2);
+				ssi.sensor_id = rsj.getInt(4);
+				ssi.instrument_id = rsj.getInt(5);
+				ssi.calibration_id = rsj.getInt(7);
+		
+				String uncertainty_unit = rsj.getString(3);
+				int spectrum_measurement_unit_id = rsj.getInt(6);
 
 				// this is the unit of the uncertainty (absolute: in this case it should be equivalent to spectrum_measurement_unit_id | relative: in this case it should be percentage)
 				if(uncertainty_unit.equals("abs"))
@@ -936,13 +1021,11 @@ public class SpaceFactory extends SPECCHIOFactory {
 					MeasurementUnit mu = getDataCache().get_measurement_unit("Percent");
 					ssi.measurement_unit_id = mu.getUnitId();
 				}
-
-
+				
+				
 				ssi_list.add(ssi);
 			}
-			rs.close();
-			stmt.close();
-
+			
 
 		} catch (SQLException ex) {
 			// bad SQL
@@ -1015,6 +1098,8 @@ public class SpaceFactory extends SPECCHIOFactory {
         Instant endclearDataVectors = Instant.now();
         long msecondsclearDataVectors = Duration.between(startclearDataVectors, endclearDataVectors).toMillis();
 
+        int uncertainty_set_id = 0;
+        
         try {
             // create SQL-building objects
             Instant startexecuteQuery = Instant.now();
@@ -1030,6 +1115,8 @@ public class SpaceFactory extends SPECCHIOFactory {
             String order_by;
             String conc_ids = SQL.conc_ids(space.getSpectrumIds());
             
+            
+            
             if (space instanceof RefPanelCalSpace) {
                 // load instrumentation calibration factors
                 table = "instrumentation_factors";
@@ -1037,8 +1124,21 @@ public class SpaceFactory extends SPECCHIOFactory {
                 order_by = null;
             }
 			else if (space instanceof UncertaintySpace) {
+				
+				// Downcasting to UncertaintySpace in order to access uncertainty set id which is needed for query
+				
+				UncertaintySpace uc_space = (UncertaintySpace) space; 
+				
+				uncertainty_set_id = uc_space.uncertainty_set_id;
+				
 				// load uncertainty vectors
-				table = "TODO: enter here the uncertainty table";
+				table = "uncertainty";
+				
+				// Do we have an id column here?
+				// Check normal spectrum/wvl space!
+				
+				id_column = "spectrum_id";
+				
 			}
 			else {
                 // load spectral data
@@ -1084,13 +1184,21 @@ public class SpaceFactory extends SPECCHIOFactory {
 				System.out.println("instrumentaton_factors query" + query);
 				
 			}
-			else if(table.equals("TODO: enter here the uncertainty table")) {
+			else if(table.equals("uncertainty")) {
 
-				// select here the uncertainty vectors for the spectrum_ids and the uncertainty_set_id of this space
-				// TODO: write query ...
-				query = "SELECT  = " + conc_ids;
+								
+				query = "SELECT sn.u_vector, ss.spectrum_id\n" + 
+						"FROM spectrum_node sn\n" + 
+						"INNER JOIN spectrum_subset ss ON ss.spectrum_node_id = sn.spectrum_node_id\n" + 
+						"INNER JOIN spectrum_set_map ssm ON ssm.spectrum_subset_id = ss.spectrum_subset_id\n" +
+						"INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id\n" +
+						"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" +
+						"INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id\n" +
+						"WHERE ucs.uncertainty_set_id = " + uncertainty_set_id + "\n" +
+						"AND ss.spectrum_id IN (" + conc_ids + ");";
 				System.out.println("uncertainty vectors query" + query);
-
+				
+				
 			}
 			
 			ResultSet rs = stmt.executeQuery(query);
