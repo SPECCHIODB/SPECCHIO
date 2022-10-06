@@ -924,7 +924,8 @@ public class SpaceFactory extends SPECCHIOFactory {
 					"INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id\n" + 
 					"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" + 
 					"INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id\n" + 
-					"WHERE ss.spectrum_id in ("  + getStatementBuilder().conc_ids(spectrum_ids) + ");";
+					"WHERE ss.spectrum_id in ("  + getStatementBuilder().conc_ids(spectrum_ids) + ")\n" + 
+					"AND ucs.uncertainty_set_id in (" + getStatementBuilder().conc_ids(uncertainty_set_ids) + ");";
 			
 			PreparedStatement uc_select_pstmt = SQL.prepareStatement(uc_select_query);
 			
