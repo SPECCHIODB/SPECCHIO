@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name="space")
-@XmlSeeAlso({RefPanelCalSpace.class,SensorAndInstrumentSpace.class,SpectralSpace.class})
+@XmlSeeAlso({RefPanelCalSpace.class,SensorAndInstrumentSpace.class,SpectralSpace.class,UncertaintySpace.class})
 public abstract class Space {
 	
 	ArrayList<Integer> spectrum_ids;

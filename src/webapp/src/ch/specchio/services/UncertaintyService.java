@@ -17,6 +17,7 @@ import ch.specchio.jaxb.XmlInteger;
 import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
+import ch.specchio.spaces.UncertaintySpace;
 import ch.specchio.types.AdjacencyMatrix;
 import ch.specchio.types.InstrumentNode;
 import ch.specchio.types.SpectralSet;
@@ -387,7 +388,7 @@ public class UncertaintyService extends SPECCHIOService {
 		ArrayList<Space> spaces = factory.getUncertaintySpaces(query_d.spectrum_ids, query_d.uncertainty_set_ids);
 		factory.dispose();
 		
-		return spaces.toArray(new Space[spaces.size()]);
+		return spaces.toArray(new UncertaintySpace[spaces.size()]);
 	}
 	
 }
