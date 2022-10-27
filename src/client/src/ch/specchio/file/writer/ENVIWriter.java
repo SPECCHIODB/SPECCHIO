@@ -92,9 +92,20 @@ class ENVIHdrWriter extends ENVIWriter {
 			bw.write("}");
 		}
 		bw.flush();
+		bw.close();
 		
 		super.endSpace();
 		
+	}
+
+	/**
+	 * Finish writing the current space.
+	 * @param combine indicates if the measurement should be appended at the end of the metadata and attribute columns
+	 * @throws IOException	could not write to output
+	 */
+	public void endSpace(Boolean combine) throws IOException{
+
+		this.endSpace();
 	}
 	
 	
