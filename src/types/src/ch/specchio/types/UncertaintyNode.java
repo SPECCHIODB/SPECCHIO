@@ -1,20 +1,25 @@
 package ch.specchio.types;
 
+import ch.specchio.spaces.RefPanelCalSpace;
+import ch.specchio.spaces.SensorAndInstrumentSpace;
+
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 
 /**
  * This class represents an uncertainty node
  */
 
 @XmlRootElement(name="uncertainty_node")
+@XmlSeeAlso({UncertaintySpectrumNode.class})
 public class UncertaintyNode {
 
 	@XmlElement public int uncertainty_node_id;
 	@XmlElement public String node_type;
-	@XmlElement public Float[] u_vector;
+	public float[] u_vector;
 	@XmlElement public double confidence_level;
 	@XmlElement public String abs_rel;
 	@XmlElement public int unit_id;
@@ -23,17 +28,13 @@ public class UncertaintyNode {
 	@XmlElement public Boolean is_spectrum;
 	
 	@XmlElement public String uncertainty_node_description;
-	
-	@XmlElement public ArrayList<UncertaintySourcePair> uncertainty_source_pairs;
+
+	private ArrayList<UncertaintySourcePair> uncertainty_source_pairs = new ArrayList<UncertaintySourcePair>();;
 	
 	public UncertaintyNode() {
-	
-		this.uncertainty_source_pairs = new ArrayList<UncertaintySourcePair>();
-		
+
 	}
-	
-	// get set statements
-	
+
 	/** 
 	 * Get the uncertainty node id
 	 * @return uncertainty_node_id
@@ -78,8 +79,7 @@ public class UncertaintyNode {
 	 * @return u_vector
 	 */
 
-	@XmlElement(name="u_vector")
-	public Float[] getUncertaintyVector() {
+	public float[] getUncertaintyVector() {
 		return u_vector;
 	}
 	
@@ -96,19 +96,29 @@ public class UncertaintyNode {
 		
 		Float[] u_vector_1d = new Float[rows];
 		
-		u_vector = new Float[rows];
+		u_vector = new float[rows];
 		
 	    // store data
 	    for (int r = 0; r < rows;r++)
 	    {
 	    	   u_vector_1d[r] = (float) u_vector_input[r];
 		    	float f = (float)(u_vector_1d[r]);
-		    	this.u_vector[r] = Float.valueOf(f);		    	   	
+//		    	this.u_vector[r] = Float.valueOf(f);
+				this.u_vector[r] = f;
 	    }	
 	    
 	    System.out.println("Injected into vector!");
 	
-	}	
+	}
+
+	/**
+	 * Set the instrument node uncertainty vector (fast method).
+	 *
+	 * @param u_vector_input
+	 */
+	public void setUncertaintyVector(float[] u_vector_input) {
+		this.u_vector = u_vector_input;
+	}
 	
 	/**
 	 * Get the instrument node confidence level % from 0 to 1.
@@ -160,7 +170,7 @@ public class UncertaintyNode {
 
 	/**
 	 * Set the uncertainty node unit id.
-	 * @param the uncertainty node's unit id
+	 * @param unit_id the uncertainty node's unit id
 	 */
 	
 	public void setUnitId(int unit_id) {
@@ -233,47 +243,47 @@ public class UncertaintyNode {
 	 * @param uncertainty_source_pairs		an arraylist of type UncertaintySourcePair		
 	 * 
 	 */
-	
+	//@XmlElement(name = "uncertainty_source_pairs")
 	public void setUncertaintySourcePairs(ArrayList<UncertaintySourcePair> uncertainty_source_pairs) {
-		
+
 		this.uncertainty_source_pairs = uncertainty_source_pairs;
-		
+
 	}
-	
+
 
 	/**
 	 * Getting uncertainty source pairs
-	 * 
+	 *
 	 * @return uncertainty_source_pairs a list of type UncertaintySourcePair
-	 * 
+	 *
 	 */
-	
-	@XmlElement(name = "uncertainty_source_pairs")
+
+	//@XmlElement(name = "uncertainty_source_pairs")
 	public ArrayList<UncertaintySourcePair> getUncertaintySourcePairs() {
-		
+
 		return uncertainty_source_pairs;
 	}
-	
+
 	/**
 	 * Set the id and the edge value (source_link_description) of a linked uncertainty source
-	 * 
-	 * @param input_source_id		the uncertainty node id of the linked node 
-	 * @param input_source_link_description	the description of how this source links to the current node			
-	 * 
+	 *
+	 * @param input_source_id		the uncertainty node id of the linked node
+	 * @param input_source_link_description	the description of how this source links to the current node
+	 *
 	 */
 	public void add_uncertainty_source_by_id(int input_source_id, String input_source_link_description) {
-		
+
 		// Adding source information to uncertainty pair
-		
+
 		UncertaintySourcePair source_pair = new UncertaintySourcePair();
-		
+
 		source_pair.setSourceId(input_source_id);
 		source_pair.setSourceLinkDescription(input_source_link_description);
-		
+
 		// adding this source pair to arraylist of source pairs
-		
+
 		uncertainty_source_pairs.add(source_pair);
-		
+
 	}
 	
 }

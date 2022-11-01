@@ -2,22 +2,22 @@ package ch.specchio.types;
 
 import java.util.ArrayList;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /**
  * This class represents a spectrum uncertainty node
  */
 
 @XmlRootElement(name="uncertainty_spectrum_node")
+@XmlSeeAlso({UncertaintySpectrumNode.class})
 public class UncertaintySpectrumNode extends UncertaintyNode {
 
-	@XmlElement public Float[][] u_vectors;
+	@XmlElement public float[][] u_vectors;
 	@XmlElement public int spectrum_node_id;
 	
-	@XmlElement public ArrayList<Integer> spectrum_ids;
+	@XmlElement public ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 	@XmlElement public int spectrum_subset_id;
-	@XmlElement public ArrayList<Integer> spectrum_subset_ids;
+	@XmlElement public ArrayList<Integer> spectrum_subset_ids = new ArrayList<Integer>();
 	@XmlElement public int spectrum_set_id;
 	@XmlElement public String spectrum_set_description;
 	
@@ -25,7 +25,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	public UncertaintySpectrumNode() {
 		
 		node_type = "spectrum";
-		
+		this.is_spectrum = true;
 	}
 	
 	public UncertaintySpectrumNode(UncertaintyNode uc_node) {
@@ -36,7 +36,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 		this.abs_rel = uc_node.abs_rel;
 		this.unit_id = uc_node.unit_id;
 		this.node_description = uc_node.node_description;
-		
+		this.is_spectrum = true;
 		
 	}
 	
@@ -46,7 +46,6 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 * Set the instrument node uncertainty matrix.
 	 * @param u_matrix
 	 */
-	
 	public void setUncertaintyMatrix(double[][] u_matrix) {
 		
 		int columns = u_matrix[0].length;
@@ -55,7 +54,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 		System.out.println("columns:" + columns);
 		System.out.println("rows:" + rows);
 		
-		u_vectors = new Float[rows][columns];
+		u_vectors = new float[rows][columns];
 		
 	    // store data
 	    for (int r = 0; r < rows;r++)
@@ -69,7 +68,13 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	    
 	    System.out.println("Injected into vectors!");
 	
-	}	
+	}
+
+
+	//@XmlElement(name="u_vectors")
+	public void setUncertaintyVectors(float[][] u_vectors) {
+		this.u_vectors = u_vectors;
+	}
 	
 	/**
 	 * Get the instrument node uncertainty vector
@@ -77,8 +82,9 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 * @return u_vectors
 	 */
 
-	@XmlElement(name="u_vectors")
-	public Float[][] getUncertaintyVectors() {
+	// Avoid duplication of entries by not adding the @XmlElement(name="u_vectors") again (already specified during definition) (https://stackoverflow.com/questions/52667244/duplicate-elements-created-during-jaxb-marshalling)
+	//@XmlElement(name="u_vectors")
+	public float[][] getUncertaintyVectors() {
 		return u_vectors;
 	}
 	
@@ -91,12 +97,12 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	public int getSpectrumNodeId() {
 		return spectrum_node_id;
 	}
-	
+
 	/**
 	 * Set the spectrum node id
-	 * @param spectrum_node_id  
+	 * @param spectrum_node_id
 	 */
-	
+
 	public void setSpectrumNodeId(int spectrum_node_id) {
 		this.spectrum_node_id = spectrum_node_id;
 	}
@@ -104,9 +110,9 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	/**
 	 * Get the spectrum ids
 	 * 
-	 * @param spectrum_ids a list of spectrum ids
+	 * @return  spectrum_ids a list of spectrum ids
 	 */
-	@XmlElement(name="spectrum_ids")
+	//@XmlElement(name="spectrum_ids")
 	public ArrayList<Integer> getSpectrumIds() {
 		return spectrum_ids;
 	}
@@ -116,6 +122,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 * 
 	 * @param spectrum_ids a list of spectrum ids
 	 */
+	//@XmlElement(name="spectrum_ids")
 	public void setSpectrumIds(ArrayList<Integer> spectrum_ids) {
 		
 		this.spectrum_ids = spectrum_ids;
@@ -126,7 +133,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 * 
 	 * @return spectrum_subset_id the spectrum subset identifier
 	 */
-	@XmlElement(name = "spectrum_subset_id")
+	//@XmlElement(name = "spectrum_subset_id")
 	public int getSpectrumSubsetId() {
 		
 		return spectrum_subset_id;
@@ -148,7 +155,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 * 
 	 * @return spectrum_set_id the spectrum set identifier
 	 */
-	@XmlElement(name = "spectrum_set_id")
+	//@XmlElement(name = "spectrum_set_id")
 	public int getSpectrumSetId() {
 		
 		return spectrum_set_id;
@@ -170,7 +177,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	 *
 	 * @return spectrum_set_description  
 	 */
-	@XmlElement(name="spectrum_set_description")
+	//@XmlElement(name="spectrum_set_description")
 	public String getSpectrumSetDescription() {
 
 		return spectrum_set_description;
@@ -191,9 +198,9 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	/**
 	 * Get the spectrum subset ids for a spectrum level uncertainty node
 	 * 
-	 * @param spectrum_subset_ids a list of spectrum subset ids
+	 * @return  spectrum_subset_ids a list of spectrum subset ids
 	 */
-	@XmlElement(name="spectrum_subset_ids")
+	//@XmlElement(name="spectrum_subset_ids")
 	public ArrayList<Integer> getSpectrumSubsetIds() {
 		return spectrum_subset_ids;
 	}
