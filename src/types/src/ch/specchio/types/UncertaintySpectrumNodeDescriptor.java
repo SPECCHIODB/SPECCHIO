@@ -21,7 +21,7 @@ public class UncertaintySpectrumNodeDescriptor {
 	/** mandatory to have no arg default constructor */
 	public UncertaintySpectrumNodeDescriptor() {
 		this.uc_spectrum_subset_ids = new ArrayList<Integer>();
-		
+		this.uc_spectrum_ids = new ArrayList<Integer>();
 	}
 	
 	public UncertaintySpectrumNodeDescriptor(UncertaintySpectrumNode uc_spectrum_node, int uc_set_id) {
