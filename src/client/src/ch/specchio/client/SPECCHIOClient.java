@@ -1138,16 +1138,27 @@ public interface SPECCHIOClient {
 	 */
 	
 	public ArrayList<Integer> getUncertaintySetIds(int spectrum_id) throws SPECCHIOClientException;
+
+	/**
+	 * Retrieve uncertainty set ids where spectrum ids can be found
+	 *
+	 * @param spectrum_ids
+	 *
+	 * @return an arraylist of UncertaintySetSpectraList
+	 */
+
+	public ArrayList<UncertaintySetSpectraList> getUncertaintySetSpectraLists( ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException;
 	
 	/**
 	 * Get the uncertainty spaces for a set of spectra and uncertainty set ids.
 	 * 
 	 * @param spectrum_ids	the spectrum identifiers
 	 * @param uncertainty_set_ids uncertainty set ids 
-	 * 
+	 * @param order_by		the field to order by
+	 *
 	 * @return an array of Space objects
 	 */
-	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOClientException;
+	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids, String order_by) throws SPECCHIOClientException;
 	
 	
 	
@@ -1359,39 +1370,53 @@ public interface SPECCHIOClient {
 	 * 
 	 * Get instrument node for a selected instrument id
 	 * 
-	 * @param an instrument node id
+	 * @param instrument_node_id instrument node id
 	 * 
 	 * @return an InstrumentNode
 	 * 
 	 */
-	
-	
-	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOClientException;
+
+
+	UncertaintyNode getUncertaintyInstrumentNode(int instrument_node_id) throws SPECCHIOClientException;
 	
 	/**
 	 * Insert an instrument node into the database.
 	 * 
-	 * @param InstrumentNode type
+	 * @param instrument_node UncertaintyInstrumentNode type
 	 * 
 	 * @return an instrument_node_id
 	 * 
 	 * @throws SPECCHIOClientException
 	 */
-	
-	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException;
+
+	int insertUncertaintyInstrumentNode(UncertaintyInstrumentNode instrument_node) throws SPECCHIOClientException;
 
 	/**
-	 * 
-	 * Get spectrum node for a selected spectrum node id
-	 * 
-	 * @param a spectrum node id
-	 * 
-	 * @return an InstrumentNode
-	 * 
+	 * Retrieve an uncertainty node.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node
+	 *
+	 * @throws SPECCHIOClientException
+	 *
 	 */
-	
-	
-	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOClientException;
+
+	UncertaintyNode[] getUncertaintyNodeComponents(int uncertainty_node_id) throws SPECCHIOClientException;
+
+
+		/**
+         *
+         * Get spectrum node for a selected spectrum node id
+         *
+         * @param spectrum_node_id spectrum node id
+         *
+         * @return an InstrumentNode
+         *
+         */
+
+
+	UncertaintyNode getUncertaintySpectrumNode(int spectrum_node_id) throws SPECCHIOClientException;
 
 	
 	/**

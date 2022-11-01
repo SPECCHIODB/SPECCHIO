@@ -1715,18 +1715,35 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getUncertaintySetIds(spectrum_id);
 		
 	}
-	
+
+
+	/**
+	 * Retrieve uncertainty set ids where spectrum ids can be found
+	 *
+	 * @param spectrum_ids
+	 *
+	 * @return an arraylist of UncertaintySetSpectraList
+	 */
+
+	public ArrayList<UncertaintySetSpectraList> getUncertaintySetSpectraLists( ArrayList<Integer> spectrum_ids) throws SPECCHIOClientException{
+
+		return realClient.getUncertaintySetSpectraLists(spectrum_ids);
+
+	}
+
+
 	/**
 	 * Get the uncertainty spaces for a set of spectra.
 	 * 
 	 * @param spectrum_ids	the spectrum identifiers
 	 * @param uncertainty_set_ids the uncertainty set ids
-	 * 
+	 * @param order_by		the field to order by
+	 *
 	 * @return an array of Space objects
 	 */
-	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids) throws SPECCHIOClientException {
+	public Space[] getUncertaintySpaces(ArrayList<Integer> spectrum_ids, ArrayList<Integer> uncertainty_set_ids, String order_by) throws SPECCHIOClientException {
 		
-		return realClient.getUncertaintySpaces(spectrum_ids, uncertainty_set_ids);
+		return realClient.getUncertaintySpaces(spectrum_ids, uncertainty_set_ids, order_by);
 		
 	}
 	
@@ -1874,9 +1891,9 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 */
 	
-	public InstrumentNode getInstrumentNode(int instrument_node_id) throws SPECCHIOClientException {
+	public UncertaintyNode getUncertaintyInstrumentNode(int instrument_node_id) throws SPECCHIOClientException {
 		
-		return realClient.getInstrumentNode(instrument_node_id);
+		return realClient.getUncertaintyInstrumentNode(instrument_node_id);
 		
 	}
 	
@@ -1884,32 +1901,48 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	/**
 	 * Insert instrument node.
 	 * 
-	 * @param an InstrumentNode object
+	 * @param instrument_node an UncertaintyInstrumentNode object
 	 * 
 	 * @return the id of the new instrument node
 	 * 
 	 */
 	
-	public int insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOClientException {
+	public int insertUncertaintyInstrumentNode(UncertaintyInstrumentNode instrument_node) throws SPECCHIOClientException {
 		
 		//some comments here to test 
-		return realClient.insertInstrumentNode(instrument_node);
+		return realClient.insertUncertaintyInstrumentNode(instrument_node);
 		
 	}
-	
+
+	/**
+	 * Retrieve an uncertainty node.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node
+	 *
+	 * @throws SPECCHIOClientException
+	 *
+	 */
+
+	public UncertaintyNode[] getUncertaintyNodeComponents(int uncertainty_node_id) throws SPECCHIOClientException {
+		return realClient.getUncertaintyNodeComponents(uncertainty_node_id);
+	}
+
+
 	/**
 	 * 
 	 * Get spectrum node for a spectrum_node_id
 	 * 
-	 * @param spectrum_node_id 
-	 * 
+	 * @param spectrum_node_id
+	 *
 	 * @return a spectrum node
 	 * 
 	 */
 	
-	public InstrumentNode getSpectrumNode(int spectrum_node_id) throws SPECCHIOClientException {
+	public UncertaintyNode getUncertaintySpectrumNode(int spectrum_node_id) throws SPECCHIOClientException {
 		
-		return realClient.getSpectrumNode(spectrum_node_id);
+		return realClient.getUncertaintySpectrumNode(spectrum_node_id);
 		
 	}
 	
