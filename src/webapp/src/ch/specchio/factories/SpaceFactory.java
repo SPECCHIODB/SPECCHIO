@@ -891,6 +891,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 		try {
 
 			SQL_StatementBuilder SQL = getStatementBuilder();
+			Statement stmt = SQL.createStatement();
 
 			// create a query string
 			String columns[] = new String[] {
@@ -902,18 +903,48 @@ public class SpaceFactory extends SPECCHIOFactory {
 			};
 			
 			// Removing rows from uc_spectrum_temp, spectrum_temp
+
+			String tmp_uc_spectrum_tablename = getStatementBuilder().prefix(getTempDatabaseName(), "uc_spectrum");
+
+			// create temporary table
+			String ddl_string = "CREATE TEMPORARY TABLE IF NOT EXISTS " + tmp_uc_spectrum_tablename + " " +
+					"(uc_set_id INT NOT NULL, " +
+					"spectrum_id INT NOT NULL," +
+					"abs_rel varchar(3))";
+			stmt.executeUpdate(ddl_string);
+
+			// ensure table is empty
+			String query = "delete from " + tmp_uc_spectrum_tablename;
+			stmt.executeUpdate(query);
+
+			String tmp_spectrum_tablename = getStatementBuilder().prefix(getTempDatabaseName(), "spectrum");
+
+			// create temporary table
+			ddl_string = "CREATE TEMPORARY TABLE IF NOT EXISTS " + tmp_spectrum_tablename + " " +
+					"(spectrum_id INT NOT NULL, " +
+					"sensor_id INT," +
+					"instrument_id INT," +
+					"spectrum_measurement_unit_id INT," +
+					"calibration_id INT)";
+			stmt.executeUpdate(ddl_string);
+
+
+			// ensure table is empty
+			 query = "delete from " + tmp_spectrum_tablename;
+			stmt.executeUpdate(query);
+
+
+//			String rm_uc_query = "DELETE FROM uc_spectrum_temp;";
+//
+//			PreparedStatement rm_uc_pstmt = SQL.prepareStatement(rm_uc_query);
+//
+//			rm_uc_pstmt.executeUpdate();
 			
-			String rm_uc_query = "DELETE FROM uc_spectrum_temp;";
-			
-			PreparedStatement rm_uc_pstmt = SQL.prepareStatement(rm_uc_query);
-			
-			rm_uc_pstmt.executeUpdate();
-			
-			String rm_spectrum_query = "DELETE FROM spectrum_temp;";
-			
-			PreparedStatement rm_spectrum_pstmt = SQL.prepareStatement(rm_spectrum_query);
-			
-			rm_spectrum_pstmt.executeUpdate();
+//			String rm_spectrum_query = "DELETE FROM spectrum_temp;";
+//
+//			PreparedStatement rm_spectrum_pstmt = SQL.prepareStatement(rm_spectrum_query);
+//
+//			rm_spectrum_pstmt.executeUpdate();
 			
 			// Selecting uncertainty information for spectrum_ids
 		
@@ -932,7 +963,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			System.out.println("Uc query:" + uc_select_query);
 			ResultSet rsc = uc_select_pstmt.executeQuery();
 			
-			String insert_uc_spectrum_query = "insert into uc_spectrum_temp(uc_set_id, spectrum_id, abs_rel) " +
+			String insert_uc_spectrum_query = "insert into " + tmp_uc_spectrum_tablename +"(uc_set_id, spectrum_id, abs_rel) " +
 					" values (?, ?, ?)";
 			
 			PreparedStatement insert_uc_spectrum_pstmt = SQL.prepareStatement(insert_uc_spectrum_query);
@@ -961,7 +992,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			
 			ResultSet rss = select_spectrum_pstmt.executeQuery();
 			
-			String insert_spectrum_query = "insert into spectrum_temp(spectrum_id, sensor_id, instrument_id, spectrum_measurement_unit_id, calibration_id) " +
+			String insert_spectrum_query = "insert into "+ tmp_spectrum_tablename +"(spectrum_id, sensor_id, instrument_id, spectrum_measurement_unit_id, calibration_id) " +
 					" values (?, ?, ?, ?, ?)";
 			
 			PreparedStatement insert_spectrum_pstmt = SQL.prepareStatement(insert_spectrum_query);
@@ -989,8 +1020,8 @@ public class SpaceFactory extends SPECCHIOFactory {
 			// Left join of tables to retrieve spectrum and uncertainty information in one place
 			
 			String join_query = "SELECT uc.uc_set_id, uc.spectrum_id, uc.abs_rel, sp.sensor_id, sp.instrument_id, sp.spectrum_measurement_unit_id, sp.calibration_id \n" + 
-					"FROM uc_spectrum_temp uc\n" + 
-					"LEFT JOIN spectrum_temp sp\n" + 
+					"FROM " + tmp_uc_spectrum_tablename + " uc\n" +
+					"LEFT JOIN " + tmp_spectrum_tablename + " sp\n" +
 					"ON uc.spectrum_id = sp.spectrum_id;";
 			
 			PreparedStatement join_pstmt = SQL.prepareStatement(join_query);
@@ -1139,7 +1170,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 				// Check normal spectrum/wvl space!
 				
 				id_column = "spectrum_id";
-				
+				quicker_order_by = "order by FIELD (spectrum_id, "+ conc_ids +")";
 			}
 			else {
                 // load spectral data
@@ -1187,8 +1218,9 @@ public class SpaceFactory extends SPECCHIOFactory {
 			}
 			else if(table.equals("uncertainty")) {
 
-								
-				query = "SELECT sn.u_vector, ss.spectrum_id\n" + 
+
+				// TODO: why do we need distinct here? Without distinct it duplicates entries ....
+				query = "SELECT distinct sn.u_vector, ss.spectrum_id\n" +
 						"FROM spectrum_node sn\n" + 
 						"INNER JOIN spectrum_subset ss ON ss.spectrum_node_id = sn.spectrum_node_id\n" + 
 						"INNER JOIN spectrum_set_map ssm ON ssm.spectrum_subset_id = ss.spectrum_subset_id\n" +
@@ -1196,7 +1228,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 						"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" +
 						"INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id\n" +
 						"WHERE ucs.uncertainty_set_id = " + uncertainty_set_id + "\n" +
-						"AND ss.spectrum_id IN (" + conc_ids + ");";
+						"AND ss.spectrum_id IN (" + conc_ids + ")"  + quicker_order_by;
 				System.out.println("uncertainty vectors query" + query);
 				
 				
@@ -1214,8 +1246,6 @@ public class SpaceFactory extends SPECCHIOFactory {
 
             int cnt = 0;
             Instant startReadBlobs = Instant.now();
-
-			// TODO: this may adapting depending on how the vectors are stored in the uncertainty table
 
             while (rs.next())
             {
