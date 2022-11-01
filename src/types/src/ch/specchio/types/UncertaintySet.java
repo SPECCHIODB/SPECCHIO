@@ -163,7 +163,7 @@ public class UncertaintySet {
 	 * @return uncertainty_node_ids a list of uncertainty node ids for an uncertainty set
 	 */
 	
-	@XmlElement(name="uncertainty_node_ids")
+	//@XmlElement(name="uncertainty_node_ids")
 	public ArrayList<Integer> getUncertaintyNodeIds() {
 		return uncertainty_node_ids;
 	}
