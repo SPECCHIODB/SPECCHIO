@@ -18,17 +18,7 @@ import ch.specchio.jaxb.XmlIntegerAdapter;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpaceQueryDescriptor;
 import ch.specchio.spaces.UncertaintySpace;
-import ch.specchio.types.AdjacencyMatrix;
-import ch.specchio.types.InstrumentNode;
-import ch.specchio.types.SpectralSet;
-import ch.specchio.types.SpectralSetDescriptor;
-import ch.specchio.types.UncertaintyInstrumentNode;
-import ch.specchio.types.UncertaintyInstrumentNodeDescriptor;
-import ch.specchio.types.UncertaintyNode;
-import ch.specchio.types.UncertaintyNodeDescriptor;
-import ch.specchio.types.UncertaintySet;
-import ch.specchio.types.UncertaintySpectrumNode;
-import ch.specchio.types.UncertaintySpectrumNodeDescriptor;
+import ch.specchio.types.*;
 
 
 /**
@@ -83,7 +73,7 @@ public class UncertaintyService extends SPECCHIOService {
 	/**
 	 * Insert instrument node.
 	 * 
-	 * @param an InstrumentNode object
+	 * @param uind InstrumentNode object
 	 * 
 	 * @return the id of the new instrument node
 	 * 
@@ -121,7 +111,7 @@ public class UncertaintyService extends SPECCHIOService {
 	/**
 	 * Insert a spectrum subset.
 	 * 
-	 * @param uncertainty spectrum node descriptor descriptor
+	 * @param usnd uncertainty spectrum node descriptor descriptor
 	 * 
 	 * @return the id of the new spectrum subset
 	 * 
@@ -159,7 +149,7 @@ public class UncertaintyService extends SPECCHIOService {
 	/**
 	 * Insert instrument node.
 	 * 
-	 * @param an InstrumentNode object
+	 * @param instrument_node InstrumentNode object
 	 * 
 	 * @return the id of the new instrument node
 	 * 
@@ -169,7 +159,7 @@ public class UncertaintyService extends SPECCHIOService {
 	@Produces(MediaType.APPLICATION_XML)
 	@Consumes(MediaType.APPLICATION_XML)
 	@Path("insertInstrumentNode")
-	public XmlInteger insertInstrumentNode(InstrumentNode instrument_node) throws SPECCHIOFactoryException {
+	public XmlInteger insertInstrumentNode(UncertaintyInstrumentNode instrument_node) throws SPECCHIOFactoryException {
 		
 		System.out.println("Uncertainty service: Inserting new instrument node");
 		
@@ -187,7 +177,7 @@ public class UncertaintyService extends SPECCHIOService {
 			throw(e);
 		}
 		
-		return new XmlInteger(instrument_node.getId()); 
+		return new XmlInteger(instrument_node.getInstrumentNodeId());
 		
 	}
 	
@@ -265,7 +255,7 @@ public class UncertaintyService extends SPECCHIOService {
 	/**
 	 * Retrieve an instrument node.
 	 * 
-	 * @param an instrument_node_id
+	 * @param  instrument_node_id
 	 * 
 	 * @return the corresponding instrument node
 	 * 
@@ -276,14 +266,14 @@ public class UncertaintyService extends SPECCHIOService {
 	@GET
 	@Path("getInstrumentNode/{instrument_node_id}")
 	@Produces(MediaType.APPLICATION_XML)
-	public InstrumentNode getInstrumentNode(
+	public UncertaintyNode getInstrumentNode(
 			@PathParam("instrument_node_id") int instrument_node_id
 		) throws SPECCHIOFactoryException {
 		
 		System.out.println("Fetching instrument node");
 		
 		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		InstrumentNode selectedInstrumentNode  = factory.getInstrumentNode(instrument_node_id);
+		UncertaintyNode selectedInstrumentNode  = factory.getInstrumentNode(instrument_node_id);
 		factory.dispose();
 		return selectedInstrumentNode;
 		
@@ -293,7 +283,7 @@ public class UncertaintyService extends SPECCHIOService {
 	/**
 	 * Retrieve a spectrum node.
 	 * 
-	 * @param an spectrum_node_id
+	 * @param spectrum_node_id
 	 * 
 	 * @return the corresponding spectrum node
 	 * 
@@ -304,18 +294,42 @@ public class UncertaintyService extends SPECCHIOService {
 	@GET
 	@Path("getSpectrumNode/{spectrum_node_id}")
 	@Produces(MediaType.APPLICATION_XML)
-	public InstrumentNode getSpectrumNode(
+	public UncertaintyNode getSpectrumNode(
 			@PathParam("spectrum_node_id") int spectrum_node_id
 		) throws SPECCHIOFactoryException {
 		
 		System.out.println("Fetching spectrum node");
 		
 		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		InstrumentNode selectedInstrumentNode  = factory.getSpectrumNode(spectrum_node_id);
+		UncertaintyNode node  = factory.getSpectrumNode(spectrum_node_id);
 		factory.dispose();
-		return selectedInstrumentNode;
-		
+		return node;
+	}
 
+	/**
+	 * Retrieve uncertainty node components.
+	 *
+	 * @param uncertainty_node_id as returned by UncertaintySpectrumNode.getUncertaintyNodeIds()
+	 *
+	 * @return the corresponding uncertainty node components that make up this combined node
+	 *
+	 * @throws SPECCHIOFactoryException
+	 *
+	 */
+
+	@GET
+	@Path("getUncertaintyNodeComponents/{uncertainty_node_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public UncertaintyNode[] getUncertaintyNodeComponents(
+			@PathParam("uncertainty_node_id") int uncertainty_node_id
+	) throws SPECCHIOFactoryException {
+
+		System.out.println("Fetching spectrum node");
+
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<UncertaintyNode> nodes  = factory.getUncertaintyNodeComponents(uncertainty_node_id);
+		factory.dispose();
+		return nodes.toArray(new UncertaintyNode[nodes.size()]);
 	}
 	
 	
@@ -369,6 +383,33 @@ public class UncertaintyService extends SPECCHIOService {
 		return adapter.marshalArray(ids);	
 		
 	}
+
+
+	/**
+	 * Retrieve uncertainty set ids where a spectrum id can be found
+	 *
+	 * @param spectrum_ids_d SpectrumIdsDescriptor class
+	 *
+	 * @return an arraylist of UncertaintySetSpectraList objects
+	 *
+	 * @throws SPECCHIOFactoryException
+	 */
+
+	@POST
+	@Path("getUncertaintySetSpectraLists")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public UncertaintySetSpectraList[] getUncertaintySetSpectraLists(SpectrumIdsDescriptor spectrum_ids_d
+	) throws SPECCHIOFactoryException {
+
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+
+		ArrayList<UncertaintySetSpectraList> ucs_spectra_lists = factory.getUncertaintySetSpectraLists(spectrum_ids_d.getSpectrumIds(1));
+		factory.dispose();
+
+		return ucs_spectra_lists.toArray(new UncertaintySetSpectraList[ucs_spectra_lists.size()]);
+
+	}
 	
 	/**
 	 * Get Space objects that represent uncertainty sets
@@ -385,6 +426,7 @@ public class UncertaintyService extends SPECCHIOService {
 	public Space[] getUncertaintySpaces(SpaceQueryDescriptor query_d) throws SPECCHIOFactoryException {
 		
 		SpaceFactory factory = new SpaceFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		factory.setOrderByAttribute(query_d.order_by);
 		ArrayList<Space> spaces = factory.getUncertaintySpaces(query_d.spectrum_ids, query_d.uncertainty_set_ids);
 		factory.dispose();
 		
