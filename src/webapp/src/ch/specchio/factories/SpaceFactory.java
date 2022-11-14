@@ -1222,7 +1222,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 				// TODO: why do we need distinct here? Without distinct it duplicates entries ....
 				query = "SELECT distinct sn.u_vector, ss.spectrum_id\n" +
 						"FROM spectrum_node sn\n" + 
-						"INNER JOIN spectrum_subset ss ON ss.spectrum_node_id = sn.spectrum_node_id\n" + 
+						"INNER JOIN spectrum_subset_map ss ON ss.spectrum_node_id = sn.spectrum_node_id\n" + 
 						"INNER JOIN spectrum_set_map ssm ON ssm.spectrum_subset_id = ss.spectrum_subset_id\n" +
 						"INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id\n" +
 						"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" +

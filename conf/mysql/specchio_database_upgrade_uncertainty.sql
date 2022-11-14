@@ -31,15 +31,22 @@ CREATE TABLE IF NOT EXISTS `spectrum_node` (
 );
 
 -- Creating spectrum_subset
--- Does not include foreign key constraint on spectrum_id to spectrum table
 CREATE TABLE IF NOT EXISTS `spectrum_subset` (
+  `spectrum_subset_id` int(11) NOT NULL,
+  PRIMARY KEY (`spectrum_subset_id`)
+  );
+
+-- Creating spectrum_subset_map
+CREATE TABLE IF NOT EXISTS `spectrum_subset_map` (
      `spectrum_subset_pk` INT UNSIGNED NOT NULL AUTO_INCREMENT,
      `spectrum_subset_id` int(11) NOT NULL,
     `spectrum_node_id` int(11) DEFAULT NULL,
     `spectrum_id` int(11) DEFAULT NULL,
     PRIMARY KEY (`spectrum_subset_pk`),
     KEY `spectrum_node_id` (`spectrum_node_id`),
-    CONSTRAINT `spectrum_subset_ibfk_1` FOREIGN KEY (`spectrum_node_id`) REFERENCES `spectrum_node` (`spectrum_node_id`)
+    CONSTRAINT `spectrum_subset_map_ibfk_1` FOREIGN KEY (`spectrum_node_id`) REFERENCES `spectrum_node` (`spectrum_node_id`),
+    CONSTRAINT `spectrum_subset_map_ibfk_2` FOREIGN KEY (`spectrum_subset_id`) REFERENCES `spectrum_subset` (`spectrum_subset_id`),
+	CONSTRAINT `spectrum_subset_map_ibfk_3` FOREIGN KEY (`spectrum_id`) REFERENCES `spectrum` (`spectrum_id`)
     );
 
 

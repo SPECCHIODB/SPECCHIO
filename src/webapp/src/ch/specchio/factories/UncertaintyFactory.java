@@ -861,10 +861,14 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 				
 				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
-				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
-						" values (?, ?, ?)";
+				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id) + values (?)";
 				
 				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
+				
+				String spectrum_subset_map_insert_sql = "insert into spectrum_subset_map(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
+						" values (?, ?, ?)";
+				
+				PreparedStatement spectrum_subset_map_insert_stmt = SQL.prepareStatement(spectrum_subset_map_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
 				// Getting next spectrum_subset_id. One spectrum_subset_id for all spectrum_ids 
 				
@@ -891,6 +895,14 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 				spectrum_subset_list.add(spectrum_subset_id);
 			
 				spectrum_subset_select_max_stmt.close();
+				
+				// Inserting new subset id into spectrum_subset table
+				
+				spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
+				
+				int affectedRows_subset= spectrum_subset_insert_stmt.executeUpdate();
+				
+				spectrum_subset_insert_stmt.close();
 				
 				// Here is where one-to-many and many-to-many split:
 				
@@ -945,17 +957,17 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 					
 					for(int i=0; i<spectrum_ids.size(); i++) {
 						
-						spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
-						spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
-						spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+						spectrum_subset_map_insert_stmt.setInt (1, spectrum_subset_id);
+						spectrum_subset_map_insert_stmt.setInt (2, spectrum_node_id);
+						spectrum_subset_map_insert_stmt.setInt (3, spectrum_ids.get(i));
 					
-						int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+						int affectedRows_4= spectrum_subset_map_insert_stmt.executeUpdate();
 					
-						ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+						ResultSet generatedKeys_4 = spectrum_subset_map_insert_stmt.getGeneratedKeys();
 						
 						
 					}
-					spectrum_subset_insert_stmt.close();
+					spectrum_subset_map_insert_stmt.close();
 
 				}
 				else {
@@ -964,8 +976,6 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 					
 					for(int i=0; i<spectrum_node.getUncertaintyVectors().length; i++) { // note: spectrum ids can be zero, hence, use matrix size to loop over inserts
 						
-	
-					
 						spectrum_node_insert_stmt.setString (1, spectrum_node.getNodeDescription()); 
 						spectrum_node_insert_stmt.setDouble (2, spectrum_node.getConfidenceLevel());
 						spectrum_node_insert_stmt.setString (3, spectrum_node.getAbsRel());
@@ -1012,25 +1022,25 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 					
 						}
 					
-						spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
-						spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
+						spectrum_subset_map_insert_stmt.setInt (1, spectrum_subset_id);
+						spectrum_subset_map_insert_stmt.setInt (2, spectrum_node_id);
 						if(spectrum_ids.size() > 0)
-							spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+							spectrum_subset_map_insert_stmt.setInt (3, spectrum_ids.get(i));
 						else
 						{
 							// No spectrum ids are provided, which means that there is no direct link of this uncertainty matrix to actual spectral vectors in the database
 							// This case happens when e.g. data are computed on the fly
-							spectrum_subset_insert_stmt.setString(3, null);
+							spectrum_subset_map_insert_stmt.setString(3, null);
 						}
 					
-						int affectedRows_4= spectrum_subset_insert_stmt.executeUpdate();
+						int affectedRows_4= spectrum_subset_map_insert_stmt.executeUpdate();
 					
-						ResultSet generatedKeys_4 = spectrum_subset_insert_stmt.getGeneratedKeys();
+						ResultSet generatedKeys_4 = spectrum_subset_map_insert_stmt.getGeneratedKeys();
 
 					}
 				
 					spectrum_node_insert_stmt.close();
-					spectrum_subset_insert_stmt.close();
+					spectrum_subset_map_insert_stmt.close();
 
 					}
 				
@@ -1215,8 +1225,6 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 		// Re-assigning arraylists
 		
 		spectrum_node.setSpectrumIds(uc_spectrum_ids);
-		
-		// What do we want to do about node_type? Do we want to check this is 'spectrum'?
 
 		try {
 		
@@ -1225,16 +1233,18 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 		
 			String spectrum_node_insert_sql = "insert into spectrum_node(node_description, confidence_level, abs_rel, unit_id, u_vector) " +
 				" values (?, ?, ?, ?, ?)";
-			String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
+			String spectrum_subset_map_insert_sql = "insert into spectrum_subset_map(spectrum_subset_id, spectrum_node_id, spectrum_id) " +
 				" values (?, ?, ?)";
 			String spectrum_subset_select_max_sql = "select max(spectrum_subset_id) from spectrum_subset;";
+			
+			String spectrum_subset_insert_sql = "insert ignore into spectrum_subset(spectrum_subset_id) + values (?)";
 			
 			// PreparedStatements
 		
 			PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement spectrum_subset_map_insert_stmt = SQL.prepareStatement(spectrum_subset_map_insert_sql, Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement spectrum_subset_select_max_stmt = SQL.prepareStatement(spectrum_subset_select_max_sql, Statement.RETURN_GENERATED_KEYS);
-			
+			PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS); 
 			
 			// Find max spectrum_subset_id 
 			
@@ -1254,8 +1264,13 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 		
 			spectrum_subset_select_max_stmt.close();
 			
-			// Insert into spectrum_node and spectrum_subset
-			// Need to make sure that the code below only inserts one spectrum_subset_id
+			spectrum_subset_insert_stmt.setInt(1, spectrum_subset_id);
+			
+			int affectedRows_4 = spectrum_subset_insert_stmt.executeUpdate();
+			
+			spectrum_subset_insert_stmt.close();
+			
+			// Insert into spectrum_node and spectrum_subset_map
 			
 			ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
 			spectrum_ids = spectrum_node.getSpectrumIds();
@@ -1313,22 +1328,18 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 				// For the time being, we have 1 spectrum subset for each spectrum id
 				// spectrum_subset_id is currently on auto-increment
 				
-				spectrum_subset_insert_stmt.setInt (1, spectrum_subset_id);
-				spectrum_subset_insert_stmt.setInt (2, spectrum_node_id);
-				spectrum_subset_insert_stmt.setInt (3, spectrum_ids.get(i));
+				spectrum_subset_map_insert_stmt.setInt (1, spectrum_subset_id);
+				spectrum_subset_map_insert_stmt.setInt (2, spectrum_node_id);
+				spectrum_subset_map_insert_stmt.setInt (3, spectrum_ids.get(i));
 				
-				int affectedRows_3= spectrum_subset_insert_stmt.executeUpdate();
+				int affectedRows_3= spectrum_subset_map_insert_stmt.executeUpdate();
 				
 			}
-			
+						
 			spectrum_node_insert_stmt.close();
-			spectrum_subset_insert_stmt.close();
+			spectrum_subset_map_insert_stmt.close();
 			
 			spectrum_node.setSpectrumSubsetId(spectrum_subset_id);
-			
-			System.out.println("executed all spectrum ids");
-			
-			// Returning spectrum subset id
 
 		
 		} catch (SQLException e) {
@@ -1993,7 +2004,7 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 			
 			String sql_stmt = "\n" + 
 					"SELECT DISTINCT us.uncertainty_set_id \n" + 
-					"FROM spectrum_subset ss \n" + 
+					"FROM spectrum_subset_map ss \n" + 
 					"INNER JOIN spectrum_set_map ssm \n" + 
 					"	ON ss.spectrum_subset_id = ssm.spectrum_subset_id \n" + 
 					"	AND ss.spectrum_id = ? \n" + 
@@ -2048,7 +2059,7 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 
 			String sql_stmt = "\n" +
 					"SELECT DISTINCT us.uncertainty_set_id, ss.spectrum_id \n" +
-					"FROM spectrum_subset ss \n" +
+					"FROM spectrum_subset_map ss \n" +
 					"INNER JOIN spectrum_set_map ssm \n" +
 					"	ON ss.spectrum_subset_id = ssm.spectrum_subset_id \n" +
 					"	AND ss.spectrum_id in ( " + spectrum_ids_str + " )\n" +
