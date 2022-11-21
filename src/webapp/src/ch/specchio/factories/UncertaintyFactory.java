@@ -861,7 +861,8 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 				
 				PreparedStatement spectrum_node_insert_stmt = SQL.prepareStatement(spectrum_node_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
-				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id) + values (?)";
+				String spectrum_subset_insert_sql = "insert into spectrum_subset(spectrum_subset_id) " +
+				"values (?)";
 				
 				PreparedStatement spectrum_subset_insert_stmt = SQL.prepareStatement(spectrum_subset_insert_sql, Statement.RETURN_GENERATED_KEYS);
 				
@@ -1237,7 +1238,8 @@ public void insertUncertaintyNode(UncertaintySpectrumNode spectrum_node, int uc_
 				" values (?, ?, ?)";
 			String spectrum_subset_select_max_sql = "select max(spectrum_subset_id) from spectrum_subset;";
 			
-			String spectrum_subset_insert_sql = "insert ignore into spectrum_subset(spectrum_subset_id) + values (?)";
+			String spectrum_subset_insert_sql = "insert ignore into spectrum_subset(spectrum_subset_id)" +
+			"values (?)";
 			
 			// PreparedStatements
 		

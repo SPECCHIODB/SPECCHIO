@@ -905,7 +905,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			// Removing rows from uc_spectrum_temp, spectrum_temp
 
 			String tmp_uc_spectrum_tablename = getStatementBuilder().prefix(getTempDatabaseName(), "uc_spectrum");
-
+			
 			// create temporary table
 			String ddl_string = "CREATE TEMPORARY TABLE IF NOT EXISTS " + tmp_uc_spectrum_tablename + " " +
 					"(uc_set_id INT NOT NULL, " +
@@ -918,7 +918,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			stmt.executeUpdate(query);
 
 			String tmp_spectrum_tablename = getStatementBuilder().prefix(getTempDatabaseName(), "spectrum");
-
+			
 			// create temporary table
 			ddl_string = "CREATE TEMPORARY TABLE IF NOT EXISTS " + tmp_spectrum_tablename + " " +
 					"(spectrum_id INT NOT NULL, " +
@@ -947,15 +947,17 @@ public class SpaceFactory extends SPECCHIOFactory {
 //			rm_spectrum_pstmt.executeUpdate();
 			
 			// Selecting uncertainty information for spectrum_ids
+			
+			
 		
-			String uc_select_query = "SELECT DISTINCT ucs.uncertainty_set_id, ss.spectrum_id, sn.abs_rel\n" + 
-					"FROM spectrum_subset ss\n" + 
-					"INNER JOIN spectrum_node sn ON sn.spectrum_node_id = ss.spectrum_node_id\n" +
-					"INNER JOIN spectrum_set_map ssm ON ss.spectrum_subset_id = ssm.spectrum_subset_id\n" + 
+			String uc_select_query = "SELECT DISTINCT ucs.uncertainty_set_id, ssbm.spectrum_id, sn.abs_rel\n" + 
+					"FROM spectrum_subset_map ssbm\n" + 
+					"INNER JOIN spectrum_node sn ON sn.spectrum_node_id = ssbm.spectrum_node_id\n" +
+					"INNER JOIN spectrum_set_map ssm ON ssm.spectrum_subset_id = ssbm.spectrum_subset_id\n" + 
 					"INNER JOIN uncertainty_node un ON un.spectrum_set_id = ssm.spectrum_set_id\n" + 
 					"INNER JOIN uncertainty_node_set uns ON uns.node_id = un.node_id\n" + 
 					"INNER JOIN uncertainty_set ucs ON ucs.node_set_id = uns.node_set_id\n" + 
-					"WHERE ss.spectrum_id in ("  + getStatementBuilder().conc_ids(spectrum_ids) + ")\n" + 
+					"WHERE ssbm.spectrum_id in ("  + getStatementBuilder().conc_ids(spectrum_ids) + ")\n" + 
 					"AND ucs.uncertainty_set_id in (" + getStatementBuilder().conc_ids(uncertainty_set_ids) + ");";
 			
 			PreparedStatement uc_select_pstmt = SQL.prepareStatement(uc_select_query);
