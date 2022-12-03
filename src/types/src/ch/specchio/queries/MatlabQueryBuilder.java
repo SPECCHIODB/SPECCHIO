@@ -163,6 +163,7 @@ public class MatlabQueryBuilder {
 		// output code to create the query object
 		out.println("query = Query(" + quoteString(query.getTableName()) + ");");
 		out.println("query.setQueryType(Query.SELECT_QUERY);");
+		out.println("attr_hash = specchio_client.getAttributesNameHash();");
 		out.println();
 		
 		// output code to add columns to the query
@@ -200,15 +201,9 @@ public class MatlabQueryBuilder {
 				EAVQueryConditionObject eavCond = (EAVQueryConditionObject)cond;
 				if (eavCond.getAttributeName() != null) {
 					out.println(
-						"cond = EAVQueryConditionObject(" +
-							quoteString(eavCond.getTableName()) +
-							", " +
-							quoteString(eavCond.getRefTableName()) +
-							", " +
-							quoteString(eavCond.getAttributeName()) +
-							", " +
-							quoteString(eavCond.getFieldName()) +
-						");"
+							"cond = EAVQueryConditionObject(attr_hash.get(" +
+									quoteString(eavCond.getAttributeName()) +
+									"));"
 					);
 				} else {
 					out.println(

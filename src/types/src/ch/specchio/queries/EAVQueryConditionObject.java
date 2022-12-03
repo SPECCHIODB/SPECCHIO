@@ -47,7 +47,7 @@ public class EAVQueryConditionObject extends QueryCondition {
 		this("eav", attr.getDefaultStorageField());
 		
 		this.attribute_name = attr.getName();
-		this.ref_tablename = "spectrum_x_eav";
+		this.ref_tablename = "spectrum_x_eav"; // obsolete
 	}
 	
 	
