@@ -331,8 +331,32 @@ public class UncertaintyService extends SPECCHIOService {
 		factory.dispose();
 		return nodes.toArray(new UncertaintyNode[nodes.size()]);
 	}
-	
-	
+
+	/**
+	 * Retrieve uncertainty node subsets.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node components grouped into subsets that make up this combined node
+	 *
+	 * @throws SPECCHIOFactoryException
+	 *
+	 */
+
+	@GET
+	@Path("getUncertaintyNodeSubSets/{uncertainty_node_id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public UncertaintyNode[] getUncertaintyNodeSubSets(
+			@PathParam("uncertainty_node_id") int uncertainty_node_id
+	) throws SPECCHIOFactoryException {
+
+		UncertaintyFactory factory = new UncertaintyFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		ArrayList<UncertaintyNode> nodes  = factory.getUncertaintyNodeSubSets(uncertainty_node_id);
+		factory.dispose();
+		return nodes.toArray(new UncertaintyNode[nodes.size()]);
+	}
+
+
 	/**
 	 * Retrieve an uncertainty set
 	 * 
