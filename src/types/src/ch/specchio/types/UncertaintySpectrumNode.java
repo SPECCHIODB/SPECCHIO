@@ -16,7 +16,7 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	@XmlElement public int spectrum_node_id;
 	
 	@XmlElement public ArrayList<Integer> spectrum_ids = new ArrayList<Integer>();
-	@XmlElement public int spectrum_subset_id;
+	@XmlElement public int spectrum_subset_id;// used to distinguish uncertainty nodes by their subsets (if existing, otherwise a single subset is the default for a group of uncertainty nodes)
 	@XmlElement public ArrayList<Integer> spectrum_subset_ids = new ArrayList<Integer>();
 	@XmlElement public int spectrum_set_id;
 	@XmlElement public String spectrum_set_description;
@@ -74,6 +74,19 @@ public class UncertaintySpectrumNode extends UncertaintyNode {
 	//@XmlElement(name="u_vectors")
 	public void setUncertaintyVectors(float[][] u_vectors) {
 		this.u_vectors = u_vectors;
+	}
+
+	public void setUncertaintyVectors(ArrayList<float[]> vector_list)
+	{
+		float[][] f = new float[vector_list.size()][vector_list.get(0).length];
+
+		for(int i = 0;i<vector_list.size();i++)
+		{
+			f[i] = vector_list.get(i);
+		}
+
+		this.setUncertaintyVectors(f);
+
 	}
 	
 	/**
