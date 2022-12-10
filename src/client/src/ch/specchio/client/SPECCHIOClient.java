@@ -1405,16 +1405,28 @@ public interface SPECCHIOClient {
 	UncertaintyNode[] getUncertaintyNodeComponents(int uncertainty_node_id) throws SPECCHIOClientException;
 
 
-		/**
-         *
-         * Get spectrum node for a selected spectrum node id
-         *
-         * @param spectrum_node_id spectrum node id
-         *
-         * @return an InstrumentNode
-         *
-         */
+	/**
+	 * Retrieve uncertainty node subsets.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node components grouped into subsets that make up this combined node
+	 *
+	 * @throws SPECCHIOClientException
+	 *
+	 */
 
+	UncertaintyNode[] getUncertaintyNodeSubSets(int uncertainty_node_id) throws SPECCHIOClientException;
+
+	/**
+	 *
+	 * Get spectrum node for a selected spectrum node id
+	 *
+	 * @param spectrum_node_id spectrum node id
+	 *
+	 * @return an InstrumentNode
+	 *
+	 */
 
 	UncertaintyNode getUncertaintySpectrumNode(int spectrum_node_id) throws SPECCHIOClientException;
 
@@ -1764,7 +1776,6 @@ public interface SPECCHIOClient {
 	 * @throws SPECCHIOClientException
 	 */
 	public void updateUser(User user) throws SPECCHIOClientException;
-
 
 
 }

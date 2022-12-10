@@ -2366,7 +2366,23 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return getArray(UncertaintyNode.class, "uncertainty", "getUncertaintyNodeComponents", Integer.toString(uncertainty_node_id));
 	}
 
-	 
+	/**
+	 * Retrieve uncertainty node subsets.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node components grouped into subsets that make up this combined node
+	 *
+	 * @throws SPECCHIOClientException
+	 *
+	 */
+
+	public UncertaintyNode[] getUncertaintyNodeSubSets(int uncertainty_node_id) throws SPECCHIOClientException {
+		return getArray(UncertaintyNode.class, "uncertainty", "getUncertaintyNodeSubSets", Integer.toString(uncertainty_node_id));
+	}
+
+
+
 	/**
 	 * Insert instrument node.
 	 * 

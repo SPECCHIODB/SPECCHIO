@@ -1929,6 +1929,21 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getUncertaintyNodeComponents(uncertainty_node_id);
 	}
 
+	/**
+	 * Retrieve uncertainty node subsets.
+	 *
+	 * @param uncertainty_node_id
+	 *
+	 * @return the corresponding uncertainty node components grouped into subsets that make up this combined node
+	 *
+	 * @throws SPECCHIOClientException
+	 *
+	 */
+
+	public UncertaintyNode[] getUncertaintyNodeSubSets(int uncertainty_node_id) throws SPECCHIOClientException {
+		return realClient.getUncertaintyNodeSubSets(uncertainty_node_id);
+	}
+
 
 	/**
 	 * 
