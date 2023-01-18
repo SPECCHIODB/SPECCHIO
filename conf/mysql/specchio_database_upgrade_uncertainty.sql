@@ -1,8 +1,6 @@
 -- Author: kmason
 -- Description: script to create tables needed for 'Uncertainty in SPECCHIO' test environment with new SPECCHIO schema v4.01
 
-START TRANSACTION;
-
 -- Creating spectrum_set
 CREATE TABLE IF NOT EXISTS `spectrum_set` (
   `spectrum_set_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -58,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `spectrum_set_map` (
   KEY `spectrum_subset_id` (`spectrum_subset_id`),
   KEY `spectrum_set_id` (`spectrum_set_id`),
   CONSTRAINT `spectrum_set_map_ibfk_1` FOREIGN KEY (`spectrum_set_id`) REFERENCES `spectrum_set` (`spectrum_set_id`),
-  -- CONSTRAINT `spectrum_set_map_ibfk_2` FOREIGN KEY (`spectrum_subset_id`) REFERENCES `spectrum_subset` (`spectrum_subset_id`)
+  CONSTRAINT `spectrum_set_map_ibfk_2` FOREIGN KEY (`spectrum_subset_id`) REFERENCES `spectrum_subset` (`spectrum_subset_id`)
 );
 
 -- Creating instrument_node
@@ -80,6 +78,7 @@ CREATE TABLE IF NOT EXISTS `uncertainty_node` (
   `is_spectrum` tinyint(1) NOT NULL,
   `instrument_node_id` int(11) DEFAULT NULL,
   `spectrum_set_id` int(11) DEFAULT NULL,
+  `uncertainty_node_description` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`node_id`),
   KEY `instrument_node_id` (`instrument_node_id`),
   KEY `spectrum_set_id` (`spectrum_set_id`),
@@ -104,13 +103,9 @@ CREATE TABLE IF NOT EXISTS `uncertainty_set` (
   `node_set_id` int(11) DEFAULT NULL,
   `uncertainty_set_description` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`uncertainty_set_id`),
-  KEY `node_set_id` (`node_set_id`)
+  KEY `node_set_id` (`node_set_id`),
+  CONSTRAINT `uncertainty_set_ibfk_1` FOREIGN KEY (`node_set_id`) REFERENCES `uncertainty_node_set` (`node_set_id`)
 );
 
-INSERT INTO `specchio`.`schema_info` (`version`, `date`) VALUES ('3.36', CURDATE());
-
--- Still to add: links to spectrum and calibration tables
-
-COMMIT;
 
 
