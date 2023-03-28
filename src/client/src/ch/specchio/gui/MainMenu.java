@@ -40,18 +40,8 @@ import ch.specchio.constants.UserRoles;
 import ch.specchio.file.reader.campaign.VirtualFileSystemView;
 import ch.specchio.metadata.MetaDataFromTabModel;
 import ch.specchio.queries.Query;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.Capabilities;
-import ch.specchio.types.Category;
-import ch.specchio.types.CustomFileView;
-import ch.specchio.types.DropboxPath;
-import ch.specchio.types.Institute;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.SpecchioCampaign;
-import ch.specchio.types.TaxonomyNodeObject;
-import ch.specchio.types.Units;
-import ch.specchio.types.User;
-import ch.specchio.types.attribute;
+import ch.specchio.spaces.Space;
+import ch.specchio.types.*;
 
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxAppInfo;
@@ -327,10 +317,10 @@ private JMenuItem dbConfigmenuItem;
       public_menu_items.put(info, menuItem);
       
       // uncomment for sandbox
-//      menuItem = new JMenuItem(test);
-//      menuItem.addActionListener(this);
-//      menu.add(menuItem);      
-//      public_menu_items.put(test, menuItem);      
+      menuItem = new JMenuItem(test);
+      menuItem.addActionListener(this);
+      menu.add(menuItem);
+      public_menu_items.put(test, menuItem);
       
       menuBar.add(menu);
    }
@@ -1051,100 +1041,145 @@ private JMenuItem dbConfigmenuItem;
     	// TODO The Sandbox is here ....
     	  // Sandbox
     	  SPECCHIOClient specchio_client = SPECCHIOApplication.getInstance().getClient();
-    	  
-    	  try {
-    		  
-    		  boolean use_access_token = true;
-    		  DbxClientV2 client;
-    		  
-    		  if (use_access_token)
-    		  {
-    			  
-					SPECCHIOPreferencesStore prefs_store = new SPECCHIOPreferencesStore();
 
-					Preferences prefs = prefs_store.getPreferences();
+//		  ArrayList<Integer> spectrum_id_list_jarray = new ArrayList<Integer>();
+//		  spectrum_id_list_jarray.add(34802);
+//		  spectrum_id_list_jarray.add(34808);
+//
+//		  ArrayList<Integer> uc_set_id_list_jarray = new ArrayList<Integer>();
+//		  uc_set_id_list_jarray.add(114);
+//		  uc_set_id_list_jarray.add(115);
+//
+//
+//		  Space[] uc_spaces = specchio_client.getUncertaintySpaces(spectrum_id_list_jarray, uc_set_id_list_jarray);
+//
+//
+//		  Space uc_space_1 = uc_spaces[0];
+//
+//		  uc_space_1 = specchio_client.loadSpace(uc_space_1);
 
-					Preferences node = prefs.node("Dropbox");    			  
-    		  
-    		  String ACCESS_TOKEN = node.get("ahueni@geo.uzh.ch", "");
-    		  
-    	        // Create Dropbox client
-    	        DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
-    	        client = new DbxClientV2(config, ACCESS_TOKEN);  
-    		  }
-    	        else
-    	        {
-    	        	DbxAppInfo dbxAppInfo = new DbxAppInfo("7gj3n1ol65mgq89", "fshdzufbmdx64zd");
-    	        	DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
+//		  ArrayList<Integer> spectrum_id_list_jarray = new ArrayList<Integer>();
+//		  spectrum_id_list_jarray.add(35419);
+//		  spectrum_id_list_jarray.add(35420);
+//
+//		  ArrayList<UncertaintySetSpectraList> uc_list  = specchio_client.getUncertaintySetSpectraLists(spectrum_id_list_jarray);
 
-    	        	DbxWebAuth.Request authRequest = DbxWebAuth.newRequestBuilder()
-    	                    .build();
-    	        	DbxWebAuth dbxWebAuth = new DbxWebAuth(config, dbxAppInfo);
-    	        	
-    	                String authorizeUrl = dbxWebAuth.authorize(authRequest);
+//		  UncertaintyNode ucsn = specchio_client.getUncertaintySpectrumNode(8747);
 
-    	                // Redirect the user to the Dropbox website so they can approve our application.
-    	                // The Dropbox website will send them back to /dropbox-auth-finish when they're done.
+//		  UncertaintyNode[] ucsns = specchio_client.getUncertaintyNodeComponents(323);
+
+		  UncertaintyNode[] ucsns = specchio_client.getUncertaintyNodeSubSets(326);
+
+		  int x = 1;
+
+//		  UncertaintySpectrumNode spectrum_node = new UncertaintySpectrumNode();
+//		  spectrum_node.spectrum_ids = spectrum_id_list_jarray;
+//		  spectrum_node.abs_rel = "rel";
+//		  spectrum_node.unit_id = 1;
+//		  spectrum_node.uncertainty_node_description = "u(L) due to noise";
+//
+//		  double[][] u_matrix = new double[1][2151];
+//
+//		  double d = 1.0;
+//
+//		  for (int i=0; i < 2151; i++)
+//		  {
+//			  u_matrix[0][i] = d;
+//		  }
+//
+//		  spectrum_node.setUncertaintyMatrix(u_matrix);
+//
+//		  int uL_noise_uncertainty_node_id = specchio_client.insertUncertaintyNode(spectrum_node, 134);
+
+		  if (1==0) {
+
+			  try {
+
+				  boolean use_access_token = true;
+				  DbxClientV2 client;
+
+				  if (use_access_token) {
+
+					  SPECCHIOPreferencesStore prefs_store = new SPECCHIOPreferencesStore();
+
+					  Preferences prefs = prefs_store.getPreferences();
+
+					  Preferences node = prefs.node("Dropbox");
+
+					  String ACCESS_TOKEN = node.get("ahueni@geo.uzh.ch", "");
+
+					  // Create Dropbox client
+					  DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
+					  client = new DbxClientV2(config, ACCESS_TOKEN);
+				  } else {
+					  DbxAppInfo dbxAppInfo = new DbxAppInfo("7gj3n1ol65mgq89", "fshdzufbmdx64zd");
+					  DbxRequestConfig config = DbxRequestConfig.newBuilder("specchio_dropbox_test").build();
+
+					  DbxWebAuth.Request authRequest = DbxWebAuth.newRequestBuilder()
+							  .build();
+					  DbxWebAuth dbxWebAuth = new DbxWebAuth(config, dbxAppInfo);
+
+					  String authorizeUrl = dbxWebAuth.authorize(authRequest);
+
+					  // Redirect the user to the Dropbox website so they can approve our application.
+					  // The Dropbox website will send them back to /dropbox-auth-finish when they're done.
 //    	                response.sendRedirect(authorizeUrl);
-    	                
-    	                String auth_code = "XXXXX";
-    	                
-    	            	DbxAuthFinish authFinish = dbxWebAuth.finishFromCode(auth_code);
-    	        		String authAccessToken = authFinish.getAccessToken(); 	        	
-    	                
 
-    	    		client = new DbxClientV2(config, authAccessToken);  
-    	        	
-    	        	
-    	        }
-    		  
-    	     // Get current account info
-    	        FullAccount account = client.users().getCurrentAccount();
-    	        System.out.println(account.getName().getDisplayName());
-    	        
-    	        
-    	        if (1==0)
-    	        {
-    	        	
-    	        	// preliminary tests ...
-    	        
-	    	        TreeSet<DropboxPath> choices = new TreeSet<DropboxPath>();
-	    	        
-	    	        ListFolderResult initial_contents = client.files().listFolder("");
-	    	        
-	    	        for (Metadata entry : initial_contents.getEntries())
-	    	        {
-	    	        	// only show folders
-	    	        	if(entry.getClass() == FolderMetadata.class)
-	    	        	{
-	    	        		DropboxPath new_entry = new DropboxPath(entry.getPathLower(), true);
-	    	        		choices.add(new_entry);
-	    	        		
-	    	        	}    	        	
-	    	        	
-	    	        }
-    	        
-    	        }
-    	        
-    	        
-    	        
-    	        JFileChooser fc = new JFileChooser(new VirtualFileSystemView(new DropboxPath("/Dropbox", true), client));
-    	        fc.setFileView(new CustomFileView());
-    	        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    	        int returnVal = fc.showOpenDialog(SPECCHIOApplication.getInstance().get_frame());
-    	        
-    	        boolean approved = returnVal == JFileChooser.APPROVE_OPTION;
-    	        
-    	        
-    	        if (returnVal == JFileChooser.APPROVE_OPTION) {
-    	            File file = fc.getSelectedFile();
-    	            //This is where a real application would open the file.
-    	            System.out.println("File: " + file.getName() + ".");    
-    	        } else {
-    	            System.out.println("Open command cancelled by user.");
-    	        }
-    	        System.out.println(returnVal);
-    	     	        
+					  String auth_code = "XXXXX";
+
+					  DbxAuthFinish authFinish = dbxWebAuth.finishFromCode(auth_code);
+					  String authAccessToken = authFinish.getAccessToken();
+
+
+					  client = new DbxClientV2(config, authAccessToken);
+
+
+				  }
+
+				  // Get current account info
+				  FullAccount account = client.users().getCurrentAccount();
+				  System.out.println(account.getName().getDisplayName());
+
+
+				  if (1 == 0) {
+
+					  // preliminary tests ...
+
+					  TreeSet<DropboxPath> choices = new TreeSet<DropboxPath>();
+
+					  ListFolderResult initial_contents = client.files().listFolder("");
+
+					  for (Metadata entry : initial_contents.getEntries()) {
+						  // only show folders
+						  if (entry.getClass() == FolderMetadata.class) {
+							  DropboxPath new_entry = new DropboxPath(entry.getPathLower(), true);
+							  choices.add(new_entry);
+
+						  }
+
+					  }
+
+				  }
+
+
+				  JFileChooser fc = new JFileChooser(new VirtualFileSystemView(new DropboxPath("/Dropbox", true), client));
+				  fc.setFileView(new CustomFileView());
+				  fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				  int returnVal = fc.showOpenDialog(SPECCHIOApplication.getInstance().get_frame());
+
+				  boolean approved = returnVal == JFileChooser.APPROVE_OPTION;
+
+
+				  if (returnVal == JFileChooser.APPROVE_OPTION) {
+					  File file = fc.getSelectedFile();
+					  //This is where a real application would open the file.
+					  System.out.println("File: " + file.getName() + ".");
+				  } else {
+					  System.out.println("Open command cancelled by user.");
+				  }
+				  System.out.println(returnVal);
+
+
 //    		  
 //    	        ListFolderResult result = client.files().listFolder("/ASD_data");
 //    	        while (true) {
@@ -1172,20 +1207,20 @@ private JMenuItem dbConfigmenuItem;
 //					// TODO Auto-generated catch block
 //					e1.printStackTrace();
 //				}
-    			
 
-    			// add null at the end
-    			// byte[] bytes_ = new byte[no_of_chars+1];
-    			//
-    			// for (int i=0;i<no_of_chars;i++) bytes_[i] = bytes[i];
-    			// bytes_[no_of_chars] = 0;
-    			//
+
+				  // add null at the end
+				  // byte[] bytes_ = new byte[no_of_chars+1];
+				  //
+				  // for (int i=0;i<no_of_chars;i++) bytes_[i] = bytes[i];
+				  // bytes_[no_of_chars] = 0;
+				  //
 
 //    			String file_version = new String(bytes);   	        
-    	        
-    		  
+
+
 //    		  User[] users = specchio_client.getUsersWithStatistics();
-    		  
+
 //    		  Institute[] inst = specchio_client.getInstitutes();
 //    		  int attr_id = specchio_client.getAttributesNameHash().get("File Name").getId();
 //    		  
@@ -1194,16 +1229,16 @@ private JMenuItem dbConfigmenuItem;
 //    		  specchio_client.getMetaparameters(ids, "File Name");
 //    		  
 //    		  ArrayList<MetaParameter> values = specchio_client.getDistinctValuesOfAttribute(attr_id);
-    		  
+
 //    		  ArrayList<Integer> lists = specchio_client.getNewestSpectra(10);
 //    		  Campaign[] c = specchio_client.getCampaigns();
-    		  
+
 //    		  Campaign c = specchio_client.getCampaign(1);
-    		  
+
 //    		  TaxonomyNodeObject node = specchio_client.getTaxonomyRootNode(specchio_client.getAttributesNameHash().get("Basic Target Type").getId());
-    		  
-    		  //Hashtable<String, Integer> hash = specchio_client.getTaxonomyHash(specchio_client.getAttributesNameHash().get("Basic Target Type").getId());
-    		  
+
+				  //Hashtable<String, Integer> hash = specchio_client.getTaxonomyHash(specchio_client.getAttributesNameHash().get("Basic Target Type").getId());
+
 //    		  ArrayList<Integer> ids = new ArrayList<Integer>();
 //    		  ids.add(251403);
 //    		  ids.add(251412);
@@ -1214,40 +1249,41 @@ private JMenuItem dbConfigmenuItem;
 //    		  attribute_ids.add(specchio_client.getAttributesNameHash().get("Integration Time").getId());
 //    		  
 //    		  ArrayList<ArrayList<MetaParameter>> data = specchio_client.getMetaparameters(ids, attribute_ids);
-    		  
-    	//	  specchio_client.getSpectrumIdsMatchingQuery(null);
-    		  
-    		  //specchio_client.renameHierarchy(2758, "CCCC");
+
+				  //	  specchio_client.getSpectrumIdsMatchingQuery(null);
+
+				  //specchio_client.renameHierarchy(2758, "CCCC");
 //    		  specchio_client.renameHierarchy(2164, "s2_t1_Water");
-    		  
-    		  
+
+
 //    		  specchio_client.getSpectrumIdsMatchingFullTextSearch("%grass%");
 //    		  specchio_client.renameHierarchy(2173, "Artificial");
-    		  //specchio_client.getHierarchyFilePath(2530);
-    		  
+				  //specchio_client.getHierarchyFilePath(2530);
+
 //    		  Spectrum s = specchio_client.getSpectrum(268081, false);
 
-    		  //Object cond = new EAVQueryConditionObject(attr);
+				  //Object cond = new EAVQueryConditionObject(attr);
 
-    		  
+
 //			String has_license = specchio_client.getCapability("END_USER_LICENSE");
 //			
 //			String short_license = specchio_client.getCapability("END_USER_LICENSE_SHORT_TEXT");
-			
-			int x = 1;
-		} catch (SPECCHIOClientException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (DbxApiException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (DbxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (BackingStoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+
+//				  int x = 1;
+			  } catch (SPECCHIOClientException e2) {
+				  // TODO Auto-generated catch block
+				  e2.printStackTrace();
+			  } catch (DbxApiException e1) {
+				  // TODO Auto-generated catch block
+				  e1.printStackTrace();
+			  } catch (DbxException e1) {
+				  // TODO Auto-generated catch block
+				  e1.printStackTrace();
+			  } catch (BackingStoreException e1) {
+				  // TODO Auto-generated catch block
+				  e1.printStackTrace();
+			  }
+		  }
     	  
 //    	  try {
 //			//int tax_id = specchio_client.getTaxonomyId(160, "Hemispherical-conical (CASE 8)");

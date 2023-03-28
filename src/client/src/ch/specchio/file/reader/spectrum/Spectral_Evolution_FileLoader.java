@@ -270,14 +270,14 @@ public class Spectral_Evolution_FileLoader extends SpectralFileLoader {
 		if(t1.equals("Foreoptic") ) // && tokens[1].contains(" LENS")
 		{
 			// assumption: lenses do not change between reference and target
-//			
-//			String[] sub_tokens = tokens[1].split(", ");
-//			
-//			String str = sub_tokens[0].replaceFirst(" LENS", "");
-//			
-//			str = str.replace(" ", "");
-//			
-//			spec_file.setForeopticDegrees(Integer.valueOf(str));	
+
+			String[] sub_tokens = tokens[1].split(", ");
+
+			String str = sub_tokens[0].replaceFirst(" LENS", "");
+
+			str = str.replace(" ", "");
+
+			spec_file.setForeopticDegrees(Integer.valueOf(str));
 						
 		}		
 		
