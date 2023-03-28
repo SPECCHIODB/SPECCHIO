@@ -83,17 +83,38 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			
 			ResultSet max_rs = max_pstmt.executeQuery();
 			
+			int last_node_set_id = 0;
+			
 			 while (max_rs.next()) {
-			        int last_node_set_id = max_rs.getInt(1);
-			        
-			        int new_node_set_id = last_node_set_id + 1;
-			        
-			        uc_set.node_set_id = new_node_set_id;
+			        last_node_set_id = max_rs.getInt(1);
 			              
 			 }
 			 
+			int new_node_set_id = last_node_set_id + 1;
+		        
+		    uc_set.node_set_id = new_node_set_id;
+			 
 			max_pstmt.close();
 			
+			// Now we have the new node set id we need to insert this (and the first node_num) into uncertainty_node_set 
+			// That way we fulfil the foreign key requirement in uncertainty_set
+			
+			int node_num = 1;
+			
+			String insert_uc_node_set_query = "INSERT into uncertainty_node_set(node_set_id, node_num) " + 
+					"values (?,?)";
+			
+			PreparedStatement insert_uc_node_set_pstmt = SQL.prepareStatement(insert_uc_node_set_query);
+			
+			insert_uc_node_set_pstmt.setInt (1, uc_set.node_set_id);
+			insert_uc_node_set_pstmt.setInt(2, node_num);
+			
+		    insert_uc_node_set_pstmt.executeUpdate();
+		    
+		    insert_uc_node_set_pstmt.close();
+			
+			// Insert into uncertainty_set should now work...
+		    
 			String uc_set_query = "insert into uncertainty_set(uncertainty_set_description, node_set_id) " +
 					" values (?, ?)";
 		
@@ -120,22 +141,6 @@ public class UncertaintyFactory extends SPECCHIOFactory {
 			
 			uc_set_pstmt.close();
 			
-			// The first node gets id = null
-			// There is a foreign key constraint on 'node_id' but because this column is nullable, we can use null
-			
-			String node_set_query = "insert into uncertainty_node_set(node_set_id, node_num) " +
-					"values (?, ?)";
-			
-			PreparedStatement node_set_pstmt = SQL.prepareStatement(node_set_query, Statement.RETURN_GENERATED_KEYS);
-			
-			int node_num = 1;
-			
-			node_set_pstmt.setInt(1, uc_set.getNodeSetId());
-			node_set_pstmt.setInt(2, node_num);
-			
-			node_set_pstmt.executeUpdate();
-			
-			node_set_pstmt.close();
 			
 			}
 			catch (SQLException ex) {

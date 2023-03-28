@@ -80,5 +80,20 @@ public class TableNames {
 		"specchio_user_group",
 		"institute"
 	};
+	
+	/**user-updateable uncertainty_table */
+	public static final String[] UNCERTAINTY_TABLES = new String[] {
+		"instrument_node",
+		"spectrum_node",
+		"spectrum_set",
+		"spectrum_set_map",
+		"spectrum_subset",
+		"spectrum_subset_map",
+		"uncertainty_edge",
+		"uncertainty_node",
+		"uncertainty_node_set",
+		"uncertainty_set"
+	};
+	
 
 }
