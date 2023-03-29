@@ -59,20 +59,18 @@ import ch.specchio.proc_modules.SpaceProcessingChainComponent;
 import ch.specchio.proc_modules.VisualisationSelectionDialog;
 import ch.specchio.processing_plane.ProcessingPlane;
 import ch.specchio.processors.DataProcessor;
-import ch.specchio.queries.MatlabQueryBuilder;
+import ch.specchio.query_builder.MatlabQueryBuilder;
 import ch.specchio.queries.Query;
 import ch.specchio.queries.QueryCondition;
 import ch.specchio.queries.QueryConditionChangeInterface;
 import ch.specchio.queries.QueryConditionObject;
-import ch.specchio.queries.RQueryBuilder;
+import ch.specchio.query_builder.RQueryBuilder;
 import ch.specchio.query_builder.QueryController;
 import ch.specchio.spaces.Space;
 import ch.specchio.types.Campaign;
-import ch.specchio.types.MatlabAdaptedArrayList;
 import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.Metadata;
-import ch.specchio.types.MetadataUpdateDescriptor;
 import ch.specchio.types.Spectrum;
 
 public class QueryBuilder extends SpectralMetaDataBase  implements ActionListener, TreeSelectionListener, ChangeListener, ClipboardOwner, QueryConditionChangeInterface, ListSelectionListener 
@@ -533,7 +531,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	public void copy_matlab_query_to_clipboard() throws IOException
 	{
 		// write the Matlab code into a string
-		MatlabQueryBuilder mqb = new MatlabQueryBuilder();
+		MatlabQueryBuilder mqb = new MatlabQueryBuilder(this.specchio_client);
 		StringWriter writer = new StringWriter();
 		mqb.writeMatlabCode(writer, query);
 		
