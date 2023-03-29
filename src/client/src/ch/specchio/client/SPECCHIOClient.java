@@ -1108,13 +1108,20 @@ public interface SPECCHIOClient {
 	 * 
 	 */
 	public Hashtable<String, Integer> getTaxonomyHash(int attribute_id)  throws SPECCHIOClientException;
-		
+
+	/**
+	 * Get the taxonomy hash for a given taxonomy
+	 *
+	 * @param attribute	attribute that defines the taxonomy
+	 *
+	 */
+	public Hashtable<String, Integer> getTaxonomyHash(attribute attribute)  throws SPECCHIOClientException;
 	
 	/**
 	 * Get the ID to name hash for a given taxonomy
-	 * 
+	 *
 	 * @param attribute_id	attribute_id that defines the taxonomy
-	 * 
+	 *
 	 */
 	public Hashtable<Integer, String> getTaxonomyIdToNameHash(int attribute_id)  throws SPECCHIOClientException;
 	
