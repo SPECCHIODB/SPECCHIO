@@ -85,7 +85,12 @@ public class QueryForm {
 					if(field instanceof EAVQueryField)
 					{	
 						cond = new EAVQueryConditionObject("eav", "spectrum_x_eav", field.getLabel(), field.get_fieldname());
-						cond.setValue(field.getValue());	
+						if (field.getNative_value() instanceof Integer) {
+							cond.setIntegerValue((Integer) field.getNative_value()); // native value to allow more flexibility in future ...
+						}
+						else {
+							cond.setValue(field.getValue());
+						}
 						cond.setOperator(field.getOperator());
 					}
 					else

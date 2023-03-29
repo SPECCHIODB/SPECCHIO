@@ -13,6 +13,16 @@ public abstract class QueryField {
 	String operator = "=";	
 
 	private String value;
+
+	public Object getNative_value() {
+		return native_value;
+	}
+
+	public void setNative_value(Object native_value) {
+		this.native_value = native_value;
+	}
+
+	private Object native_value;
 	
 	public void putClientProperty(String key,
 			Object o) {

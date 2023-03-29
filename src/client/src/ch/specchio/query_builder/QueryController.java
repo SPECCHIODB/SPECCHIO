@@ -40,6 +40,7 @@ public class QueryController {
 		System.out.println("Change:" + field.getLabel() + ", value = " + string_value);
 		
 		field.set_value(string_value);
+		field.setNative_value(new_value);
 		
 		informChangeListeners();
 		
