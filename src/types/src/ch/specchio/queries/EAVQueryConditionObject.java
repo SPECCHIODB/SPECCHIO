@@ -91,10 +91,10 @@ public class EAVQueryConditionObject extends QueryCondition {
 	
 	@XmlElement(name="integerValue")
 	public Integer getIntegerValue() { return this.integerValue; }
-	public void setIntegerValue(Integer integerValue) { this.integerValue = integerValue; this.value = this.integerValue; }
+	public void setIntegerValue(Integer integerValue) { this.integerValue = integerValue; this.value = this.integerValue; this.stringValue = this.integerValue.toString();}
 	
 	@XmlElement(name="stringValue")
-	public String getStringValue() { return this.stringValue; }
+	public String getStringValue() {return this.stringValue;}
 	public void setStringValue(String stringValue) { this.stringValue = stringValue; this.value = this.stringValue; }
 	
 	@XmlElement(name="listValue")
@@ -103,8 +103,8 @@ public class EAVQueryConditionObject extends QueryCondition {
 	
 	
 	public boolean QuoteValue() { return this.quote_value; }
-	public void setQuoteValue(boolean quote_value) { this.quote_value = quote_value; }	
-	
+	public void setQuoteValue(boolean quote_value) { this.quote_value = quote_value; }
+
 	public Object getValue() { return this.value; }
 	public void setValue(Object[] value) { setArrayValue(value); }
 	public void setValue(Integer value) { setIntegerValue(value); }
