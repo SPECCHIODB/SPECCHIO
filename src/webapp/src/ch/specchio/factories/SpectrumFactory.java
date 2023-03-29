@@ -686,6 +686,7 @@ public class SpectrumFactory extends SPECCHIOFactory {
 					// check if this is a taxonomy node: if so, we need to search for all children under this node
 					MetadataFactory mdf = new MetadataFactory(this);
 					int taxonomy_id = Integer.valueOf((String) cond.getValue());
+					//int check = ((EAVQueryConditionObject) cond).getIntegerValue(); // in future, the value should be available as integer by default
 					TaxonomyNodeObject parent_node = mdf.getTaxonomyObject(taxonomy_id);
 					ArrayList<TaxonomyNodeObject> children = mdf.getTaxonomyChildrenRecursively(parent_node);
 					
