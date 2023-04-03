@@ -230,7 +230,7 @@ public class MatlabQueryBuilder {
 				out.println("for i=1:size(id_array,2) ids_list.add(id_array(i)); end;");				
 				out.println("cond.setValue(ids_list);");				
 			}
-			if(cond instanceof EAVQueryConditionObject && cond.getFieldName().equals("taxonomy_id"))
+			else if(cond instanceof EAVQueryConditionObject && cond.getFieldName().equals("taxonomy_id"))
 			{
 				out.println("name_id_hash = specchio_client.getTaxonomyHash(attr_hash.get(" +
 						quoteString(cond.getAttributeName()) +
