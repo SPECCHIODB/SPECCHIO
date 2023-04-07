@@ -176,9 +176,11 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 																	// array.
 		}
 
-		read_reference_file_header(data_in, spec_file);
+		if (data_in.available() > 0) {
+			read_reference_file_header(data_in, spec_file);
 
-		reference_data = read_data(data_in, spec_file.getNumberOfChannels(0));		
+			reference_data = read_data(data_in, spec_file.getNumberOfChannels(0));
+		}
 		
 		if (data_in.available() > 0) {
 			read_classifier_data(data_in, spec_file);
