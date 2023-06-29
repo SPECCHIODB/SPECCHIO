@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ObjectUtils;
 //import org.freixas.jcalendar.DateListener;
 //import org.freixas.jcalendar.JCalendar;
 //import org.freixas.jcalendar.JCalendarCombo;
+import org.joda.time.DateTime;
 import org.w3c.dom.ranges.Range;
 
 import javax.swing.*;
@@ -1069,6 +1070,23 @@ public class SpectrumFilterPanel extends JPanel {
          * @return a string representing the input date
          */
         public String formatDate(Date date) {
+
+            TimeZone tz = TimeZone.getDefault();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            formatter.setTimeZone(tz);
+
+            return formatter.format(date);
+
+        }
+
+        /**
+         * Format a date for transmission to the query controller.
+         *
+         * @param date	the date
+         *
+         * @return a string representing the input date
+         */
+        public String formatDate(DateTime date) {
 
             TimeZone tz = TimeZone.getDefault();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");

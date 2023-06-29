@@ -8,6 +8,8 @@ package ch.specchio.gui;
 // Import list
 //**********************************************************************
 
+import org.joda.time.DateTime;
+
 import java.util.EventObject;
 import java.util.Calendar;
 
@@ -31,7 +33,7 @@ public class DateEvent
 // Private Members
 //**********************************************************************
 
-private Calendar selectedDate;
+private DateTime selectedDate;
 
 //**********************************************************************
 // Constructors
@@ -47,7 +49,7 @@ private Calendar selectedDate;
 public
 DateEvent(
     Object source,
-    Calendar selectedDate)
+    DateTime selectedDate)
 {
     super(source);
     this.selectedDate = selectedDate;
@@ -63,7 +65,7 @@ DateEvent(
  * @return The selected date.
  */
 
-public Calendar
+public DateTime
 getSelectedDate()
 {
     return selectedDate;
@@ -80,7 +82,8 @@ toString()
 {
     return
 	super.toString() + ",selectedDate=" +
-	selectedDate.getTime().toString();
+	//selectedDate.getTime().toString();
+            selectedDate.toString();
 }
 
 }

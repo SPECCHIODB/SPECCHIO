@@ -8,6 +8,8 @@ package ch.specchio.gui;
 // Import list
 //**********************************************************************
 
+import org.joda.time.DateTime;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -135,7 +137,8 @@ private int selectedComponents;
 // The calendar containing a selected day. The selected day may not be
 // always be displayed
 
-private Calendar selectedCalendar;
+	private	DateTime selectedDateTime;
+//private Calendar selectedCalendar;
 private int selectedYear = -1;
 private int selectedMonth = -1;
 private int selectedDay = -1;
@@ -145,7 +148,8 @@ private int selectedSecond = -1;
 
 // The calendar we display
 
-private Calendar displayCalendar;
+//private Calendar displayCalendar;
+private	DateTime displayDateTime;
 private int displayYear;
 private int displayMonth;
 
@@ -369,8 +373,9 @@ JCalendar(
     boolean isTodayDisplayed,
     String timePattern)
 {
-    this.selectedCalendar = (Calendar)calendar.clone();
-    this.displayCalendar = (Calendar)selectedCalendar.clone();
+	this.selectedDateTime = new DateTime();
+//    this.selectedCalendar = (Calendar)calendar.clone();
+//    this.displayCalendar = (Calendar)selectedCalendar.clone();
     this.selectedComponents = selectedComponents;
     if ((selectedComponents & (DISPLAY_DATE | DISPLAY_TIME)) == 0) {
  	throw new IllegalStateException(
@@ -395,7 +400,7 @@ JCalendar(
     }
 
     createCalendarComponents();
-    setDate(new Date());
+    setDate(new DateTime());
 }
 
 //**********************************************************************
@@ -469,14 +474,15 @@ setNullAllowed(
  * is selected, null is returned.
  *
  * @return The date currently displayed.
- * @see #getCalendar
+ //* @see #getCalendar
  */
 
-public Date
+public DateTime
 getDate()
 {
     if (isNullDate) return null;
-    return selectedCalendar.getTime();
+    //return selectedCalendar.getTime();
+	return selectedDateTime;
 }
 
 /**
@@ -490,7 +496,7 @@ getDate()
 
 public void
 setDate(
-    Date date)
+		DateTime date)
 {
     if (date == null) {
 
@@ -503,12 +509,13 @@ setDate(
 	    selectedYear = -1;
 	    selectedMonth = -1;
 	    selectedDay = -1;
-	    selectedCalendar.set(Calendar.YEAR, 9999);
-	    selectedCalendar.set(Calendar.MONTH, 9);
-	    selectedCalendar.set(Calendar.DATE, 9);
-	    selectedCalendar.set(Calendar.HOUR_OF_DAY, 0);
-	    selectedCalendar.set(Calendar.MINUTE, 0);
-	    selectedCalendar.set(Calendar.SECOND, 0);
+//	    selectedCalendar.set(Calendar.YEAR, 9999);
+//	    selectedCalendar.set(Calendar.MONTH, 9);
+//	    selectedCalendar.set(Calendar.DATE, 9);
+//	    selectedCalendar.set(Calendar.HOUR_OF_DAY, 0);
+//	    selectedCalendar.set(Calendar.MINUTE, 0);
+//	    selectedCalendar.set(Calendar.SECOND, 0);
+		selectedDateTime = new DateTime();
 	    updateCalendarComponents();
 	    fireDateChange();
 	}
@@ -522,15 +529,24 @@ setDate(
 	int oldMinute = selectedMinute;
 	int oldSecond = selectedSecond;
 
-	selectedCalendar.setTime(date);
-	selectedYear = selectedCalendar.get(Calendar.YEAR);
-	selectedMonth = selectedCalendar.get(Calendar.MONTH);
-	selectedDay = selectedCalendar.get(Calendar.DATE);
-	selectedHour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
-	selectedMinute = selectedCalendar.get(Calendar.MINUTE);
-	selectedSecond = selectedCalendar.get(Calendar.SECOND);
+	this.selectedDateTime = date;
+//	selectedCalendar.setTime(date);
+//	selectedYear = selectedCalendar.get(Calendar.YEAR);
+//	selectedMonth = selectedCalendar.get(Calendar.MONTH);
+//	selectedDay = selectedCalendar.get(Calendar.DATE);
+//	selectedHour = selectedCalendar.get(Calendar.HOUR_OF_DAY);
+//	selectedMinute = selectedCalendar.get(Calendar.MINUTE);
+//	selectedSecond = selectedCalendar.get(Calendar.SECOND);
 
-	if ((((selectedComponents & DISPLAY_DATE) > 0) &&
+ 	selectedYear = selectedDateTime.getYear();
+	selectedMonth = selectedDateTime.getMonthOfYear();
+	selectedDay = selectedDateTime.getDayOfMonth();
+	selectedHour = selectedDateTime.getHourOfDay();
+	selectedMinute = selectedDateTime.getMinuteOfHour();
+	selectedSecond = selectedDateTime.getSecondOfMinute();
+
+
+		if ((((selectedComponents & DISPLAY_DATE) > 0) &&
 	     oldDay != selectedDay ||
 	     oldMonth != selectedMonth ||
 	     oldYear != selectedYear) ||
@@ -541,7 +557,8 @@ setDate(
 	     oldSecond != selectedSecond)) {
 
 	    isNullDate = false;
-	    displayCalendar.setTime(date);
+//	    displayCalendar.setTime(date);
+			this.displayDateTime = date;
 	    updateCalendarComponents();
 	    fireDateChange();
 	}
@@ -558,14 +575,17 @@ setDate(
 
 public void
 setDisplayDate(
-    Date date)
+		DateTime date)
 {
-    if (date == null) date = new Date();
+    if (date == null) date = new DateTime();
 
-    displayCalendar.setTime(date);
-    int oldMonth = displayCalendar.get(Calendar.MONTH);
-    int oldYear = displayCalendar.get(Calendar.YEAR);
-    if (oldMonth != displayMonth || oldYear != displayYear) {
+    this.displayDateTime = date;
+//    int oldMonth = displayCalendar.get(Calendar.MONTH);
+//    int oldYear = displayCalendar.get(Calendar.YEAR);
+	int oldMonth = displayDateTime.getMonthOfYear();
+	int oldYear = displayDateTime.getYear();
+
+	if (oldMonth != displayMonth || oldYear != displayYear) {
 	updateCalendarComponents();
     }
 }
@@ -598,11 +618,11 @@ getTimePattern()
  * @see #getDate
  */
 
-public Calendar
-getCalendar()
-{
-    return (Calendar)selectedCalendar.clone();
-}
+//public Calendar
+//getCalendar()
+//{
+//    return (Calendar)selectedCalendar.clone();
+//}
 
 /**
  * Return the locale used by this JCalendar.
@@ -636,6 +656,10 @@ getSelectedComponents()
     return selectedComponents;
 }
 
+
+public String toString(){
+	return "WTF";
+}
 
 /**
  * Returns true if today's date is displayed at the bottom of the
@@ -978,7 +1002,8 @@ fireDateChange()
 		dateEvent = new DateEvent(this, null);
 	    }
 	    else {
-		dateEvent = new DateEvent(this, selectedCalendar);
+//		dateEvent = new DateEvent(this, selectedCalendar);
+			dateEvent = new DateEvent(this, this.selectedDateTime);
 	    }
 	    ((DateListener)listeners[i + 1]).dateChanged(dateEvent);
 	}
@@ -1197,7 +1222,12 @@ createCalendarComponents()
 	// Set up the day panel
 
 	JPanel dayPanel = new JPanel(new GridLayout(7, 7));
-	int firstDay = displayCalendar.getFirstDayOfWeek();
+//	int firstDay = displayCalendar.getFirstDayOfWeek();
+
+		Calendar displayCalendar =  Calendar.getInstance();
+		displayCalendar.setTime(this.selectedDateTime.toDate());
+
+		int firstDay = displayCalendar.getFirstDayOfWeek();
 
 	// Get the week day labels. The following technique is used so
 	// that we can start the calendar on the right day of the week and
@@ -1325,12 +1355,14 @@ updateCalendarComponents()
 
 	// Get the display date. We only need the month and year
 
-	displayMonth = displayCalendar.get(Calendar.MONTH);
-	displayYear = displayCalendar.get(Calendar.YEAR);
+//	displayMonth = displayCalendar.get(Calendar.MONTH);
+//	displayYear = displayCalendar.get(Calendar.YEAR);
+	displayMonth = this.displayDateTime.getMonthOfYear();
+	displayYear = displayDateTime.getYear();
 
 	// Get the localized display month name and year
 
-	String month = formatMonth.format(displayCalendar.getTime());
+	String month = formatMonth.format(displayDateTime.toDate());
 	String year = Integer.toString(displayYear);
 
 	{
@@ -1352,7 +1384,9 @@ updateCalendarComponents()
 	    // determine where day 1 goes and how many days there are
 	    // in this month
 
-	    Calendar temp = (Calendar)displayCalendar.clone();
+//	    Calendar temp = (Calendar)displayCalendar.clone();
+		Calendar temp = Calendar.getInstance();
+		temp.setTime(this.displayDateTime.toDate());
 	    temp.set(Calendar.DATE, 1);
 
 	    int dayOfWeek = temp.get(Calendar.DAY_OF_WEEK);
@@ -1424,12 +1458,15 @@ updateCalendarComponents()
 	// change the time (unless all we have is a time field)
 
 	if (isNullDate) {
-	    Calendar temp = (Calendar)selectedCalendar.clone();
-	    temp.setTime(new Date());
-	    temp.set(Calendar.HOUR, 12);
-	    temp.set(Calendar.MINUTE, 0);
-	    temp.set(Calendar.SECOND, 0);
-	    spinnerDateModel.setValue(temp.getTime());
+//	    Calendar temp = (Calendar)selectedCalendar.clone();
+//	    temp.setTime(new Date());
+//	    temp.set(Calendar.HOUR, 12);
+//	    temp.set(Calendar.MINUTE, 0);
+//	    temp.set(Calendar.SECOND, 0);
+		DateTime temp = this.selectedDateTime;
+
+//	    spinnerDateModel.setValue(temp.getTime());
+		spinnerDateModel.setValue(temp.toDate());
 	    spinner.setEnabled((selectedComponents & DISPLAY_DATE) == 0);
 	}
 
@@ -1437,7 +1474,8 @@ updateCalendarComponents()
 
 	else {
 	    spinner.setEnabled(JCalendar.this.isEnabled());
-	    spinnerDateModel.setValue(selectedCalendar.getTime());
+//	    spinnerDateModel.setValue(selectedCalendar.getTime());
+		spinnerDateModel.setValue(selectedDateTime.toDate());
 	    spinnerDateModel.setStart(null);
 	    spinnerDateModel.setEnd(null);
 	    spinner.revalidate();
@@ -1452,7 +1490,8 @@ updateCalendarComponents()
 private void
 yearBackward()
 {
-    displayCalendar.add(Calendar.YEAR, -1);
+//    displayCalendar.add(Calendar.YEAR, -1);
+	this.displayDateTime.minusYears(1);
     updateCalendarComponents();
 }
 
@@ -1463,7 +1502,8 @@ yearBackward()
 private void
 yearForward()
 {
-    displayCalendar.add(Calendar.YEAR, 1);
+//    displayCalendar.add(Calendar.YEAR, 1);
+	this.displayDateTime = this.displayDateTime.plusYears(1);
     updateCalendarComponents();
 }
 
@@ -1474,7 +1514,8 @@ yearForward()
 private void
 monthBackward()
 {
-    displayCalendar.add(Calendar.MONTH, -1);
+//    displayCalendar.add(Calendar.MONTH, -1);
+	displayDateTime.minusMonths(1);
     updateCalendarComponents();
 }
 
@@ -1485,7 +1526,8 @@ monthBackward()
 private void
 monthForward()
 {
-    displayCalendar.add(Calendar.MONTH, 1);
+//    displayCalendar.add(Calendar.MONTH, 1);
+	displayDateTime.plusMonths(1);
     updateCalendarComponents();
 }
 
@@ -1622,9 +1664,12 @@ itemStateChanged(
 	    oldYear != selectedYear) {
 
 	    isNullDate = false;
-	    selectedCalendar.set(Calendar.YEAR, selectedYear);
-	    selectedCalendar.set(Calendar.MONTH, selectedMonth);
-	    selectedCalendar.set(Calendar.DATE, selectedDay);
+//	    selectedCalendar.set(Calendar.YEAR, selectedYear);
+//	    selectedCalendar.set(Calendar.MONTH, selectedMonth);
+//	    selectedCalendar.set(Calendar.DATE, selectedDay);
+		selectedDateTime = selectedDateTime.year().setCopy(selectedYear);
+		selectedDateTime = selectedDateTime.monthOfYear().setCopy(selectedMonth);
+		selectedDateTime = selectedDateTime.dayOfMonth().setCopy(selectedDay);
 
 	    updateCalendarComponents();
 	    fireDateChange();
@@ -1659,14 +1704,18 @@ stateChanged(
 
     if (!isNullDate || (selectedComponents & DISPLAY_DATE) == 0) {
 	temp.setTime(date);
-	temp.set(Calendar.YEAR, selectedCalendar.get(Calendar.YEAR));
-	temp.set(Calendar.MONTH, selectedCalendar.get(Calendar.MONTH));
-	temp.set(Calendar.DATE, selectedCalendar.get(Calendar.DATE));
+//	temp.set(Calendar.YEAR, selectedCalendar.get(Calendar.YEAR));
+//	temp.set(Calendar.MONTH, selectedCalendar.get(Calendar.MONTH));
+//	temp.set(Calendar.DATE, selectedCalendar.get(Calendar.DATE));
+	temp.set(Calendar.YEAR, selectedDateTime.getYear());
+	temp.set(Calendar.MONTH, selectedDateTime.getMonthOfYear());
+	temp.set(Calendar.DATE, selectedDateTime.getDayOfMonth());
 
 	// Make sure we change the time only if necessary
 
 	if (lastTemp == null || !lastTemp.equals(temp)) {
-	    setDate(temp.getTime());
+//	    setDate(temp.getTime());
+		setDate(selectedDateTime);
 	    lastTemp = (Calendar)temp.clone();
 	}
     }

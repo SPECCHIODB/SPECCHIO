@@ -498,7 +498,7 @@ class CalibrationMetadataPanel extends InstrumentationMetadataPanel implements D
 			    false
 			);			
 		calibration_date.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-		calibration_date.setDate(cm.getCalibrationDate().toDate());
+		calibration_date.setDate(cm.getCalibrationDate().toDateTime());
 		calibration_date.addDateListener(this);	
 		constraints.gridx = 1;
 		l.insertComponent(calibration_date, constraints);
@@ -576,7 +576,7 @@ class CalibrationMetadataPanel extends InstrumentationMetadataPanel implements D
 		CalibrationMetadata cm = new CalibrationMetadata(calibration_id);
 		
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(calibration_date.getDate());
+		cal.setTime(calibration_date.getDate().toDate()); // TODO: check if dates and times are properly displayed!
 		SimpleDateFormat formatter_1 = new SimpleDateFormat(MetaDate.DEFAULT_DATE_FORMAT);		
 		String out=formatter_1.format(cal.getTime());	
 		DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT).withZoneUTC();

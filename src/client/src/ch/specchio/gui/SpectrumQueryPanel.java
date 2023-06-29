@@ -54,6 +54,7 @@ import ch.specchio.types.MetaTaxonomy;
 import ch.specchio.types.Point2D;
 import ch.specchio.types.TaxonomyNodeObject;
 import ch.specchio.types.attribute;
+import org.joda.time.DateTime;
 
 
 /**
@@ -1029,6 +1030,23 @@ public class SpectrumQueryPanel extends JPanel {
 							
 			return formatter.format(date);		
 			
+		}
+
+		/**
+		 * Format a date for transmission to the query controller.
+		 *
+		 * @param date	the date
+		 *
+		 * @return a string representing the input date
+		 */
+		public String formatDate(DateTime date) {
+
+			TimeZone tz = TimeZone.getDefault();
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+			formatter.setTimeZone(tz);
+
+			return formatter.format(date);
+
 		}
 		
 		

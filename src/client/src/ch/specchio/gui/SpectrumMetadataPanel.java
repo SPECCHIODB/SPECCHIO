@@ -21,13 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import java.awt.datatransfer.*;
 
@@ -1626,13 +1620,17 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 			super(container, field);
 			
 			// set up date and format
+			Calendar cal = Calendar.getInstance();
 			Date date = ((MetaDate)field.getMetaParameter()).valueAsDate();
-			
+
+			int timezoneOffset = (cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
+
 			// build the calendar control
 			// Interestingly, when debugging this, the cal_combo shows times corrected from UTC to local time, but this disappears after compiling it and installing as regular java app ....
 			cal_combo = new JCalendarCombo(JCalendar.DISPLAY_DATE | JCalendar.DISPLAY_TIME,  false);			
 			cal_combo.setDateFormat(MetaDate.getDateFormat());
-			cal_combo.setDate(date);
+			cal_combo.setDateFormatter(MetaDate.getDateFormatter());
+			cal_combo.setDate(((MetaDate)field.getMetaParameter()).valueAsDateTime());
 			cal_combo.addDateListener(this);
 			
 			// build the text field
@@ -1649,12 +1647,14 @@ public class SpectrumMetadataPanel extends JPanel implements ListSelectionListen
 		/**
 		 * Date changed handler.
 		 * 
-		 * @param the event to be handled
+		 * @param event 	the event to be handled
 		 */
 		public void dateChanged(DateEvent event) {	
 			
-			java.util.Date date = cal_combo.getDate();
-			fireMetadataFieldChanged(getField(), date);	
+//			java.util.Date date = cal_combo.getDate();
+//			fireMetadataFieldChanged(getField(), date);
+
+			fireMetadataFieldChanged(getField(), cal_combo.getDate());
 			
 		}
 		

@@ -8,6 +8,10 @@ package ch.specchio.gui;
 // Import list
 //**********************************************************************
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -15,7 +19,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.plaf.*;
 import javax.swing.plaf.basic.*;
-import java.beans.*;
 
 import javax.swing.plaf.metal.MetalComboBoxUI;
 import javax.swing.plaf.basic.BasicComboBoxUI;
@@ -25,14 +28,9 @@ import javax.swing.plaf.basic.BasicComboBoxUI;
 //import com.l2fprod.gui.plaf.skin.SkinComboBoxUI;
 
 import java.text.*;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.EventListener;
 import java.util.Locale;
-import java.util.ResourceBundle;
-
-import javax.accessibility.*;
 
 /**
  * This class is a combo box that allows you to select a date either
@@ -138,6 +136,7 @@ public static final int DISPLAY_TIME = JCalendar.DISPLAY_TIME;
 // The currently displayed popup
 
 static JCalendarCombo currentPopup = null;
+private DateTimeFormatter dateFormatter;
 
 // The locale to use
 
@@ -165,11 +164,11 @@ private boolean isCalendarDisplayed = false;
 
 // Keep track of the original date in case the date change is canceled
 
-private Date originalDate = null;
+private DateTime originalDate = null;
 
 // Cache the date so we can tell when to take down the calendar
 
-private Calendar cacheCalendar = null;
+private DateTime cacheCalendar = null;
 
 // These maps are used to bind keyboard keys to methods. These maps
 // are added to the maps used by JCalendar.
@@ -388,6 +387,10 @@ JCalendarCombo(
 // Public
 //**********************************************************************
 
+    public String toString(){
+        return "WTF";
+    }
+
 /**
  * Add a date listener. This listener will receive events each time
  * the selected date changes.
@@ -458,7 +461,7 @@ setNullAllowed(
  * @see #getCalendar
  */
 
-public Date
+public DateTime
 getDate()
 {
     return calendarPanel.getDate();
@@ -473,7 +476,7 @@ getDate()
 
 public void
 setDate(
-    Date date)
+    DateTime date)
 {
     calendarPanel.setDate(date);
 }
@@ -513,6 +516,17 @@ setDateFormat(
     this.dateFormat = dateFormat;
 }
 
+    public void setDateFormatter(
+            DateTimeFormatter dateFormatter)
+            throws NullPointerException
+    {
+        if (dateFormatter == null) {
+            throw new NullPointerException("Date dateFormatter cannot be null.");
+        }
+
+        this.dateFormatter = dateFormatter;
+    }
+
 /**
  * Get a copy of the calendar used by this JCalendar. This calendar
  * will be set to the currently selected date, so it is an alternative
@@ -525,7 +539,12 @@ setDateFormat(
 public Calendar
 getCalendar()
 {
-    return calendarPanel.getCalendar();
+
+    Calendar temp = Calendar.getInstance();
+    temp.setTime(calendarPanel.getDate().toDate());
+    return temp;
+
+//    return calendarPanel.getCalendar();
 }
 
 /**
@@ -807,7 +826,7 @@ paramString()
  * @return The equivalent Date object or null.
  */
 
-protected Date
+protected DateTime
 stringToDate(
     String string)
 {
@@ -836,7 +855,7 @@ stringToDate(
 	}
     }
 
-    return date;
+    return new DateTime(date);
 }
 
 //**********************************************************************
@@ -1004,7 +1023,8 @@ showCalendar()
 
 	originalDate = calendarPanel.getDate();
 	calendarPanel.setDisplayDate(originalDate);
-	cacheCalendar = calendarPanel.getCalendar();
+//	cacheCalendar = calendarPanel.getCalendar();
+	cacheCalendar = calendarPanel.getDate();
 
 	// Make it visible
 
@@ -1115,24 +1135,31 @@ public void
 dateChanged(
     DateEvent e)
 {
-    Calendar cal = e.getSelectedDate();
+    DateTime cal = e.getSelectedDate();
 
     if (cal == null) {
 	setSelectedItem(null);
     }
     else {
-	setSelectedItem(dateFormat.format(e.getSelectedDate().getTime()));
+//	setSelectedItem(dateFormat.format(e.getSelectedDate().getTime()));
+        String tmp = dateFormatter.print(e.getSelectedDate());
+        setSelectedItem(tmp);
     }
 
     // Hide the calendar only if the day changes (ignore the time)
 
     if (cal == null && cacheCalendar == null) return;
     if (cal != null && cacheCalendar != null) {
-	if (cal.get(Calendar.YEAR) == cacheCalendar.get(Calendar.YEAR) &&
-	    cal.get(Calendar.MONTH) == cacheCalendar.get(Calendar.MONTH) &&
-	    cal.get(Calendar.DATE) == cacheCalendar.get(Calendar.DATE)) {
-	    return;
-	}
+//	if (cal.get(Calendar.YEAR) == cacheCalendar.get(Calendar.YEAR) &&
+//	    cal.get(Calendar.MONTH) == cacheCalendar.get(Calendar.MONTH) &&
+//	    cal.get(Calendar.DATE) == cacheCalendar.get(Calendar.DATE)) {
+//	    return;
+//	}
+        if (cal.getYear() == cacheCalendar.getYear() &&
+                cal.getMonthOfYear() == cacheCalendar.getMonthOfYear() &&
+                cal.getDayOfMonth() == cacheCalendar.getDayOfMonth()) {
+            return;
+        }
     }
     hideCalendar();
 }
@@ -1194,9 +1221,20 @@ getSize()
 public Object
 getSelectedItem()
 {
-    Date date = calendarPanel.getDate();
+    DateTime date = calendarPanel.getDate();
     if (date == null) return "";
-    return dateFormat.format(date);
+
+//    DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+
+    String format = dateFormat.toString();
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+
+    String temp = dateFormat.format(date.toDate());
+
+    String test = dateTimeFormatter.print(date);
+
+    return test;
 }
 
 // Set the selected date. We get the source date by calling the
@@ -1211,7 +1249,8 @@ setSelectedItem(
 {
     // Get the date to set
 
-    Date date = null;
+    DateTime date = null;
+//    if (anItem != null) date = stringToDate(anItem.toString());
     if (anItem != null) date = stringToDate(anItem.toString());
 
     // This method may be called because:
@@ -1223,7 +1262,7 @@ setSelectedItem(
 
     boolean fireEvent = false;
 
-    Date calDate = calendarPanel.getDate();
+    DateTime calDate = calendarPanel.getDate();
     if (date == null && calDate != null ||
 	date != null && !date.equals(calDate)) {
 
@@ -1233,7 +1272,7 @@ setSelectedItem(
 
     if (isEditable()) {
 	Object editorItem = getEditor().getItem();
-	Date editorDate = null;
+	DateTime editorDate = null;
 	if (editorItem != null) {
 	    editorDate = stringToDate(editorItem.toString());
 	}
