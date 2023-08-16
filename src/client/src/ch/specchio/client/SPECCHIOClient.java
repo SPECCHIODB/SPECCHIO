@@ -363,7 +363,18 @@ public interface SPECCHIOClient {
 	 * @return a new Instrument object, or null if the calibrated instrument does not exist
 	 */
 	public Instrument getCalibratedInstrument(int calibration_id) throws SPECCHIOClientException;
-	
+
+	/**
+	 * Get an array of CalibrationMetadata based on an instrument id and a calibration number (typically an ASD instrument).
+	 *
+	 * @param instrument_id			the instrument_id
+	 * @param calibration_number	the calibration number is given in the Metadata field "Calibration Number"
+	 *
+	 * @return an array of CalibrationMetadata
+	 *
+	 */
+
+	public CalibrationMetadata[] getCalibrationMetadataByCalibrationNumber(int instrument_id, int calibration_number) throws SPECCHIOClientException;
 	
 	/**
 	 * Get the value of a capability.

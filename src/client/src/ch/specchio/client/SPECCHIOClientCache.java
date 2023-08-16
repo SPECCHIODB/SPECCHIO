@@ -606,8 +606,24 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 		return realClient.getCalibratedInstrument(calibration_id);
 		
 	}
-	
-	
+
+
+	/**
+	 * Get an array of CalibrationMetadata based on an instrument id and a calibration number (typically an ASD instrument).
+	 *
+	 * @param instrument_id			the instrument_id
+	 * @param calibration_number	the calibration number is given in the Metadata field "Calibration Number"
+	 *
+	 * @return an array of CalibrationMetadata
+	 *
+	 */
+
+	public CalibrationMetadata[] getCalibrationMetadataByCalibrationNumber(int instrument_id, int calibration_number) throws SPECCHIOClientException {
+		return realClient.getCalibrationMetadataByCalibrationNumber(instrument_id, calibration_number);
+	}
+
+
+
 	/**
 	 * Get the value of a capability.
 	 * 
