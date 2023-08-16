@@ -473,25 +473,18 @@ public class SpectrumService extends SPECCHIOService {
 	 * 
 	 * @throws SPECCHIOFactoryException	
 	 */	
-	@GET
-	@Path("getDirectSpectrumIdsOfHierarchy/{hierarchy_id: [0-9]+}")
-	@Produces(MediaType.APPLICATION_XML)	
-	public XmlInteger[] getDirectSpectrumIdsOfHierarchy(@PathParam("hierarchy_id") int hierarchy_id) throws SPECCHIOFactoryException {
+	@POST
+	@Path("getDirectSpectrumIdsOfHierarchy")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	public XmlInteger[] getDirectSpectrumIdsOfHierarchy(XmlString hierarchy_id) throws SPECCHIOFactoryException {
 		
 		SpectrumFactory factory = new SpectrumFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
-		List<Integer> ids = factory.getDirectSpectrumIdsOfHierarchy(hierarchy_id);
+		List<Integer> ids = factory.getDirectSpectrumIdsOfHierarchy(Integer.valueOf(hierarchy_id.getString()));
 		factory.dispose();
 		
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
-		return adapter.marshalArray(ids);		
-		
-		
-//		@GET
-//		@Path("get/{spectrum_id: [0-9]+}/{prepare_metadata}")
-//		@Produces(MediaType.APPLICATION_XML)
-//		public Spectrum get(
-//				@PathParam("spectrum_id") int spectrum_id,
-//				@PathParam("prepare_metadata") String prepare_metadata		
+		return adapter.marshalArray(ids);
 
 	}
 	
