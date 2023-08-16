@@ -729,6 +729,24 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		return getObject(Instrument.class, "instrumentation", "getCalibratedInstrument", Integer.toString(calibration_id));
 		
 	}
+
+	/**
+	 * Get an array of CalibrationMetadata based on an instrument id and a calibration number (typically an ASD instrument).
+	 *
+	 * @param instrument_id			the instrument_id
+	 * @param calibration_number	the calibration number is given in the Metadata field "Calibration Number"
+	 *
+	 * @return an array of CalibrationMetadata
+	 *
+	 */
+
+	public CalibrationMetadata[] getCalibrationMetadataByCalibrationNumber(int instrument_id, int calibration_number) throws SPECCHIOClientException {
+
+		//return getObject(Instrument.class, "instrumentation", "getCalibratedInstrumentByCalibrationNumber", Integer.toString(instrument_id), Integer.toString(calibration_number));
+
+		return getArray(CalibrationMetadata.class,
+				"instrumentation", "getCalibrationMetadataByCalibrationNumber", Integer.toString(instrument_id), Integer.toString(calibration_number));
+	}
 	
 	/**
 	 * Get the value of a capability.
@@ -2005,10 +2023,13 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @return a list of spectrum identifiers
 	 */
 	public ArrayList<Integer> getDirectSpectrumIdsOfHierarchy(int hierarchy_id) throws SPECCHIOClientException{
-		
+
+		XmlString xmlstr = new XmlString();
+		xmlstr.setString(Integer.toString(hierarchy_id));
 		
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
-		List<Integer> ids_ = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "getDirectSpectrumIdsOfHierarchy", Integer.toString(hierarchy_id)));		
+
+		List<Integer> ids_ = adapter.unmarshalList(postForList(XmlInteger.class, "spectrum", "getDirectSpectrumIdsOfHierarchy",xmlstr));
 		
 		ArrayList<Integer> ids = new ArrayList<Integer>();
 		
@@ -2477,6 +2498,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 		
 		SpectralFileInsertResult insert_result = null;
 		try {
+			spec_file.serialiseMatrices(); // prepare for JAXB due to interfaces not being supported
 			insert_result = postForObject(SpectralFileInsertResult.class, "spectral_file", "insert", spec_file);
 		} catch (SPECCHIOWebClientException e) {
 			// TODO Auto-generated catch block
@@ -2661,9 +2683,11 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * @return a complete Space object
 	 */
 	public Space loadSpace(Space space) throws SPECCHIOWebClientException {
-		
-		return postForObject(Space.class, "spectrum", "loadSpace", space);
-		
+
+		space = postForObject(Space.class, "spectrum", "loadSpace", space);
+		space.deserialiseMatrices(); // convert to Matrix objects from HEX Strings after JAXB transfer
+
+		return space;
 	}
 
 	/**
