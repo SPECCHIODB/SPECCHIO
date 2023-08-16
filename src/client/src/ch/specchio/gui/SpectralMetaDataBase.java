@@ -87,8 +87,8 @@ public class SpectralMetaDataBase extends JFrame {
 		 * 
 		 * @param plotTypeIn		the plot type
 		 * @param idsIn				the spectrum identifiers to be visualised
-		 * @param bySensor			split spaces by sensor
-		 * @param bySensorAndUnit	split spaces by sensor and unit
+		 * @param bySensorIn			split spaces by sensor
+		 * @param bySensorAndUnitIn	split spaces by sensor and unit
 		 * @param orderByIn			field to order by
 		 */
 		public VisualisationThread(String plotTypeIn, ArrayList<Integer> idsIn, boolean bySensorIn, boolean bySensorAndUnitIn, String orderByIn)
