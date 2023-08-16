@@ -1304,7 +1304,7 @@ public class DataCache {
 					
 					// check if company names are matching ...
 					String spec_file_company = spec_file.getCompany();
-					if(!s.getManufacturerShortName().get_value().equals(spec_file_company))
+					if(s != null && !s.getManufacturerShortName().get_value().equals(spec_file_company))
 					{
 						s = null;
 					}
