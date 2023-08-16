@@ -1,8 +1,15 @@
 package ch.specchio.spaces;
 
+import org.ujmp.core.Matrix;
+import org.ujmp.core.util.SerializationUtil;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 import javax.xml.bind.annotation.*;
+
+import static org.ujmp.core.util.SerializationUtil.serialize;
 
 @XmlRootElement(name="space")
 @XmlSeeAlso({RefPanelCalSpace.class,SensorAndInstrumentSpace.class,SpectralSpace.class,UncertaintySpace.class})
@@ -13,6 +20,11 @@ public abstract class Space {
 	Integer selectedBand;
 	float selectedWavelength;
 	ArrayList<double[]> vectors;
+
+	private ArrayList<Matrix> matrices = new ArrayList<>();
+	private ArrayList<String> matrices_serialised = new ArrayList<String>();
+
+	boolean UJMP_storage;
 	String SpaceTypeName;
 	String space_name_str = "";
 	int measurement_unit;
@@ -31,7 +43,10 @@ public abstract class Space {
 		this.order_by = "date";
 		this.selectedBand = null;
 	}
-	
+
+	@XmlElement(name="UJMP_storage")
+	public boolean isUJMP_storage() { return UJMP_storage; }
+	public void setUJMP_storage(boolean UJMP_storage) { this.UJMP_storage = UJMP_storage; }
 	
 	@XmlElement(name="dimensionality")
 	public Integer getDimensionality() { return this.dimensionality; }
@@ -99,7 +114,52 @@ public abstract class Space {
 		}	
 		
 		return array;
-	}	
+	}
+
+
+	@XmlTransient
+	public void setMeasurementMatrices(ArrayList<Matrix> measurements) { this.matrices = measurements; }
+	public Matrix getMeasurementMatrix(int i) { return this.matrices.get(i); }
+	public void setMeasurementMatrix(int i, Matrix measurements) { this.matrices.set(i, measurements); }
+	public void addMeasurementMatrix(Matrix measurements) { this.matrices.add(measurements); }
+
+
+	@XmlElement(name="matrices_serialised")
+	public ArrayList<String> getMeasurementMatricesSerialised() { return this.matrices_serialised; }
+	public void setMeasurementMatricesSerialised(ArrayList<String> matrices_serialised) { this.matrices_serialised = matrices_serialised; }
+	public void addMeasurementMatrixSerialised(String measurements) { this.matrices_serialised.add(measurements); }
+
+	public void serialiseMatrices() {
+		// prepare for JAXB transfer by serialising the UJMP matrices and later ignoring the Matrix objects in JAXB via @XmlTransient
+		ListIterator<Matrix> li = this.matrices.listIterator();
+
+		while(li.hasNext()) {
+			try {
+				byte[] byte_arr = serialize(li.next());
+				this.matrices_serialised.add(javax.xml.bind.DatatypeConverter.printHexBinary(byte_arr));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void deserialiseMatrices() {
+		// transform from HEX back to Matrix objects
+
+		ListIterator<String> li = this.matrices_serialised.listIterator();
+
+		while(li.hasNext()) {
+			try {
+				byte[] b = javax.xml.bind.DatatypeConverter.parseHexBinary(li.next());
+				addMeasurementMatrix((Matrix) SerializationUtil.deserialize(b));
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
 	
 	@XmlElement(name="wvls_are_known")
 	public boolean getWvlsAreKnown() { return this.wvls_are_known; }

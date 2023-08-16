@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -15,13 +16,18 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import ch.specchio.jaxb.XmlDateTimeAdapter;
+import org.ujmp.core.Matrix;
+
+import static java.lang.Math.max;
+import static org.ujmp.core.util.SerializationUtil.*;
 
 
 /**
  * Class representing a spectral file.
  */
 @XmlRootElement(name="spectral_file")
-//@XmlSeeAlso({spatial_pos.class})
+//@XmlRootElement
+//@XmlSeeAlso({DefaultDenseDoubleMatrixMultiD.class})
 public class SpectralFile {
 	
 	// static file error code definitions
@@ -43,12 +49,12 @@ public class SpectralFile {
 	private String file_format_name;
 	private String company;
 	private String comment;
-	private ArrayList<DateTime> capture_dates = new ArrayList<DateTime>();
+	private ArrayList<DateTime> capture_dates = new ArrayList<>();
 	private DateTime capture_date; // in case there is a single one and we do not
 								// know the number of spectra yet ...
-	private ArrayList<spatial_pos> pos = new ArrayList<spatial_pos>();
+	private ArrayList<spatial_pos> pos = new ArrayList<>();
 	private spatial_pos single_pos;
-	private ArrayList<Integer> no_of_channels = new ArrayList<Integer>();
+	private ArrayList<Integer> no_of_channels = new ArrayList<>();
 	private int no_of_spectra; // can be more than one for e.g. ENVI spectral
 									// libraries
 	private int data_type; // for datatypes see
@@ -62,15 +68,15 @@ public class SpectralFile {
 	private DateTime calibration_date = null; // e.g. available for the FLoX
 	private String instrument_number = null; // e.g. available for ASD
 	private int instrument_type_number = -1; // e.g. available for ASD
-	private ArrayList<Integer> measurement_units  = new ArrayList<Integer>(); // a number code that defines: refl, rad,
+	private ArrayList<Integer> measurement_units  = new ArrayList<>(); // a number code that defines: refl, rad,
 									// raw (acc. ASD specification)
-	private ArrayList<Integer> measurement_types  = new ArrayList<Integer>(); // CASE number according to Nicodemus and
+	private ArrayList<Integer> measurement_types  = new ArrayList<>(); // CASE number according to Nicodemus and
 									// Schaepman-Strub -> beam geometries
-	private ArrayList<Integer> measurand_designator  = new ArrayList<Integer>(); // internal designator for Reference panel, Target and others in future
-	private ArrayList<Float> sensor_azimuth = new ArrayList<Float>();
-	private ArrayList<Float> sensor_zenith = new ArrayList<Float>();
-	private ArrayList<Float> illumination_azimuth = new ArrayList<Float>();
-	private ArrayList<Float> illumination_zenith = new ArrayList<Float>();
+	private ArrayList<Integer> measurand_designator  = new ArrayList<>(); // internal designator for Reference panel, Target and others in future
+	private ArrayList<Float> sensor_azimuth = new ArrayList<>();
+	private ArrayList<Float> sensor_zenith = new ArrayList<>();
+	private ArrayList<Float> illumination_azimuth = new ArrayList<>();
+	private ArrayList<Float> illumination_zenith = new ArrayList<>();
 	private int[] measurement_id;
 	private String[] author;
 	private String campaign_name;
@@ -95,7 +101,7 @@ public class SpectralFile {
 	private Double[] polarization_dir;
 	private String[] spectrum_type;
 	private String fgi_file_loader_comment;
-	private ArrayList<Metadata> specchio_eav_metadata = new ArrayList<Metadata>();
+	private ArrayList<Metadata> specchio_eav_metadata = new ArrayList<>();
 
 	// fields necessary for specpr files
 	private String[] siderial_time;
@@ -119,17 +125,32 @@ public class SpectralFile {
 	private boolean parent_garbage_flag;
 
 	private Float[][] measurements; // first dimension (rows): spectra
-	// second dimension (cols): refl per spectrum
-	private ArrayList<Float[]> wvls = new ArrayList<Float[]>();
+
+	// https://iliachemodanov.ru/en/blog-en/10-java/jaxb/36-jaxb-and-interfaces-en: whatever; solving the interface problem via adapters was unsuccessful.
+//	@XmlElements({
+//			@XmlElement(type = DefaultDenseDoubleMatrixMultiD.class),
+//			@XmlElement(type = Annotation.class)
+//	})
+
+//	@XmlJavaTypeAdapter(XmlMatrixAdapter.class)
+
+
+	//	@XmlTransient
+	private ArrayList<Matrix> measurement_matrices = new ArrayList<>();
+	private ArrayList<String> measurement_matrices_serialised = new ArrayList<String>();
+	private boolean UJMP_storage;
+//	@XmlTransient private   measurement_matrix; // UJMP version for new default storage model
+
+	private ArrayList<Float[]> wvls = new ArrayList<>();
 	private String path;
 	protected String filename;
 	private String base_name; // filename without the extension
 	private String ext; // extension of the filename
-	private ArrayList<String> spectra_filenames= new ArrayList<String>(); // for single spectrum files this is
+	private ArrayList<String> spectra_filenames= new ArrayList<>(); // for single spectrum files this is
 										// ditto to the file_name
 	// for multiple spectra files this is an autoconstructed name
 	// of the file_name including a sequential number
-	private ArrayList<String> spectra_names= new ArrayList<String>();
+	private ArrayList<String> spectra_names= new ArrayList<>();
 	private String spectrum_name_type;
 
 	private int number_of_spectra_names;
@@ -167,7 +188,7 @@ public class SpectralFile {
 	private boolean create_unit_folder_for_asd_old_files;
 	private boolean create_DN_folder_for_asd_files;
 	
-	private  ArrayList<SpecchioMessage> file_errors = new ArrayList<SpecchioMessage>();
+	private  ArrayList<SpecchioMessage> file_errors = new ArrayList<>();
 	private int file_error_code;
 	
 	
@@ -176,7 +197,18 @@ public class SpectralFile {
 	private boolean use_shared_loading_time = true; // uses same loading time for all spectra in file
 	private DateTime loading_time = null;
 	private ArrayList<MetaParameter> unique_metaparameters;
-	
+
+	// ENVI Hdr fields
+	private String fileType;
+	private int across_track_dim;
+	private int along_track_dim;
+
+	//@XmlElement
+	//@XmlJavaTypeAdapter(XmlMatrixAdapter.class)
+
+	//@XmlAnyElement
+	//@XmlTransient private Matrix measurement_matrix;
+
 	public SpectralFile() {
 		
 	}
@@ -512,7 +544,62 @@ public class SpectralFile {
 	public Float getMeasurement(int i, int j) { return this.measurements[i][j]; }
 	public void setMeasurement(int i, Float[] measurements) { this.measurements[i] = measurements; }
 	public void setMeasurement(int i, int j, Float measurements) { this.measurements[i][j] = measurements; }
-	
+
+	//@XmlElement(name="measurement_matrices")
+	//@XmlTransient
+	//@XmlElementRef
+	//@XmlJavaTypeAdapter(XmlMatrixArrayListAdapter.class)
+	public ArrayList<Matrix> getMeasurementMatrices() { return this.measurement_matrices; }
+	//@XmlJavaTypeAdapter(XmlMatrixArrayListAdapter.class)
+	//@XmlJavaTypeAdapter(XmlMatrixArrayListAdapter.class)
+
+	@XmlTransient
+	public void setMeasurementMatrices(ArrayList<Matrix> measurements) { this.measurement_matrices = measurements; }
+
+	//@XmlTransient
+	public Matrix getMeasurementMatrix(int i) { return this.measurement_matrices.get(i); }
+	public void setMeasurementMatrix(int i, Matrix measurements) { this.measurement_matrices.set(i, measurements); }
+	public void addMeasurementMatrix(Matrix measurements) { this.measurement_matrices.add(measurements); }
+
+	@XmlElement(name="measurement_matrices_serialised")
+	public ArrayList<String> getMeasurementMatricesSerialised() { return this.measurement_matrices_serialised; }
+	public void setMeasurementMatricesSerialised(ArrayList<String> measurement_matrices_serialised) { this.measurement_matrices_serialised = measurement_matrices_serialised; }
+
+	public void serialiseMatrices() {
+
+		// prepare for JAXB transfer by serialising the UJMP matrices and later ignoring the Matrix objects in JAXB via @XmlTransient
+
+		ListIterator<Matrix> li = this.measurement_matrices.listIterator();
+
+		while(li.hasNext()) {
+			try {
+				// a trial, but this goes too far ...
+				//				this.measurement_matrices_serialised.getList().add(new JAXBElement<byte[]>(new javax.xml.namespace.Qname("byte_arr"), byte[].class, serialize(li.next())));
+
+				byte[] byte_arr = serialize(li.next());
+
+				this.measurement_matrices_serialised.add(javax.xml.bind.DatatypeConverter.printHexBinary(byte_arr));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+
+	//@XmlJavaTypeAdapter(XmlMatrixAdapter.class)
+	//@XmlTransient
+//	public Matrix getMeasurementMatrix() { return this.measurement_matrix; }
+//	@XmlJavaTypeAdapter(XmlMatrixAdapter.class)
+	//@XmlTransient
+//	public void setMeasurementMatrix(Matrix measurements) {  this.measurement_matrix = measurements; }
+
+
+
+	@XmlElement(name="UJMP_storage")
+	public boolean getIsUjmpStorage() { return this.UJMP_storage; }
+	public void setIsUjmpStorage(boolean UJMP_storage) { this.UJMP_storage = UJMP_storage; }
+
 	@XmlElement(name="measurement_id")
 	public int[] getMeasurementIds() { return this.measurement_id; }
 	public void setMeasurementIds(int measurement_id[]) { this.measurement_id = measurement_id; }
@@ -555,10 +642,16 @@ public class SpectralFile {
 	public int getNumberOfSpectra() { return this.no_of_spectra; }
 	public void setNumberOfSpectra(int no_of_spectra) {
 		this.no_of_spectra = no_of_spectra;
-		
-		// set the size of some arrays that depend on the number of spectra in the file
-		//this.capture_dates = new DateTime[no_of_spectra];
-		//this.measurement_type = new int[no_of_spectra];
+	}
+
+	public int getNumberOfMeasurements() {
+		if(measurement_matrices_serialised.size() > 0 || measurement_matrices.size() > 0)
+		{
+			return max(measurement_matrices_serialised.size(), measurement_matrices.size());
+		}
+		else {
+			return getNumberOfSpectra();
+		}
 	}
 	
 	@XmlElement(name="number_of_spectra_names")
@@ -748,6 +841,22 @@ public class SpectralFile {
 	public void setWvls(int i, Float[] wvls) { this.wvls.set(i, wvls); }
 	public void addWvls(Float[] wvls) { this.wvls.add(wvls); }
 
+	@XmlElement(name="across_track_dim")
+	public int getAcross_track_dim() {
+		return across_track_dim;
+	}
+	public void setAcross_track_dim(int across_track_dim) {
+		this.across_track_dim = across_track_dim;
+	}
+
+	@XmlElement(name="along_track_dim")
+	public int getAlong_track_dim() {
+		return along_track_dim;
+	}
+	public void setAlong_track_dim(int along_track_dim) {
+		this.along_track_dim = along_track_dim;
+	}
+
 
 	public double DDDmm2DDDdecimals(double in) {
 		// reformat to dd.mmmmmmmmm
@@ -769,7 +878,7 @@ public class SpectralFile {
 
 	/**
 	 * Write the floats into a ByteArrayOutputStream, store as byte array,
-	 * the open as ByteArrayInputStream to use in an SQL statement
+	 * then open as ByteArrayInputStream to use in an SQL statement
 	 */
 	public InputStream getInputStream(int spec_no) {
 		byte[] temp_buf;
@@ -870,22 +979,42 @@ public class SpectralFile {
     public String measurementsToHex(int spec_no) {
 
         StringBuilder sb = new StringBuilder();
-        
-		for (int i = 0; i < measurements[spec_no].length; i++) {
-			try {
-				
-				sb.append(SpectralFile.hex(measurements[spec_no][i]));
-				
-			}
-			catch (NullPointerException e){
-				
-				// log the error
-				file_errors.add(new SpecchioMessage("Spectrum contains null values.", SpecchioMessage.ERROR));
-				
-				break;
-			}
+
+		if(measurement_matrices_serialised.size() > 0)
+		{
+			// UJMP storage
+			// object stream method
+//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//			try {
+//				serialize(measurement_matrices.get(spec_no), baos);
+//				return javax.xml.bind.DatatypeConverter.printHexBinary(baos.toByteArray());
+//
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+
+			return measurement_matrices_serialised.get(spec_no); // serialised data are already in HEX format
+
 		}
-        return sb.toString();
+        else {
+			for (int i = 0; i < measurements[spec_no].length; i++) {
+				try {
+
+					sb.append(SpectralFile.hex(measurements[spec_no][i]));
+
+				} catch (NullPointerException e) {
+
+					// log the error
+					file_errors.add(new SpecchioMessage("Spectrum contains null values.", SpecchioMessage.ERROR));
+
+					break;
+				}
+			}
+
+			return sb.toString();
+		}
+
 
     }
     
@@ -898,6 +1027,19 @@ public class SpectralFile {
         // change the float to raw integer bits(according to the OP's requirement)
         return hex(Float.floatToRawIntBits(f));
     }
+
+	// using JAXB instead (https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java)
+//	private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
+//
+//	public static String bytesToHex(byte[] bytes) {
+//		char[] hexChars = new char[bytes.length * 2];
+//		for (int j = 0; j < bytes.length; j++) {
+//			int v = bytes[j] & 0xFF;
+//			hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+//			hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+//		}
+//		return new String(hexChars);
+//	}
 
 	public ArrayList<ArrayList<Integer>> getRedundancy_reduced_metaparameter_index_per_spectrum() {
 		return redundancy_reduced_metaparameter_index_per_spectrum;
@@ -939,7 +1081,14 @@ public class SpectralFile {
 
 	public ArrayList<MetaParameter> getUniqueMetaParameters() {
 		return unique_metaparameters;		
-	}    
-	
+	}
 
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
 }
