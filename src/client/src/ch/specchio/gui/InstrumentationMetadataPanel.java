@@ -498,7 +498,12 @@ class CalibrationMetadataPanel extends InstrumentationMetadataPanel implements D
 			    false
 			);			
 		calibration_date.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-		calibration_date.setDate(cm.getCalibrationDate().toDateTime());
+		try {
+			calibration_date.setDate(cm.getCalibrationDate().toDateTime());
+		} catch(java.lang.NullPointerException ex)
+		{
+			int wtf = 1;
+		}
 		calibration_date.addDateListener(this);	
 		constraints.gridx = 1;
 		l.insertComponent(calibration_date, constraints);
