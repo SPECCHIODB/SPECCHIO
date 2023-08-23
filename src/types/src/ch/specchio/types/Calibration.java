@@ -44,7 +44,9 @@ public class Calibration {
 	private double[] factors;
 	private double[] uncertainty;
 	private int measurement_unit_id;
-	private int field_of_view; // indicates the FOV in degrees in case there is a FOV dependency 
+	private int field_of_view; // indicates the FOV in degrees in case there is a FOV dependency
+
+	private Metadata md;
 	
 	public Calibration() {
 		calibration_id = 0;
@@ -122,6 +124,16 @@ public class Calibration {
 		this.factors = factors;
 	}
 
+	public Float[] getFactorsAsFloat() {
+
+		Float[] floatArray = new Float[factors.length];
+		for (int i = 0 ; i < factors.length; i++)
+		{
+			floatArray[i] = (float) factors[i];
+		}
+		return floatArray;
+	}
+
 	@XmlElement(name="uncertainty")
 	public double[] getUncertainty() {
 		return uncertainty;
@@ -136,6 +148,15 @@ public class Calibration {
 	}
 	public void setMeasurement_unit_id(int measurement_unit_id) {
 		this.measurement_unit_id = measurement_unit_id;
+	}
+
+	@XmlElement(name="md")
+	public Metadata getMetadata() {
+		return md;
+	}
+
+	public void setMetadata(Metadata md) {
+		this.md = md;
 	}
 	
 
