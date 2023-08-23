@@ -96,7 +96,12 @@ public class VisualisationModule extends Module implements ModuleCallback {
 	
 			if(this.vis_module_type.equals(VisualisationSelectionDialog.spectral_multiplot))
 			{
-				vis_panel = new SpectralMultiPlot((SpectralSpace)this.get_main_input_space().getSpace(), this, 0);			
+				if(get_main_input_space().getSpace().isUJMP_storage()) {
+					get_main_input_space().getSpace().getMeasurementMatrix(0).showGUI();
+				}
+				else {
+					vis_panel = new SpectralMultiPlot((SpectralSpace) this.get_main_input_space().getSpace(), this, 0);
+				}
 			}		
 			
 			if(this.vis_module_type.equals(VisualisationSelectionDialog.spectral_scatter_multiplot))
