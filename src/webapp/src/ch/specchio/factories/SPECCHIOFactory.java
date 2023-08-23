@@ -282,6 +282,8 @@ public class SPECCHIOFactory {
 		this.eav = new EAVDBServices(getStatementBuilder(), getAttributes(), getDatabaseUserName());
 		this.eav.set_primary_x_eav_tablename(MetaParameter.SPECTRUM_LEVEL, "spectrum_x_eav", "spectrum_x_eav_view", "spectrum_id", "spectrum");
 		this.eav.set_primary_x_eav_tablename(MetaParameter.HIERARCHY_LEVEL, "hierarchy_x_eav", "hierarchy_x_eav_view", "hierarchy_level_id", "hierarchy_level");
+		this.eav.set_primary_x_eav_tablename(MetaParameter.CALIBRATION_LEVEL, "calibration_x_eav", "calibration_x_eav", "calibration_id", "calibration");
+
 
 
 		String table_name = (is_admin)? "eav" : "eav_view";
@@ -579,6 +581,7 @@ public class SPECCHIOFactory {
 		this.eav = new EAVDBServices(getStatementBuilder(), getAttributes(), getDatabaseUserName());
 		this.eav.set_primary_x_eav_tablename(MetaParameter.SPECTRUM_LEVEL, "spectrum_x_eav", "spectrum_x_eav_view", "spectrum_id", "spectrum");
 		this.eav.set_primary_x_eav_tablename(MetaParameter.HIERARCHY_LEVEL, "hierarchy_x_eav", "hierarchy_x_eav_view", "hierarchy_level_id", "hierarchy_level");
+		this.eav.set_primary_x_eav_tablename(MetaParameter.CALIBRATION_LEVEL, "calibration_x_eav", "calibration_x_eav", "calibration_id", "calibration");
 		String table_name = (is_admin)? "eav" : "eav_view";
 		this.eav.set_eav_view_name(table_name);
 		
