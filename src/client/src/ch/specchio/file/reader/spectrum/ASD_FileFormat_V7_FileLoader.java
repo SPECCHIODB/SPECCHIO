@@ -93,6 +93,9 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 
 	byte[] cbType;
 	String[] cbName;
+
+
+
 	long[] cbIT;
 	int[] cbSwir1Gain;
 	int[] cbSwir2Gain;
@@ -1262,6 +1265,54 @@ public class ASD_FileFormat_V7_FileLoader extends SpectralFileLoader {
 	
 
 		return pos;
+	}
+
+	public long[] getCbIT() {
+		return cbIT;
+	}
+
+	public void setCbIT(long[] cbIT) {
+		this.cbIT = cbIT;
+	}
+
+	public int[] getCbSwir1Gain() {
+		return cbSwir1Gain;
+	}
+
+	public void setCbSwir1Gain(int[] cbSwir1Gain) {
+		this.cbSwir1Gain = cbSwir1Gain;
+	}
+
+	public int[] getCbSwir2Gain() {
+		return cbSwir2Gain;
+	}
+
+	public void setCbSwir2Gain(int[] cbSwir2Gain) {
+		this.cbSwir2Gain = cbSwir2Gain;
+	}
+
+	public float getInt_time() {
+		return int_time;
+	}
+
+	public void setInt_time(float int_time) {
+		this.int_time = int_time;
+	}
+
+	public int getGain_swir1() {
+		return gain_swir1;
+	}
+
+	public void setGain_swir1(int gain_swir1) {
+		this.gain_swir1 = gain_swir1;
+	}
+
+	public int getGain_swir2() {
+		return gain_swir2;
+	}
+
+	public void setGain_swir2(int gain_swir2) {
+		this.gain_swir2 = gain_swir2;
 	}
 
 	protected String read_string(DataInputStream in, int no_of_chars)
