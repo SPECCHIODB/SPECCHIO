@@ -22,6 +22,7 @@ public class SpectralFileInsertStruct {
 	public String calibration_id;
 	public String measurement_unit_id;
 	public String measurement_as_hex;
+	public String storage_format; // default is zero, UJMP storage is 1
 	public Metadata metadata;
 	
 	
