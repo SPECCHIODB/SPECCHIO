@@ -228,11 +228,11 @@ public class ASD_FileLoader extends SpectralFileLoader {
 				asd_file.setCalibrationSeries(Integer.valueOf(no_and_cal.substring(no_and_cal.length()-1, no_and_cal.length())));					
 			}
 			
-			if(asd_file.getFilename().endsWith(".raw") || asd_file.getFilename().endsWith(".raw") )
+			if(asd_file.getFilename().endsWith(".RAW") || asd_file.getFilename().endsWith(".raw") )
 			{
 				String no_and_cal = asd_file.getBasename().substring(2);				
 				asd_file.setInstrumentNumber(no_and_cal.substring(0, no_and_cal.length()-1));				
-				asd_file.setCalibrationSeries(Integer.valueOf(no_and_cal.substring(no_and_cal.length()-1, no_and_cal.length())));	
+				asd_file.setCalibrationSeries(Integer.valueOf(no_and_cal.substring(no_and_cal.length()-1, no_and_cal.length())));
 				
 				String fov_str = asd_file.getBasename().substring(0, 1);
 				
