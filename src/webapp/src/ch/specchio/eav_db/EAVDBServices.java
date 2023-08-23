@@ -55,7 +55,7 @@ public class EAVDBServices extends Thread {
 		this.SQL = SQL;
 		this.ATR = ATR;
 		this.databaseUserName = databaseUserName;
-		eav_table_infos = new EAVTableAndRelationsInfoStructure[2];
+		eav_table_infos = new EAVTableAndRelationsInfoStructure[3];
 		
 		String query = "SELECT count(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = (select schema()) AND TABLE_NAME = 'eav' AND COLUMN_NAME = 'spatial_val'";
 		
