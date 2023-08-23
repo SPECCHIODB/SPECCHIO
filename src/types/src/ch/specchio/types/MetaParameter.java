@@ -17,6 +17,7 @@ public abstract class MetaParameter {
 	
 	public static final int SPECTRUM_LEVEL = 0;
 	public static final int HIERARCHY_LEVEL = 1;
+	public static final int CALIBRATION_LEVEL = 2;
 	//public static final int HIERARCHY_INHERITANCE_LEVEL = 2;
 
 	private int level = SPECTRUM_LEVEL;
