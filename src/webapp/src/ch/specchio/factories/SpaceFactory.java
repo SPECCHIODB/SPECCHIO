@@ -18,8 +18,10 @@ import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.plots.GonioPosition;
 import ch.specchio.plots.GonioSamplingPoints;
 import ch.specchio.spaces.*;
+import ch.specchio.types.Capabilities;
 import ch.specchio.types.Instrument;
-import ch.specchio.types.Sensor;
+import org.ujmp.core.Matrix;
+import org.ujmp.core.util.SerializationUtil;
 
 /**
  * Class for creating and manipulating Space objects.
@@ -31,7 +33,24 @@ public class SpaceFactory extends SPECCHIOFactory {
 	
 	/** field by which to order lists of spaces */
 	private String order_by = "date";
-	
+
+	/**
+	 * Construct a factory using a specific user's connection to the database.
+	 *
+	 * @param db_user		database account user name
+	 * @param db_password	database account password
+	 * @param is_admin	is the user an administrator?
+	 * @param capabilities		server capabilities and configurations
+	 *
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public SpaceFactory(String db_user, String db_password, String ds_name, boolean is_admin, Capabilities capabilities) throws SPECCHIOFactoryException {
+
+		this(db_user, db_password, ds_name, is_admin);
+
+		this.capabilities = capabilities;
+
+	}
 	
 	/**
 	 * Constructor. 
@@ -113,7 +132,8 @@ public class SpaceFactory extends SPECCHIOFactory {
 			int sensor_id,
 			int instrument_id,
 			int calibration_id,
-			int measurement_type_id
+			int measurement_type_id,
+			boolean storage_format
 		) throws SPECCHIOFactoryException {
 		
 		boolean space_exists = false;
@@ -157,7 +177,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 		{
 			// create a new space
 			MeasurementUnit mu = getMeasurementUnit(measurement_type_id);
-			ss = createSensorAndInstrumentSpace(sensor_id, instrument_id, calibration_id, mu);
+			ss = createSensorAndInstrumentSpace(sensor_id, instrument_id, calibration_id, mu, storage_format);
 			
 			// add new space to space list
 			spaces.add(ss);
@@ -177,6 +197,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			int instrument_id,
 			int calibration_id,
 			int measurement_type_id,
+			boolean storage_format,
 			int uncertainty_set_id
 	) throws SPECCHIOFactoryException {
 
@@ -323,11 +344,12 @@ public class SpaceFactory extends SPECCHIOFactory {
 	/**
 	 * Create a new sensor and instrument space.
 	 * 
-	 * @param sensor_id			the sensor identifier
-	 * @param instrument_id		the instrument identifier (0 to create a reference panel calibration space)
-	 * @param calibration_id	the calibration identifier
-	 * @param mu				the measurement unit
-	 * 
+	 * @param sensor_id            the sensor identifier
+	 * @param instrument_id        the instrument identifier (0 to create a reference panel calibration space)
+	 * @param calibration_id    the calibration identifier
+	 * @param mu                the measurement unit
+	 *
+	 * @param storage_format
 	 * @return a new SensorAndInstrumentSpace or RefPanelCalSpace object
 	 *
 	 * @throws SPECCHIOFactoryException	database error
@@ -336,13 +358,13 @@ public class SpaceFactory extends SPECCHIOFactory {
 			int sensor_id,
 			int instrument_id,
 			int calibration_id,
-			MeasurementUnit mu) throws SPECCHIOFactoryException {
+			MeasurementUnit mu, boolean storage_format) throws SPECCHIOFactoryException {
 		
 		SensorAndInstrumentSpace sais;
 
 		sais = new SensorAndInstrumentSpace(sensor_id, instrument_id, calibration_id, mu);
 		sais.setOrderBy(this.order_by);
-
+		sais.setUJMP_storage(storage_format);
 		setSensorAndInstrumentInSpace(sais);
 		
 		return sais;
@@ -529,7 +551,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 					"from instrumentation_factors where instrumentation_factors_id in (" + SQL.conc_ids(cal_factor_ids) + ")";
 			rs = stmt.executeQuery(query);
 			while (rs.next()) {				
-				addSpectrumToSpace(cal_spaces, rs.getInt(1), rs.getInt(2), rs.getInt(3));				
+				addSpectrumToSpace(cal_spaces, rs.getInt(1), rs.getInt(2), rs.getInt(3));
 			}	
 			rs.close();
 			
@@ -832,6 +854,18 @@ public class SpaceFactory extends SPECCHIOFactory {
 				"measurement_unit_id",
 				"calibration_id"
 			};
+
+			if(capabilities.getBooleanCapability(Capabilities.MATRIX_STORAGE))
+			{
+				columns = new String[] {
+						"spectrum_id",
+						"sensor_id",
+						"instrument_id",
+						"measurement_unit_id",
+						"calibration_id", "storage_format"
+				};
+			}
+
 			String query = buildSpaceQuery("spectrum", "spectrum_id", columns, spectrum_ids, this.order_by);
 			
 			// get the spectra from the database
@@ -843,8 +877,12 @@ public class SpaceFactory extends SPECCHIOFactory {
 				ssi.sensor_id = rs.getInt(2);
 				ssi.instrument_id = rs.getInt(3);
 				ssi.measurement_unit_id = rs.getInt(4);		
-				ssi.calibration_id = rs.getInt(5);	
-				ssi_list.add(ssi);				
+				ssi.calibration_id = rs.getInt(5);
+				if(capabilities.getBooleanCapability(Capabilities.MATRIX_STORAGE)){
+					ssi.storage_format = rs.getBoolean(6); }
+				else
+					ssi.storage_format = false;
+				ssi_list.add(ssi);
 			}	
 			rs.close();
 			stmt.close();
@@ -863,8 +901,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 		while(li.hasNext())
 		{
 			space_sorting_ident_struct ssi = li.next();
-			addSpectrumToSpace(spaces, ssi.spectrum_id, ssi.sensor_id, ssi.instrument_id, ssi.calibration_id, ssi.measurement_unit_id);
-
+			addSpectrumToSpace(spaces, ssi.spectrum_id, ssi.sensor_id, ssi.instrument_id, ssi.calibration_id, ssi.measurement_unit_id, ssi.storage_format);
 		}
 		
 		return spaces;
@@ -1070,7 +1107,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 		while(li.hasNext())
 		{
 			space_sorting_ident_struct ssi = li.next();
-			addSpectrumToSpace(spaces, ssi.spectrum_id, ssi.sensor_id, ssi.instrument_id, ssi.calibration_id, ssi.measurement_unit_id, ssi.uncertainty_set_id);
+			addSpectrumToSpace(spaces, ssi.spectrum_id, ssi.sensor_id, ssi.instrument_id, ssi.calibration_id, ssi.measurement_unit_id, ssi.storage_format, ssi.uncertainty_set_id);
 
 		}
 
@@ -1221,7 +1258,7 @@ public class SpaceFactory extends SPECCHIOFactory {
 			else if(table.equals("uncertainty")) {
 
 
-				// TODO: why do we need distinct here? Without distinct it duplicates entries ....
+				// TODO: why do we need distinct here? Without distinct it duplicates entries .... but this was apparenlty due to the JAXB unmarshalling
 				query = "SELECT distinct sn.u_vector, ss.spectrum_id\n" +
 						"FROM spectrum_node sn\n" + 
 						"INNER JOIN spectrum_subset_map ss ON ss.spectrum_node_id = sn.spectrum_node_id\n" + 
@@ -1249,11 +1286,13 @@ public class SpaceFactory extends SPECCHIOFactory {
             int cnt = 0;
             Instant startReadBlobs = Instant.now();
 
+
+
             while (rs.next())
             {
+				Blob measurement = rs.getBlob(1);
+				InputStream binstream = measurement.getBinaryStream();
 
-                Blob measurement = rs.getBlob(1);
-                int nElements = (int) measurement.length() / 4;
                 curr_id = rs.getInt(2);
 
                 if(curr_id != space.getSpectrumIds().get(cnt))
@@ -1261,13 +1300,35 @@ public class SpaceFactory extends SPECCHIOFactory {
                     int buggerit = 1;
                 }
 
-                InputStream binstream = measurement.getBinaryStream();
-                DataInput dis = new DataInputStream(binstream);
 
-				if(space.getSelectedBand() != null){
-					space.setDimensionality(1);
-				} else{
-					if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
+
+				if(space.isUJMP_storage())
+				{
+					//String m_hex = rs.getString(1);
+
+					byte[] b =  measurement.getBytes(1l, (int)measurement.length());
+
+					String hex = javax.xml.bind.DatatypeConverter.printHexBinary(b);
+
+					space.addMeasurementMatrixSerialised(hex);
+
+					// Test of conversion to matrix from hex
+//					byte[] b_ = javax.xml.bind.DatatypeConverter.parseHexBinary(hex);
+//					space.addMeasurementMatrix((Matrix) SerializationUtil.deserialize(b_));
+
+					int x = 1;
+
+					// Direct creation of matrices; not needed as they get pushed through JAXB anyway, hence, it is easier to keep them as HEX string
+					// space.addMeasurementMatrix((Matrix) SerializationUtil.deserialize(binstream));
+				}
+				else {
+
+					int nElements = (int) measurement.length() / 4;
+
+					if(space.getSelectedBand() != null){
+						space.setDimensionality(1);
+					} else{
+						if(!space.getWvlsAreKnown() && space.getDimensionalityIsSet() == false)
 						{
 							try {
 								space.setDimensionality(binstream.available() / 4);
@@ -1276,39 +1337,46 @@ public class SpaceFactory extends SPECCHIOFactory {
 								e.printStackTrace();
 							}
 						}
-				}
-                double[] vector = new double[nElements];
+					}
+
+					DataInput dis = new DataInputStream(binstream);
+					double[] vector = new double[nElements];
 //				ArrayList<Double> vectorArr = new ArrayList<>();
 
-                for(int i = 0; i < nElements; i++)
-                {
-                    try {
-                        Float f = dis.readFloat();
+					for (int i = 0; i < nElements; i++) {
+						try {
+							Float f = dis.readFloat();
 
 //							vectors[cnt][i]=f;
-                        vector[i] = f.doubleValue();
+							vector[i] = f.doubleValue();
 //						vectorArr.add(f.doubleValue());
-                    } catch (IOException e) {
-                        // don't know what would cause this
-                        e.printStackTrace();
-                    }
-                }
+						} catch (IOException e) {
+							// don't know what would cause this
+							e.printStackTrace();
+						}
+					}
+
+					space.addVector(vector);
+
+					try {
+						binstream.close();
+					} catch (IOException e) {
+						// don't know what would cause this
+						e.printStackTrace();
+					}
+
+				}
 
                 cnt++;
 
-                try {
-                    binstream.close();
-                } catch (IOException e) {
-                    // don't know what would cause this
-                    e.printStackTrace();
-                }
+
 //                double[] vector = new double[vectorArr.size()];
 //
 //                for(int i=0;i<vectorArr.size();i++){
 //                	vector[i] = vectorArr.get(i);
 //				}
 
-                space.addVector(vector);
+
 
             }
 
@@ -1321,9 +1389,6 @@ public class SpaceFactory extends SPECCHIOFactory {
             rs.close();
             stmt.close();
 
-
-
-
         } catch (SQLException ex) {
             // database error
             throw new SPECCHIOFactoryException(ex);
@@ -1332,7 +1397,12 @@ public class SpaceFactory extends SPECCHIOFactory {
         {
             throw new SPECCHIOFactoryException("Found spectrum with a zero binary entry: please delete or reload spectrum with id = " + curr_id);
         }
-    }
+//        catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		}
+	}
 	
 	
 	public void setMatchOnlySensor(boolean match_only_sensor) {
