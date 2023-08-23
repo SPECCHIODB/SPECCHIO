@@ -7,4 +7,5 @@ public class space_sorting_ident_struct {
 	int measurement_unit_id;
 	int calibration_id;
 	int uncertainty_set_id;
+	boolean storage_format;
 }
