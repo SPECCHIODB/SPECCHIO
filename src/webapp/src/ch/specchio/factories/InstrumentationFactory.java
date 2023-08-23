@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.specchio.types.*;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -23,22 +24,12 @@ import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.eav_db.id_and_op_struct;
 import ch.specchio.spaces.Space;
 import ch.specchio.spaces.SpectralSpace;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.CalibrationMetadata;
-import ch.specchio.types.CalibrationPlotsMetadata;
-import ch.specchio.types.Institute;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.InstrumentDescriptor;
-import ch.specchio.types.MetaDate;
-import ch.specchio.types.Picture;
-import ch.specchio.types.PictureTable;
-import ch.specchio.types.Reference;
-import ch.specchio.types.ReferenceBrand;
-import ch.specchio.types.ReferenceDescriptor;
-import ch.specchio.types.Sensor;
-import ch.specchio.types.SpecchioMessage;
-import ch.specchio.types.SpectralFile;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 
 /**
@@ -51,6 +42,24 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	
 	/** the prefix of reference table and column names */
 	private static final String REFERENCE = "reference";
+
+	/**
+	 * Construct a factory using a specific user's connection to the database.
+	 *
+	 * @param db_user		database account user name
+	 * @param db_password	database account password
+	 * @param is_admin	is the user an administrator?
+	 * @param capabilities		server capabilities and configurations
+	 *
+	 * @throws SPECCHIOFactoryException	could not establish initial context
+	 */
+	public InstrumentationFactory(String db_user, String db_password, String ds_name, boolean is_admin, Capabilities capabilities) throws SPECCHIOFactoryException {
+
+		this(db_user, db_password, ds_name, is_admin);
+
+		this.capabilities = capabilities;
+
+	}
 	
 	/**
 	 * Constructor. 
@@ -62,10 +71,10 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	 * 
 	 * @throws SPECCHIOFactoryException	could not establish initial context
 	 */
-	public InstrumentationFactory(String db_user, String db_password, String ds_name, boolean is_admin) throws SPECCHIOFactoryException {
+	private InstrumentationFactory(String db_user, String db_password, String ds_name, boolean is_admin) throws SPECCHIOFactoryException {
 
 		super(db_user, db_password, ds_name, is_admin);
-		
+
 	}
 
 	/**
@@ -264,12 +273,32 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 		
 		return i;
 	}
+
+	/**
+	 * Get an array of CalibrationMetadata based on an instrument id and a calibration number (typically an ASD instrument).
+	 *
+	 * @param instrument_id			the instrument_id
+	 * @param calibration_number	the calibration number is given in the Metadata field "Calibration Number"
+	 *
+	 * @return an array of CalibrationMetadata
+	 *
+	 * @throws SPECCHIOFactoryException	the instrument does not exist
+	 */
+	public CalibrationMetadata[] getCalibrationMetadataByCalibrationNumber(int instrument_id, int calibration_number) throws SPECCHIOFactoryException {
+
+		String query = "select calibration_id,calibration_no,calibration_date,comments, cal_factors, uncertainty, reference_id, instrument_id, fov, name from calibration " +
+				" where instrument_id =" + Integer.toString(instrument_id) + " AND calibration_no = " + Integer.toString(calibration_number);
+
+		List<CalibrationMetadata> cmlist = getCalibrationMetadata(query);
+
+		return cmlist.toArray(new CalibrationMetadata[cmlist.size()]);
+	}
+
 	
 	/**
 	 * Get the calibration metadata for an instrument or reference.
 	 * 
-	 * @param object_type	"instrument" or "reference"
-	 * @param object_id		the instrument or reference identifier
+	 * @param calibration_id	calibration_id
 	 * 
 	 * @return an array of calibration metatdata objects associated with the instrument
 	 * 
@@ -315,7 +344,7 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	/**
 	 * Get the calibration metadata for a defined query.
 	 * 
-	 * @param String	query
+	 * @param 	query
 	 * 
 	 * @return an list of calibration metatdata objects
 	 * 
@@ -329,13 +358,19 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 		try {
 			SQL_StatementBuilder SQL = getStatementBuilder();
 			Statement stmt = SQL.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			ResultSet rs;
+
+			// check if the eav metadata for calibrations exists on this system
+
+			rs = stmt.executeQuery(query);
+
 			while (rs.next()) {
-				CalibrationMetadata cm = new CalibrationMetadata(rs.getInt(1));
-				cm.setCalibrationNumber(rs.getInt(2));
+				int col_no = 1;
+				CalibrationMetadata cm = new CalibrationMetadata(rs.getInt(col_no++));
+				cm.setCalibrationNumber(rs.getInt(col_no++));
 				
 				DateTimeFormatter formatter;
-				String date_str = rs.getString(3);
+				String date_str = rs.getString(col_no++);
 				
 
 				
@@ -355,19 +390,27 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 					cm.setCalibrationDate(d);
 				}
 				
-				cm.setComments(rs.getString(4));
-				cm.setCalFactorsId(rs.getInt(5));
+				cm.setComments(rs.getString(col_no++));
+				cm.setCalFactorsId(rs.getInt(col_no++));
 				cm.setCalibrationFactorsPlot(getCalibrationPlotsMetadata(cm.getCalFactorsId(), "cal_factors"));
-				cm.setUncertainty_id(rs.getInt(6));
+				cm.setUncertainty_id(rs.getInt(col_no++));
 				cm.setCalibrationUncertaintyPlot(getCalibrationPlotsMetadata(cm.getUncertainty_id(), "uncertainty"));				
-				cm.setReferenceId(rs.getInt(7));
-				cm.setInstrumentId(rs.getInt(8));
-				cm.setField_of_view(rs.getInt(9));
-				cm.setName(rs.getString(10));
+				cm.setReferenceId(rs.getInt(col_no++));
+				cm.setInstrumentId(rs.getInt(col_no++));
+				if(query.contains("fov"))  cm.setField_of_view(rs.getInt(col_no++)); // dirty hack to avoid errors with different queries
+				if(query.contains("name"))  cm.setName(rs.getString(col_no++));
 				
 				// fill factors from space
 				cm.setFactors(cm.getCalibrationFactorsPlot().getSpace().getVectors().get(0));
-				
+
+				// get additional metadata if existing in the eav table
+				if(this.capabilities.getBooleanCapability(Capabilities.EAV_FOR_CALIBRATION)){
+					MetadataFactory mf = new MetadataFactory(this);
+					Metadata md = mf.getMetadataForCalibration(cm.getCalibration_id());
+					cm.setMetadata(md);
+				}
+
+
 				cmlist.add(cm);
 			}
 			rs.close();
@@ -537,7 +580,7 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	/**
 	 * Get the descriptors of every instrument in the database.
 	 * 
-	 * @param an array of InstrumentDescriptors identifying every instrument in the database
+	 * @return an array of InstrumentDescriptors identifying every instrument in the database
 	 * 
 	 * @throws SPECCHIOFactoryException	could not access the database
 	 */
@@ -769,7 +812,7 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	/**
 	 * Get the descriptors of every reference in the database.
 	 * 
-	 * @param an array of ReferenceDescriptors identifying every reference in the database
+	 * @return an array of ReferenceDescriptors identifying every reference in the database
 	 * 
 	 * @throws SPECCHIOFactoryException	could not access the database
 	 */
@@ -954,7 +997,7 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 	/**
 	 * Insert an instrument into the database.
 	 * 
-	 * @param instrument	instrument data structure
+	 * @param instr	instrument data structure
 	 * 
 	 * @throws SPECCHIOFactoryException could not insert the new instrument
 	 */	
