@@ -1241,11 +1241,43 @@ public class MetadataFactory extends SPECCHIOFactory {
 		return adcs;
 		
 		
-	}	
-	
-	
+	}
+
+
 	/**
-	 * Get the metadata for a given spectrum.
+	 * Get the metadata for a given calibration.
+	 *
+	 * @param calibration_id	the identifier of the calibration
+	 *
+	 * @return the metadata for the specific calibration
+	 *
+	 * @throws SPECCHIOFactoryException the calibration does not exist
+	 */
+	public Metadata getMetadataForCalibration(int calibration_id) throws SPECCHIOFactoryException {
+
+		Metadata md = new Metadata();
+
+		md.setFrameId(calibration_id);
+
+		ArrayList<Integer> metaparameter_ids = new ArrayList<Integer>();
+
+		metaparameter_ids = getEavServices().get_eav_ids(MetaParameter.CALIBRATION_LEVEL, calibration_id);
+
+		// bulk reading of metaparameters
+		try {
+			getEavServices().metadata_bulk_loader(md, metaparameter_ids);
+		} catch (SQLException ex) {
+			// database error
+			throw new SPECCHIOFactoryException(ex);
+		}
+
+		return md;
+
+	}
+
+
+	/**
+	 * Get the metadata for a given hierarchy.
 	 * 
 	 * @param hierarchy_id	the identifier of the hierarchy
 	 * 
