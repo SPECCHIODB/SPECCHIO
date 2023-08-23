@@ -152,6 +152,8 @@ public class SpectralFileService extends SPECCHIOService {
 				getDataSourceName(),
 				spec_file.getCampaignId()
 			);
+
+		factory.capabilities = this.getServerCapabilities();
 		
 		Instant start = Instant.now();
 		SpectralFileInsertResult insert_result = factory.insertSpectralFile(spec_file, spec_file.getHierarchyId());

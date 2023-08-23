@@ -861,11 +861,22 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		SpectralFileLoader loader = null;
 		try {
 			// cx if there are header files and slb (sli) files
-			// in that case we got ENVI header and spectral libary files
+			// in that case we got ENVI header and spectral library files
 //			if (exts.contains("hdr")
 //					&& (exts.contains("slb") || exts.contains("sli")))
-			if (exts.contains("hdr") || exts.contains("slb") || exts.contains("sli"))			
+			if (exts.contains("slb") || exts.contains("sli"))
 				loader = new ENVI_SLB_FileLoader(specchio_client, this);
+
+			if (exts.contains("hdr")) {
+				// Can either be a spectral library, or a cube
+				loader = new ENVI_SLB_FileLoader(specchio_client, this);
+
+				((ENVI_SLB_FileLoader) loader).read_ENVI_header(files.get(0));
+
+				if(((ENVI_SLB_FileLoader) loader).getSpec_file().getFileType().equals("ENVI Standard"))
+					loader = new ENVI_Cube_FileLoader(specchio_client, this);
+
+			}
 
 			// cx for APOGEE files
 			else if (exts.contains("TRM"))
@@ -1024,13 +1035,15 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				if (loader == null) {
 					// cx if we got ASD files
 					// to do this we open randomly the first file and read an ASD header
+					try {
 					file_input = new FileInputStream(files.get(0));
 					data_in = new DataInputStream(file_input);
 					ASD_FileLoader asd_loader = new ASD_FileLoader(specchio_client, this);
 					SpectralFile sf = asd_loader.asd_file;
 					sf.setFilename(files.get(0).getName());
-		
-					asd_loader.read_ASD_header(data_in, sf);
+
+
+						asd_loader.read_ASD_header(data_in, sf);
 		
 					if (sf.getCompany().equals("ASD")) {
 						loader = new ASD_FileLoader(specchio_client, this);
@@ -1038,6 +1051,13 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		
 					file_input.close();
 					data_in.close();
+					}
+					catch (IOException e) {
+						// presumably not an ASD V7 file; ignore it
+					}
+					catch (NumberFormatException e) {
+						// presumably not an ASD V7 file; ignore it
+					}
 				}
 				
 				if (loader == null) {

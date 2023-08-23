@@ -52,7 +52,7 @@
   </servlet-mapping>
   <login-config>
     <auth-method>BASIC</auth-method>
-    <realm-name>specchioRealm</realm-name>
+    <realm-name>specchio_RSL_Prod_Realm</realm-name>
   </login-config>
   <security-constraint>
     <web-resource-collection>

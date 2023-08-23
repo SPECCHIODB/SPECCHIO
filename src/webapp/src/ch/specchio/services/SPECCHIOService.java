@@ -2,6 +2,9 @@ package ch.specchio.services;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.Cookie;
@@ -21,10 +24,11 @@ import au.ands.org.researchdata.ResearchDataAustralia;
 
 import ch.specchio.constants.UserRoles;
 import ch.specchio.eav_db.EAVDBServices;
+import ch.specchio.eav_db.SQL_StatementBuilder;
 import ch.specchio.factories.SPECCHIOFactory;
 import ch.specchio.factories.SPECCHIOFactoryException;
 import ch.specchio.types.Capabilities;
-
+import ch.specchio.eav_db.SQL_StatementBuilder;
 
 /**
  * Base class for all SPECCHIO web services. This class provides a few common
@@ -163,6 +167,42 @@ public class SPECCHIOService {
 		EAVDBServices eav = factory.getEavServices();
 		Boolean spatially_enabled = eav.isSpatially_enabled();
 		capabilities.setCapability(Capabilities.SPATIAL_EXTENSION, spatially_enabled.toString());
+
+		// get more capabilities from DB
+		try {
+			SQL_StatementBuilder SQL = factory.getStatementBuilder();
+			Statement stmt = SQL.createStatement();
+			ResultSet rs;
+			String eavl_cal_query = "select * from information_schema.tables where table_schema = database() and table_name = 'calibration_x_eav'";
+			boolean calibration_x_eav_exists = false;
+			rs = stmt.executeQuery(eavl_cal_query);
+			while (rs.next())
+			{
+				calibration_x_eav_exists = true;
+			}
+			rs.close();
+
+			capabilities.setBooleanCapability(Capabilities.EAV_FOR_CALIBRATION, calibration_x_eav_exists);
+
+			String storage_format_query = "select * from information_schema.columns where table_schema = database() and table_name = 'spectrum' and column_name = 'storage_format'";
+			boolean storage_format_config = false;
+			rs = stmt.executeQuery(storage_format_query);
+			while (rs.next())
+			{
+				storage_format_config = true;
+			}
+			rs.close();
+
+			capabilities.setBooleanCapability(Capabilities.MATRIX_STORAGE, storage_format_config);
+
+
+			stmt.close();
+		}
+		catch (SQLException ex) {
+			// database error
+			throw new SPECCHIOFactoryException(ex);
+		}
+
 
 		capabilities.setCapability(Capabilities.SERVER_VERSION, SPECCHIO_ReleaseInfo.getVersion());
 		capabilities.setCapability(Capabilities.SERVER_BUILD_NUMBER, Integer.toString(SPECCHIO_ReleaseInfo.getBuildNumber()));
@@ -325,7 +365,7 @@ public class SPECCHIOService {
 	/**
 	 * Upgrade the DB.
 	 * 
-	 * @param campaign_type	the type of campaign to be import
+	 * @param version	db version
 	 * 
 	 * @throws SecurityException		a non-admin user tried to upgrade the database
 	 * @throws SPECCHIOFactoryException	the request body is not in the correct format

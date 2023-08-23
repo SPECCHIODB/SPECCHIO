@@ -15,6 +15,7 @@ public class Capabilities {
 	
 	/** mapping of capability names to values */
 	private Hashtable<String, String> table;
+	private Hashtable<String, Boolean> boolean_table;
 	
 	/** capability name for version number of server WAR file */
 	public static final String VERSION = "version";
@@ -41,6 +42,10 @@ public class Capabilities {
 	public static final String PASSWORD_HASHING_ALGORITHM = "PASSWORD_HASHING_ALGORITHM";
 
 	public static final String USE_SALTING = "USE_SALTING";
+
+	public static final String MATRIX_STORAGE = "MATRIX_STORAGE";
+
+	public static final String EAV_FOR_CALIBRATION = "EAV_FOR_CALIBRATION";
 	
 	
 	/**
@@ -49,7 +54,7 @@ public class Capabilities {
 	public Capabilities() {
 		
 		this.table = new Hashtable<String, String>();
-		
+		this.boolean_table = new Hashtable<String, Boolean>();
 	}
 	
 	
@@ -71,6 +76,19 @@ public class Capabilities {
 		return table.get(capability);
 		
 	}
+
+	/**
+	 * Get the value of a capability.
+	 *
+	 * @param capability	the capability
+	 *
+	 * @return the value of the capability, or null if the capability is not known
+	 */
+	public Boolean getBooleanCapability(String capability) {
+
+		return boolean_table.get(capability);
+
+	}
 	
 	
 	/**
@@ -84,6 +102,16 @@ public class Capabilities {
 		table.put(capability, value);
 		
 	}
-	
 
+	/**
+	 * Set the value of a capability.
+	 *
+	 * @param capability	the capability
+	 * @param value			the new value
+	 */
+	public void setBooleanCapability(String capability, Boolean value) {
+
+		boolean_table.put(capability, value);
+
+	}
 }
