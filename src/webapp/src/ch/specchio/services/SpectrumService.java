@@ -453,7 +453,7 @@ public class SpectrumService extends SPECCHIOService {
 		
 		//System.out.println("spectrum ids to get space for:" + query_d.spectrum_ids);
 		
-		SpaceFactory factory = new SpaceFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin());
+		SpaceFactory factory = new SpaceFactory(getClientUsername(), getClientPassword(), getDataSourceName(), isAdmin(), getServerCapabilities());
 		factory.setMatchOnlySensor(query_d.split_spaces_by_sensor);
 		factory.setMatchOnlySensorAndUnit(query_d.split_spaces_by_sensor_and_unit);
 		factory.setOrderByAttribute(query_d.order_by);
@@ -465,13 +465,13 @@ public class SpectrumService extends SPECCHIOService {
 
 		
 	/**
-	 * Get a list of hierarchy ids, covering all hierarchies above these spectra
-	 * 
-	 * @param hierarchy_id		the identifiers of the desired spectra
-	 * 
-	 * @return hierarchy ids
-	 * 
-	 * @throws SPECCHIOFactoryException	
+	 * Get the identifiers of all spectra directly belonging to a hierarchy
+	 *
+	 * @param hierarchy_id	the hierarchy_id
+	 *
+	 * @return a list of spectrum identifiers
+	 *
+	 * @throws SPECCHIOFactoryException
 	 */	
 	@POST
 	@Path("getDirectSpectrumIdsOfHierarchy")
