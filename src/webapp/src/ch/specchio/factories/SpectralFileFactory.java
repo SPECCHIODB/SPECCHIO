@@ -1026,7 +1026,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 
 			 StringBuffer valueStatement = new StringBuffer();
 
-			 for (int i = 0; i < spec_file.getNumberOfSpectra(); i++) {
+			 for (int i = 0; i < spec_file.getNumberOfMeasurements(); i++) {
 				 SpectralFileInsertStruct spec_file_insert_struct = getSpectrumInsertStruct(spec_file, i, exists_info);
 
 				 if(spec_file_insert_struct.getErrors().size()>0) insert_result.addErrors(spec_file_insert_struct.getErrors());
@@ -1035,7 +1035,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 
 				 getValueString(valueStatement, spec_file_insert_struct);
 
-				 if(i < spec_file.getNumberOfSpectra()-1){
+				 if(i < spec_file.getNumberOfMeasurements()-1){
 				 	valueStatement.append(",");
 				 }
 
@@ -1111,6 +1111,10 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		valueStatement.append(",");
 		valueStatement.append(sfis.measurement_unit_id);
 		valueStatement.append(",");
+		if(capabilities.getBooleanCapability(Capabilities.MATRIX_STORAGE)) {
+			valueStatement.append(sfis.storage_format);
+			valueStatement.append(",");
+		}
 		valueStatement.append("x'" + sfis.measurement_as_hex + "')");
 		return valueStatement;
 	}
@@ -1124,6 +1128,16 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				+ "file_format_id, instrument_id, calibration_id, "
 				+ "measurement_unit_id, measurement) "
 				+ "VALUES ";
+
+		if(capabilities.getBooleanCapability(Capabilities.MATRIX_STORAGE)){
+
+			query = "INSERT INTO spectrum_view "
+					+ "("
+					+ " hierarchy_level_id, sensor_id, campaign_id, "
+					+ "file_format_id, instrument_id, calibration_id, "
+					+ "measurement_unit_id, storage_format, measurement) "
+					+ "VALUES ";
+		}
 
 		query += valueString;
 
@@ -1525,7 +1539,8 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 				insert_struct.instrument_id = instrument_id;
 				insert_struct.calibration_id = SQL.is_null_key_get_val_and_op(calibration_id).id;
 				insert_struct.measurement_unit_id = SQL.is_null_key_get_val_and_op(getDataCache().get_measurement_unit_id_for_file(spec_file, spec_no)).id;
-				
+				insert_struct.storage_format = (spec_file.getIsUjmpStorage() == false ? "0" : "1");
+
 				
 				String hex = spec_file.measurementsToHex(spec_no);
 
