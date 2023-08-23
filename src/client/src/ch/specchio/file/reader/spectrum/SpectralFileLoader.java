@@ -324,7 +324,17 @@ public abstract class SpectralFileLoader {
 		int high = arr[start+1] & 0xff;
 		return (int)( high << 8 | low );
 	}
-	
+
+	public static short arr2short (byte[] arr, int start) {
+
+//		short s = (short) ((arr[2*j + 1] & 0xFF) << 8 | (arr[2 * j] & 0xFF));
+		int low = arr[start] & 0xff;
+		int high = arr[start+1] & 0xff;
+
+		return (short)( high << 8 | low );
+	}
+
+
 	public static int arr4int (byte[] arr, int start) {
 		int b1 = arr[start] & 0xff;
 		int b2 = arr[start+1] & 0xff;
