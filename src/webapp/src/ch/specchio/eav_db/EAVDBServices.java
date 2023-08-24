@@ -122,13 +122,12 @@ public class EAVDBServices extends Thread {
 	/**
 	 * Insert metadata into the database Only inserts metaparameters that are new
 	 * 
-	 * @param campaign_id	the identifier of the campaign to which this metadata belongs
 	 * @param md			the metadata to be inserted
 	 * @param stmt 
 	 * 
 	 * @return the list of all eav_ids, even when not inserted this time
 	 */
-	public ArrayList<Integer> insert_metadata_into_db(int campaign_id, Metadata md, boolean is_admin, Statement stmt) throws SQLException, IOException {
+	public ArrayList<Integer> insert_metadata_into_db(Metadata md, Statement stmt) throws SQLException, IOException {
 		
 		// prepare insert statement
 		String query = "insert into eav_view (campaign_id, attribute_id, int_val, double_val, string_val, binary_val, datetime_val, taxonomy_id, " + (isSpatially_enabled() ? "spatial_val," : "") + " unit_id) values";
@@ -464,7 +463,7 @@ public class EAVDBServices extends Thread {
 			}
 
 			StringBuffer query = new StringBuffer("(");
-			query.append(Integer.toString(campaign_id));
+			query.append(campaign_id > 0 ? Integer.toString(campaign_id) : "null");
 			query.append(",");
 			query.append(e.getAttributeId());
 			query.append(",");
