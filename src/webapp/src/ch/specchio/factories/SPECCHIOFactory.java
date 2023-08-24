@@ -80,7 +80,7 @@ public class SPECCHIOFactory {
 	private boolean is_admin;
 	
 	/** server capabilities and configurations */
-	public Capabilities capabilities;
+	public static Capabilities capabilities;
 	
 	
 	public boolean Is_admin() {

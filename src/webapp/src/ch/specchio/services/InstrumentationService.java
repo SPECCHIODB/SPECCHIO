@@ -381,6 +381,7 @@ public class InstrumentationService extends SPECCHIOService {
 		
 		//InstrumentationFactory factory = new InstrumentationFactory(getClientUsername(), getClientPassword(), getDataSourceName());
 		InstrumentationFactory factory = new InstrumentationFactory(getDataSourceName()); // insert as admin
+		factory.capabilities = this.getServerCapabilities();
 		factory.insertInstrumentCalibration(cal);
 		factory.dispose();
 		

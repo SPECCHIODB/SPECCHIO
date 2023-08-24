@@ -765,6 +765,7 @@ public class DataCache {
 				// connect to DB as admin to insert a new instrument
 
 				InstrumentationFactory factory = new InstrumentationFactory(datasource_name);
+				//factory.capabilities = this.capabilities;
 
 				instr = new Instrument();
 
@@ -862,6 +863,7 @@ public class DataCache {
 		// connect to DB as admin to insert a new instrument
 
 		InstrumentationFactory factory = new InstrumentationFactory(datasource_name);
+		//factory.capabilities = this.capabilities;
 		
 		System.out.println(factory.getDatabaseUserName());
 		

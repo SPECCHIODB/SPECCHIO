@@ -336,9 +336,14 @@ public class SPECCHIOService {
 	 */
 	public Capabilities getServerCapabilities() throws SPECCHIOFactoryException {
 		
-		if (capabilities == null) {
+		if (capabilities == null && SPECCHIOFactory.capabilities == null) {
+
 			configureCapabilities();
 		}
+		else {
+			capabilities = SPECCHIOFactory.capabilities;
+		}
+
 		
 		return capabilities;
 		
