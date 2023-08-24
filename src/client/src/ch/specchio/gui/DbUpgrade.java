@@ -215,7 +215,7 @@ public class DbUpgrade extends JFrame  implements ActionListener, PropertyChange
 		{
 			// development environment
 			String tmp = SPECCHIOClientFactory.getApplicationFilepath("");
-			File dc10_dir = new File(tmp).getParentFile().getParentFile(); 
+			File dc10_dir = new File(tmp).getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
 			mysql_dir = new File(dc10_dir.getPath() + File.separator + "conf" + File.separator + "mysql");
 
 		}
