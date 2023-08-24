@@ -19,11 +19,7 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -45,6 +41,8 @@ import javax.swing.border.TitledBorder;
 //import org.freixas.jcalendar.DateListener;
 //import org.freixas.jcalendar.JCalendar;
 //import org.freixas.jcalendar.JCalendarCombo;
+import ch.specchio.metadata.MD_EAV_Field;
+import ch.specchio.types.*;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -52,18 +50,6 @@ import org.joda.time.format.DateTimeFormatter;
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
 import ch.specchio.file.reader.calibration.CalibrationFileLoader;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.CalibrationMetadata;
-import ch.specchio.types.CalibrationPlotsMetadata;
-import ch.specchio.types.Institute;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.MetaDate;
-import ch.specchio.types.MetaParameterFormatException;
-import ch.specchio.types.Picture;
-import ch.specchio.types.PictureTable;
-import ch.specchio.types.Reference;
-import ch.specchio.types.ReferenceBrand;
-import ch.specchio.types.Sensor;
 
 public class InstrumentationMetadataPanel extends JPanel {
 	
@@ -543,6 +529,30 @@ class CalibrationMetadataPanel extends InstrumentationMetadataPanel implements D
 		comment.addKeyListener(this);
 		constraints.gridx = 1;
 		l.insertComponent(comment, constraints);
+
+		// if there are EAV metadata then add them as well
+		if(cm.getMetadata() != null & cm.getMetadata().getEntries().size() > 0)
+		{
+			ListIterator<MetaParameter> it = cm.getMetadata().getEntries().listIterator();
+
+			while(it.hasNext()) {
+
+				MetaParameter mp = it.next();
+				constraints.gridx = 0;
+				constraints.gridy++;
+				l.insertComponent(new JLabel(mp.getAttributeName()), constraints);
+				comment = new JTextField(mp.valueAsString(), 20);
+				//comment.addKeyListener(this);
+				constraints.gridx = 1;
+				l.insertComponent(comment, constraints);
+
+
+			}
+
+		}
+
+
+
 		
 		constraints.gridx = 0;
 		constraints.gridy++;
