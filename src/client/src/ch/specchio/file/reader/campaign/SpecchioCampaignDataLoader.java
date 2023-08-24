@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.prefs.BackingStoreException;
 
+import ch.specchio.types.*;
 import org.joda.time.DateTime;
 
 import ch.specchio.client.SPECCHIOClient;
@@ -21,19 +22,6 @@ import ch.specchio.client.SPECCHIOPreferencesStore;
 import ch.specchio.file.reader.spectrum.*;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.Space;
-import ch.specchio.types.Calibration;
-import ch.specchio.types.Instrument;
-import ch.specchio.types.InstrumentDescriptor;
-import ch.specchio.types.MetaDate;
-import ch.specchio.types.MetaParameterFormatException;
-import ch.specchio.types.MetaparameterStatistics;
-import ch.specchio.types.SpecchioMessage;
-import ch.specchio.types.SpectralFile;
-import ch.specchio.types.SpectralFileInsertResult;
-import ch.specchio.types.SpectralFiles;
-import ch.specchio.types.Spectrum;
-import ch.specchio.types.attribute;
-import ch.specchio.types.hierarchy_node;
 
 public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	
@@ -759,6 +747,28 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 			c.setMeasurement_unit_id(specchio_client.getMeasurementUnitFromCoding(MeasurementUnit.DN).getUnitId());
 			doubleArray = get_double_array(loader, loader.fibre_optic_data);	
 			c.setField_of_view(loader.getSpec_file().getForeopticDegrees());
+
+			Metadata md = new Metadata();
+
+			try {
+				MetaParameter mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Integration Time"));
+				Long temp = loader.getCbIT()[2];
+				mp.setValue(temp.intValue() , "RAW");
+				md.add_entry(mp);
+
+				mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Gain_SWIR1"));
+				mp.setValue( loader.getCbSwir1Gain()[2], "RAW");
+				md.add_entry(mp);
+
+				mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Gain_SWIR2"));
+				mp.setValue( loader.getCbSwir2Gain()[2], "RAW");
+				md.add_entry(mp);
+
+			} catch (MetaParameterFormatException e) {
+				e.printStackTrace();
+			}
+
+			c.setMetadata(md);
 		}		
 		
 		c.setFactors(doubleArray);								
