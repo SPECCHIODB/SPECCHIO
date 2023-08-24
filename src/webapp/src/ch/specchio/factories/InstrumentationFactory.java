@@ -99,8 +99,40 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 		
 		try {
 			Statement stmt = getStatementBuilder().createStatement();
-			
-			String query = "delete from calibration where calibration_id = " + calibration_id;
+
+			ArrayList<Integer> eav_ids = new ArrayList<Integer>();
+
+			// 1. EAV
+			// Find eav_ids for the selected calibration_ids
+			String query = "SELECT eav_id FROM calibration_x_eav WHERE calibration_id = " + calibration_id;
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				eav_ids.add(rs.getInt(1));
+			}
+			rs.close();
+
+			// 2. Delete the eav_ids for the selected calibration_ids
+			String cmd = "DELETE FROM calibration_x_eav WHERE eav_id IN (" + getStatementBuilder().conc_ids(eav_ids) + ")";
+			stmt.executeUpdate(cmd);
+
+			// 3. From the set of eav_ids and the selected calibration_ids find those eav_ids that are no longer shared
+			ArrayList<Integer> eav_ids_to_delete = new ArrayList<Integer>();
+			query = "SELECT eav.eav_id, count(sxe.calibration_id) FROM eav eav LEFT JOIN "+
+					"calibration_x_eav sxe ON sxe.eav_id = eav.eav_id WHERE eav.eav_id IN (" +
+					getStatementBuilder().conc_ids(eav_ids) + ")  GROUP BY eav_id;";
+			rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				int cnt = rs.getInt(2);
+				if(cnt == 0) eav_ids_to_delete.add(rs.getInt(1));
+			}
+			rs.close();
+
+			// 4. Delete the found eav_ids
+			query = "delete from eav where eav_id in( " + getStatementBuilder().conc_ids(eav_ids_to_delete) + ")";
+			stmt.executeUpdate(query);
+
+			// remove calibration
+			query = "delete from calibration where calibration_id = " + calibration_id;
 			stmt.executeUpdate(query);
 			
 			query = "delete from instrumentation_factors USING instrumentation_factors, calibration where (instrumentation_factors_id = cal_factors OR instrumentation_factors_id = uncertainty) and calibration_id = " + calibration_id;
@@ -958,14 +990,29 @@ public class InstrumentationFactory extends SPECCHIOFactory {
 				cal_id = rs.getInt(1);
 			}
 			rs.close();	
+
+
+			// insert any EAV metadata
+			if(this.capabilities.getBooleanCapability(Capabilities.EAV_FOR_CALIBRATION)) {
+
+				if (cal.getMetadata() != null) {
+					getEavServices().getMetadataInsertData(0, cal.getMetadata());
+					ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(cal.getMetadata(), stmt);
+					getEavServices().insert_primary_x_eav(MetaParameter.CALIBRATION_LEVEL, cal_id, eav_ids);
+				}
+
+			}
+
 			stmt.close();
 			
 		}
 		catch (SQLException ex) {
 			// database error
 			throw new SPECCHIOFactoryException(ex);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
+
 		return cal_id;
 		
 	}
