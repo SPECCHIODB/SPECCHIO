@@ -15,10 +15,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JButton;
@@ -40,21 +37,16 @@ import javax.swing.event.TreeSelectionListener;
 
 import ch.specchio.client.SPECCHIOClientException;
 import ch.specchio.client.SPECCHIOWebClientException;
+import ch.specchio.file.reader.campaign.SpecchioCampaignDataLoader;
+import ch.specchio.file.reader.spectrum.ASD_FileFormat_V7_FileLoader;
 import ch.specchio.metadata.MDE_Controller;
 import ch.specchio.metadata.MDE_Hierarchy_Controller;
 import ch.specchio.metadata.MDE_Spectrum_Controller;
 import ch.specchio.metadata.MD_ChangeListener;
 import ch.specchio.metadata.MD_Field;
 import ch.specchio.proc_modules.VisualisationSelectionDialog;
-import ch.specchio.types.ArrayListWrapper;
-import ch.specchio.types.Campaign;
-import ch.specchio.types.MatlabAdaptedArrayList;
-import ch.specchio.types.MetaParameter;
-import ch.specchio.types.MetaParameterFormatException;
-import ch.specchio.types.MetaSpatialGeometry;
-import ch.specchio.types.Point2D;
-import ch.specchio.types.hierarchy_node;
-import ch.specchio.types.spectral_node_object;
+import ch.specchio.spaces.Space;
+import ch.specchio.types.*;
 
 public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeListener, TreeSelectionListener, PropertyChangeListener {
 	
@@ -80,7 +72,7 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 	String measurement_support = "Compute measurement support";
 	String altitude_augmentation = "Augment altitude (api.geonames.org/astergdem)";
 	String E_W_Switch = "Switch longitude E-W";
-	String RadiometricCalibration = "Radiometric Calibration";
+	String RadiometricCalibration = "BETA: Radiometric Calibration (ASD only)";
 	private JMenuBar menuBar;
 	//private ArrayList<MD_Field> shared_fields;
 	private ArrayList<MD_Field> shared_fields_spectrum_level;
@@ -123,8 +115,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		
 		menuItem = new JMenuItem(RadiometricCalibration);
 		menuItem.addActionListener(this);
-		menuItem.setEnabled(false); // under development
-		//menu.add(menuItem);		
+		//menuItem.setEnabled(false); // under development
+		menu.add(menuItem);
 		
 		menuBar.add(menu);
 		
@@ -644,6 +636,8 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		{
 			try {
 				System.out.println(e.getActionCommand());
+
+				Object cal_number = null;
 				
 				// requirements:
 				// - DN data must be selected
@@ -652,15 +646,167 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 				// for ASD spectrometer only at this point:
 				
 				// get the calibration number of the instrument used for these spectra 
+				ArrayList<MetaParameter> cal_numbers = specchio_client.getMetaparameters(mdec_s.getIds(), "Calibration Number");
+
+				try {
+					cal_number = cal_numbers.get(0).getValue();
+				} catch (java.lang.IndexOutOfBoundsException ex)
+				{
+					ErrorDialog error = new ErrorDialog(this, "Missing Metadata", "No calibration number found in the metadata.", ex);
+					error.setVisible(true);
+				}
+
+				ArrayList<Integer> instrument_ids = specchio_client.getInstrumentIds(mdec_s.getIds());
+
+				// get FOVs
+				MatlabAdaptedArrayList<Object> FOVs = specchio_client.getMetaparameterValues(mdec_s.getIds(), "FOV");
 				
+				// get calibrations
+				CalibrationMetadata[] cms = specchio_client.getCalibrationMetadataByCalibrationNumber(instrument_ids.get(0), (Integer) cal_number);
+
+				CalibrationMetadata DN = null, BSE = null, LMP = null;
+
+				for(int i=0; i <cms.length; i++)
+				{
+					// check that the FOV is fitting
+					if(cms[i].getField_of_view() == (Integer) FOVs.get(0)) { //
+
+						switch (cms[i].getName()) {
+							case "DN":
+								DN = cms[i];
+								break;
+							case "BSE":
+								BSE = cms[i];
+								break;
+							case "LMP":
+								LMP = cms[i];
+								break;
+						}
+					}
+
+				}
+
+
+				// create spectral file loader to use for the transformation to L
+				SpecchioCampaignDataLoader campaignDataLoader = new SpecchioCampaignDataLoader(null, specchio_client);
+				ASD_FileFormat_V7_FileLoader afl = new ASD_FileFormat_V7_FileLoader(specchio_client, campaignDataLoader);
+
+				// get spectral data
+				Space[] spaces = specchio_client.getSpaces(mdec_s.getIds(), "Acquisition Time");
+				Space space = spaces[0];
+				space = specchio_client.loadSpace(space);
 				
-				// get calibration ids
-				//ArrayList<Integer> cal_ids = this.specchio_client.getCalibrationIds(mdec.getIds());
-				
-				// get calibrated instruments and coefficients
-				
-				int i = 0;
-				
+				// get measurement integration time and gains
+				MatlabAdaptedArrayList<Object> meas_IT = specchio_client.getMetaparameterValues(space.getSpectrumIds(), "Integration Time");
+				MatlabAdaptedArrayList<Object> meas_SWIR1_gain = specchio_client.getMetaparameterValues(space.getSpectrumIds(), "Gain_SWIR1");
+				MatlabAdaptedArrayList<Object> meas_SWIR2_gain = specchio_client.getMetaparameterValues(space.getSpectrumIds(), "Gain_SWIR2");
+
+				// get parent directory to later get the Radiance folder
+				Spectrum s = specchio_client.getSpectrum(mdec_s.getIds().get(0), false);
+				Campaign campaign = specchio_client.getCampaign(s.getCampaignId());
+				int containing_hierarchy_id = specchio_client.getDirectHierarchyId(mdec_s.getIds().get(0));
+				int parent_hierarchy_id = specchio_client.getHierarchyParentId(containing_hierarchy_id);
+				int radiance_hierarchy_id = specchio_client.getHierarchyId(campaign, "Radiance", parent_hierarchy_id);
+
+				ArrayList<Integer> new_radiance_spectrum_ids = new ArrayList<>();
+
+				// loop over all spectra: sorted as they appear in space
+				ListIterator<Integer> it = space.getSpectrumIds().listIterator();
+
+				int cnt = 0;
+
+				while(it.hasNext()) {
+
+					int spectrum_id = it.next();
+					double[] DNs = space.getVector(spectrum_id);
+
+					// configure the file loader with a spectral file
+					SpectralFile spec_file = new SpectralFile();
+					spec_file.addNumberOfChannels(space.getDimensionality());
+
+					afl.setSpec_file(spec_file);
+
+					float IT = ((Integer) meas_IT.get(cnt)).floatValue();
+
+					if (IT == 8) IT = 8.5F; // only valid for ASDs. Should change the datatype of IT in the database to float!
+
+					afl.setInt_time(IT);
+					afl.setGain_swir1((Integer) meas_SWIR1_gain.get(cnt));
+					afl.setGain_swir2((Integer) meas_SWIR2_gain.get(cnt));
+
+					long[] CbIT = new long[3];
+					int[] cbSwir1Gain = new int[3];
+					int[] cbSwir2Gain = new int[3];
+
+					try {
+
+						MetaParameter mp = DN.getMetadata().get_first_entry(specchio_client.getAttributesNameHash().get("Integration Time").id);
+						CbIT[2] = new Long((Integer) mp.getValue());
+						afl.setCbIT(CbIT);
+
+						mp = DN.getMetadata().get_first_entry(specchio_client.getAttributesNameHash().get("Gain_SWIR1").id);
+						cbSwir1Gain[2] = (int) mp.getValue();
+						afl.setCbSwir1Gain(cbSwir1Gain);
+
+						mp = DN.getMetadata().get_first_entry(specchio_client.getAttributesNameHash().get("Gain_SWIR2").id);
+						cbSwir2Gain[2] = (int) mp.getValue();
+						afl.setCbSwir2Gain(cbSwir2Gain);
+
+						Float[][] f = new Float[1][space.getDimensionality()];
+						f[0] = LMP.getFactorsAsFloat();
+						afl.lamp_calibration_data = f;
+						f = new Float[1][space.getDimensionality()];
+						f[0] = DN.getFactorsAsFloat();
+						afl.fibre_optic_data = f;
+						f = new Float[1][space.getDimensionality()];
+						f[0] = BSE.getFactorsAsFloat();
+						afl.base_calibration_data = f;
+
+						Float[][] floatArray = new Float[1][space.getDimensionality()];
+						for (int i = 0; i < DNs.length; i++) {
+							floatArray[0][i] = (float) DNs[i];
+						}
+
+						spec_file.setDn(floatArray);
+
+						//afl.dn[0] = floatArray;
+
+						Float[][] L = afl.convert_DN2L(space.getDimensionality());
+
+						float[] L_as_floatArr = new float[space.getDimensionality()];
+						for (int i = 0 ; i < space.getDimensionality(); i++)
+						{
+							L_as_floatArr[i] = (float)  L[0][i];
+						}
+
+						// create a copy if the DN spectrum in a (new) radiance folder, the exchange the spectral vector and adapt the measurement unit
+
+						int new_radiance_spectrum_id = specchio_client.copySpectrum(spectrum_id, radiance_hierarchy_id);
+						specchio_client.updateSpectrumVector(new_radiance_spectrum_id, L_as_floatArr);
+
+						new_radiance_spectrum_ids.add(new_radiance_spectrum_id);
+
+
+						cnt++;
+
+					} catch (NullPointerException ex)
+					{
+						ErrorDialog error = new ErrorDialog(this, "Missing Metadata", "Likely the integration times and gains of the calibration are not available", ex);
+						error.setVisible(true);
+					}
+
+
+
+				}
+
+				// change measurement unit of new radiance spectra
+				Hashtable<String, Integer> category_values = specchio_client.getMetadataCategoriesForNameAccess(Spectrum.MEASUREMENT_UNIT);
+				int radiance_id = category_values.get("Radiance");
+				specchio_client.updateSpectraMetadata(new_radiance_spectrum_ids, "measurement_unit", radiance_id);
+
+				JOptionPane.showMessageDialog(this, new_radiance_spectrum_ids.size() + " spectra were radiometrically calibrated.", "Info",
+						JOptionPane.INFORMATION_MESSAGE, SPECCHIOApplication.specchio_icon);
+
 				
 			}
 			catch (SPECCHIOClientException ex) {
@@ -1423,9 +1569,6 @@ public class MetaDataEditorView extends MetaDataEditorBase implements MD_ChangeL
 		
 		/**
 		 * Constructor.
-		 * @param shared_fields 
-		 * 
-		 * @param spectrumIdsIn	the list of spectrum identifiers to be processed
 		 */
 		public UpdateThread(MetaDataEditorView mde, MDE_Controller mdec, int shared_field_opt, ArrayList<MD_Field> shared_fields, int level) {
 						
