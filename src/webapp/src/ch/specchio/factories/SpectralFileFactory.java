@@ -1062,7 +1062,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			 // processing of EAV data: get value strings and redundancy reduced eav_ids, stored in md object
 			 getEavServices().getMetadataInsertData(campaign.getId(), md);
 
-			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), md, this.Is_admin(), stmt);
+			 ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(md, stmt);
 
 
 			 //------------
@@ -1286,7 +1286,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		
 				// automatic processing of EAV data
 				if (spec_file.getEavMetadata(spec_no) != null) {
-					ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(campaign.getId(), spec_file.getEavMetadata(spec_no), this.Is_admin(), stmt);
+					ArrayList<Integer> eav_ids = getEavServices().insert_metadata_into_db(spec_file.getEavMetadata(spec_no), stmt);
 					getEavServices().insert_primary_x_eav(MetaParameter.SPECTRUM_LEVEL, id, eav_ids);
 				}
 		
