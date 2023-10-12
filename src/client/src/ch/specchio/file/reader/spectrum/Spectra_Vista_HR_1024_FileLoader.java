@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 
+import ch.specchio.gui.SPECCHIOApplication;
+import ch.specchio.gui.dateFormatterSelection;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -25,10 +27,12 @@ import ch.specchio.types.SpecchioMessage;
 import ch.specchio.types.SpectralFile;
 import ch.specchio.types.spatial_pos;
 
+import javax.swing.*;
+
 public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 	
 	SpectralFile spec_file;
-	Metadata md_tgt, md_ref;
+	Metadata md_tgt, md_ref, md_refl;
 
 	public Spectra_Vista_HR_1024_FileLoader(SPECCHIOClient specchio_client, SpecchioCampaignDataLoader campaignDataLoader)  {
 		super("SVC HR 1024", specchio_client, campaignDataLoader);
@@ -61,6 +65,7 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		
 		md_tgt = new Metadata();
 		md_ref = new Metadata();
+		md_refl = new Metadata();
 		
 		file_input = new FileInputStream (file);			
 				
@@ -181,10 +186,6 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 			
 			hdr.setCaptureDate(1, get_date_and_time_from_HR_string(time_data[1]));
 			hdr.setCaptureDate(2, hdr.getCaptureDate(1)); // reflectance capture date is same as radiance of target
-			
-
-			
-				
 
 		}
 		
@@ -201,11 +202,13 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 			String[] sub_tokens = tokens[1].split(", ");
 
 			MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Optics Name"));
-			mp.setValue(sub_tokens[0].substring(1), "String"); // cut first whitespace
-			md_tgt.addEntry(mp); 	
-			
-			 mp = MetaParameter.newInstance(attributes_name_hash.get("Optics Name"));
-			 mp.setValue(sub_tokens[1], "String");
+			mp.setValue(sub_tokens[0].trim(), "String"); // cut first whitespace
+			md_tgt.addEntry(mp);
+
+			md_refl.addEntry(mp);
+
+			mp = MetaParameter.newInstance(attributes_name_hash.get("Optics Name"));
+			 mp.setValue(sub_tokens[1].trim(), "String");
 			 md_ref.addEntry(mp); 
 
 			
@@ -293,50 +296,50 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		str = str.replace(" ", "");
 		
 		String[] coords = str.split(",");
-		
-		if (coords.length == 4)
-		{
-			
-			file_coord[0] = Double.valueOf(coords[0]);
-			file_coord[1] = Double.valueOf(coords[2]);
-			
-			coord[0] = spec_file.DDDmm2DDDdecimals(file_coord[0]);
-			coord[1] = spec_file.DDDmm2DDDdecimals(file_coord[1]);
-			
-//			if (coords[0].equals("S") || coords[0].equals("E"))
-			if (coords[1].equals("S") || coords[1].equals("W"))
-			{
-				coord[0] = coord[0]*(-1);
-				coord[1] = coord[1]*(-1);
-			}
-			
-			return(coord);			
-			
-		}
-		else if (coords.length == 2)
-		{
-			
-			file_coord[0] = Double.valueOf(coords[0].substring(0, coords[0].length()-1));
-			file_coord[1] = Double.valueOf(coords[1].substring(0, coords[1].length()-1));
-			
-			coord[0] = spec_file.DDDmm2DDDdecimals(file_coord[0]);
-			coord[1] = spec_file.DDDmm2DDDdecimals(file_coord[1]);
-			
-			String c1_ = coords[0].substring(coords[0].length()-1);
-			String c2_ = coords[1].substring(coords[0].length()-1);
-			
-//			if (c1_.equals("S") || c2_.equals("E"))
-			if (c1_.equals("S") || c2_.equals("W"))
-			{
-				coord[0] = coord[0]*(-1);
-				coord[1] = coord[1]*(-1);
-			}
-			
-			return(coord);			
 
-		}		
-		else
-		{
+		try {
+
+			if (coords.length == 4) {
+
+				file_coord[0] = Double.valueOf(coords[0]);
+				file_coord[1] = Double.valueOf(coords[2]);
+
+				coord[0] = spec_file.DDDmm2DDDdecimals(file_coord[0]);
+				coord[1] = spec_file.DDDmm2DDDdecimals(file_coord[1]);
+
+//			if (coords[0].equals("S") || coords[0].equals("E"))
+				if (coords[1].equals("S") || coords[1].equals("W")) {
+					coord[0] = coord[0] * (-1);
+					coord[1] = coord[1] * (-1);
+				}
+
+				return (coord);
+
+			} else if (coords.length == 2) {
+
+				file_coord[0] = Double.valueOf(coords[0].substring(0, coords[0].length() - 1));
+				file_coord[1] = Double.valueOf(coords[1].substring(0, coords[1].length() - 1));
+
+				coord[0] = spec_file.DDDmm2DDDdecimals(file_coord[0]);
+				coord[1] = spec_file.DDDmm2DDDdecimals(file_coord[1]);
+
+				String c1_ = coords[0].substring(coords[0].length() - 1);
+				String c2_ = coords[1].substring(coords[0].length() - 1);
+
+//			if (c1_.equals("S") || c2_.equals("E"))
+				if (c1_.equals("S") || c2_.equals("W")) {
+					coord[0] = coord[0] * (-1);
+					coord[1] = coord[1] * (-1);
+				}
+
+				return (coord);
+
+			} else {
+				return null;
+			}
+
+		} catch(java.lang.StringIndexOutOfBoundsException ex){
+			// some malformed coordinate appeared
 			return null;
 		}
 	}
@@ -385,33 +388,42 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		// time= 05/03/2015 12:17:23 PM, 05/03/2015 12:24:55 PM
 		// time= 11-lug-15 13.08.32, 11-lug-15 13.08.47
 		// time= 07/15/2021 11:59:30AM		% damn bloody American format!!!!
+
+		// remove any leading or trailing white spaces
+		str = str.trim();
 		
 		// check what pattern might apply here
 		DateTimeFormatter formatter = null;
 		DateTime dt = null;
-		
-		str = str.replaceFirst(" ", "");
-		
-		// trial and error approach
-		ArrayList<DateTimeFormatter> formatters = new ArrayList<DateTimeFormatter>();
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yy hh:mm:ss a").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yy HH:mm:ss").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yy hh:mm:ss a").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yy HH:mm:ss").withZoneUTC());	
-		
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ss a").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ss a").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").withZoneUTC());
-		
-		formatters.add(DateTimeFormat.forPattern( "dd-MMM-yy HH.mm.ss").withLocale( Locale.ITALY ).withZoneUTC());
-		
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ssa").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ssa").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("dd/MM/yyyyhh:mm:ssa").withZoneUTC());
-		formatters.add(DateTimeFormat.forPattern("MM/dd/yyyyhh:mm:ssa").withZoneUTC());
-		
-		
+
+		if(this.campaignDataLoader.getSpectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter() == null) {
+
+
+			ArrayList<DateTime> valid_dts = new ArrayList<>();
+			ArrayList<DateTimeFormatter> valid_formatters = new ArrayList<DateTimeFormatter>();
+
+			//str = str.replaceFirst(" ", "");
+
+			// trial and error approach
+			ArrayList<DateTimeFormatter> formatters = new ArrayList<DateTimeFormatter>();
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yy hh:mm:ss a").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yy HH:mm:ss").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yy hh:mm:ss a").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yy HH:mm:ss").withZoneUTC());
+
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ss a").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ss a").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").withZoneUTC());
+
+			formatters.add(DateTimeFormat.forPattern("dd-MMM-yy HH.mm.ss").withLocale(Locale.ITALY).withZoneUTC());
+
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ssa").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ssa").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("dd/MM/yyyyhh:mm:ssa").withZoneUTC());
+			formatters.add(DateTimeFormat.forPattern("MM/dd/yyyyhh:mm:ssa").withZoneUTC());
+
+
 //		if (str.contains("/") && str.contains(":") && (str.contains("PM") || str.contains("AM")))
 //		{
 //			formatter = DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ss a").withZoneUTC();
@@ -440,44 +452,74 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 ////			System.out.println( "localDate: " + localDate );			
 //			
 //		}
-		
-		int format_index = 0;
-		String message = "";
-		
-		formatter = formatters.get(format_index);
-		format_index++;
-		
-		try{
 
-			while (dt==null)
-			{
-				try{
-					dt = formatter.parseDateTime(str);
+			int format_index = 0;
+			String message = "";
 
-				} catch(java.lang.IllegalArgumentException e)				
-				{					
-					formatter = formatters.get(format_index);
-					message = e.getMessage();
+			formatter = formatters.get(format_index);
+
+			ArrayList<SpecchioMessage> date_time_file_errors = new ArrayList<SpecchioMessage>();
+
+			// collect all valid times, if there are more than one, then the user needs to decide what format applies
+			try {
+
+				while (format_index < formatters.size()) {
+					try {
+						DateTime dt_tmp = formatter.parseDateTime(str);
+
+						if (!valid_dts.contains(dt_tmp)) {
+
+							valid_dts.add(dt_tmp);
+							valid_formatters.add(formatter);
+						}
+
+					} catch (java.lang.IllegalArgumentException e) {
+
+						message = e.getMessage();
+					}
 					format_index++;
+					formatter = formatters.get(format_index);
+
 				}
-
-			}
-		}
-		catch(java.lang.IndexOutOfBoundsException e)
-		{
-			spec_file.setFileErrorCode(SpectralFile.UNRECOVERABLE_ERROR);
-			ArrayList<SpecchioMessage> file_errors = spec_file.getFileErrors();
-			if(file_errors == null)
-			{
-				file_errors = new ArrayList<SpecchioMessage>();						
+			} catch (java.lang.IndexOutOfBoundsException e) {
+				date_time_file_errors.add(new SpecchioMessage("Error when parsing date: " + message, SpecchioMessage.ERROR));
 			}
 
-			file_errors.add(new SpecchioMessage("Error when parsing date: " + message, SpecchioMessage.ERROR));
-			spec_file.setFileErrors(file_errors);		
+			if (valid_dts.size() == 0) {
+				// if all went wrong, add all parsing errors related to date-time
+				ArrayList<SpecchioMessage> file_errors = spec_file.getFileErrors();
+				file_errors.addAll(date_time_file_errors);
+				spec_file.setFileErrors(file_errors);
+				spec_file.setFileErrorCode(SpectralFile.UNRECOVERABLE_ERROR);
+			}
+
+
+			if (valid_dts.size() > 1) {
+
+				boolean multi_time_options = true;
+
+				// user choice required
+				dateFormatterSelection dfs = new dateFormatterSelection(valid_dts);
+
+				final JDialog frame = new JDialog(SPECCHIOApplication.getInstance().get_frame(), "Date Ambiguity Resolver", true);
+				frame.getContentPane().add(dfs);
+				frame.pack();
+				frame.setVisible(true);
+
+				dt = valid_dts.get(dfs.selected_formatter);
+
+				this.campaignDataLoader.setSpectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter(valid_formatters.get(dfs.selected_formatter));
+
+			} else {
+				dt = valid_dts.get(0);
+			}
 
 		}
+		else {
+			// ambiguity was already resolved during this loading; hence, use defined formatter
+			dt = this.campaignDataLoader.getSpectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter().parseDateTime(str);
 
-
+		}
 		
 		
 //		DateTimeFormatter fmt = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT);

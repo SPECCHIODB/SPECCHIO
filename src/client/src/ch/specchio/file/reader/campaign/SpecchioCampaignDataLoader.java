@@ -22,6 +22,7 @@ import ch.specchio.client.SPECCHIOPreferencesStore;
 import ch.specchio.file.reader.spectrum.*;
 import ch.specchio.spaces.MeasurementUnit;
 import ch.specchio.spaces.Space;
+import org.joda.time.format.DateTimeFormatter;
 
 public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	
@@ -44,6 +45,8 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 	private File flox_rox_cal_file;
 	private FileTime lastModifiedTime;
 	private int files_with_null_sfl_cnt = 0;
+
+	private DateTimeFormatter Spectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter = null;
 
 	public SpecchioCampaignDataLoader(CampaignDataLoaderListener listener, SPECCHIOClient specchio_client) {
 		super(listener);		
@@ -1151,5 +1154,12 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 		return this.is_nl_cal_corr;
 	}
 
+	public DateTimeFormatter getSpectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter() {
+		return Spectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter;
+	}
+
+	public void setSpectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter(DateTimeFormatter spectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter) {
+		Spectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter = spectra_Vista_HR_1024_FileLoader_User_Selected_DateTimeFormatter;
+	}
 
 }
