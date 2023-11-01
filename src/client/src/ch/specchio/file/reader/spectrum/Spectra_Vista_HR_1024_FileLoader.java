@@ -129,8 +129,19 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		if(t1.equals("/*** Spectra Vista SIG Data ***/"))
 		{
 			hdr.setCompany("SVC");
-		}		
-		
+		}
+
+		if(t1.equals("Reference"))
+		{
+			// reference file written sometimes by the SVC. Ignored at this point as format unclear.
+			ArrayList<SpecchioMessage> file_errors = spec_file.getFileErrors();
+			SpecchioMessage e = new SpecchioMessage("Found SVC Reference file. File is ignored.", SpecchioMessage.INFO);
+			file_errors.add(e);
+			spec_file.setFileErrors(file_errors);
+			spec_file.setFileErrorCode(SpectralFile.UNRECOVERABLE_ERROR);
+			throw(new MetaParameterFormatException(e.getMessage()));
+		}
+
 		if(t1.equals("instrument"))
 		{
 			tokens[1] = tokens[1].replace(" ", ""); // remove spaces from token 2
@@ -598,87 +609,86 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 		reflectance = new ArrayList<Float>();
 		
 		int reference_total = 0;
-				
-		// read line by line
-		while((line=d.readLine()) != null)
-		{
-			
-			// replace commas with full stop (happens in the Italian language setting, blasted stuff ...)
-			line = line.replaceAll(",", ".");
-			
-			// tokenise the line
-			String[] tokens = line.split("\\s+"); // values are separated by one or more spaces
-			
-			// first token is wavelength
-			wvls.add(Float.valueOf(tokens[0]));
-			
-			// second token is radiance of reference
-			Float ref_val = Float.valueOf(tokens[1]);
-			reference.add(ref_val);
-			reference_total += ref_val;
-			
-			// third token is radiance of target
-			target.add(Float.valueOf(tokens[2]));
-			
-			// 4th token is radiance of reflectance
-			reflectance.add(Float.valueOf(tokens[3]) / 100); // normalise to range 0:1			
-			
-		}
-		
-		
-		// check if this is a radiance only file (no reference taken)
-		// in this case, the reference readings are all set to 1.00
-		if (reference.size() == reference_total)
-		{ 
-			// only radiance of target
-			
-			
-			f = new Float[1][target.size()];			
-			f[0] = target.toArray(f[0]);		
-			
-			// Why to we do this????
-			ArrayList<String> local_spectra_names = new ArrayList<String>(spec_file.getSpectraNames());
-			ArrayList<String> local_spectra_filenames = spec_file.getSpectraNames();
-//			Integer[] local_spectra_numbers = spec_file.spectra_numbers;
-			ArrayList<DateTime> local_capture_dates = spec_file.getCaptureDates();
-			ArrayList<Integer> local_measurement_units = new ArrayList<Integer>(spec_file.getMeasurementUnits());
-			//spatial_pos[] local_pos = spec_file.pos;	
-			
-			spec_file.setNumberOfSpectra(1);
-			
-			spec_file.setSpectraNames(new ArrayList<String>());	
-			spec_file.setSpectraFilenames(new ArrayList<String>());	
-			spec_file.setMeasurementUnits(new ArrayList<Integer>());	
-			
-			spec_file.addSpectrumName(local_spectra_names.get(1));
-			spec_file.addSpectrumFilename(local_spectra_filenames.get(1));
-//			spec_file.spectra_numbers[0] = local_spectra_numbers[1];
-			spec_file.setCaptureDate(0, local_capture_dates.get(1));
-			spec_file.addMeasurementUnits(local_measurement_units.get(1));
-			//spec_file.pos[0] = local_pos[1];
-			
-		}
-		else
-		{
-			
-			f = new Float[3][target.size()];
-			
-			f[0] = reference.toArray(f[0]);
-			f[1] = target.toArray(f[1]);
-			f[2] = reflectance.toArray(f[2]);
-			
-		}
-		
-		for(int i=0;i<f.length;i++)
-		{
-		
-			spec_file.addWvls(new Float[target.size()]);
-			spec_file.setWvls(i, wvls.toArray(spec_file.getWvls(0)));
-		
-		}
 
-		
-		
+		try {
+
+			// read line by line
+			while ((line = d.readLine()) != null) {
+
+				// replace commas with full stop (happens in the Italian language setting, blasted stuff ...)
+				line = line.replaceAll(",", ".");
+
+				// tokenise the line
+				String[] tokens = line.split("\\s+"); // values are separated by one or more spaces
+
+				// first token is wavelength
+				wvls.add(Float.valueOf(tokens[0]));
+
+				// second token is radiance of reference
+				Float ref_val = Float.valueOf(tokens[1]);
+				reference.add(ref_val);
+				reference_total += ref_val;
+
+				// third token is radiance of target
+				target.add(Float.valueOf(tokens[2]));
+
+				// 4th token is radiance of reflectance
+				reflectance.add(Float.valueOf(tokens[3]) / 100); // normalise to range 0:1
+
+			}
+
+
+			// check if this is a radiance only file (no reference taken)
+			// in this case, the reference readings are all set to 1.00
+			if (reference.size() == reference_total) {
+				// only radiance of target
+
+
+				f = new Float[1][target.size()];
+				f[0] = target.toArray(f[0]);
+
+				// Why to we do this????
+				ArrayList<String> local_spectra_names = new ArrayList<String>(spec_file.getSpectraNames());
+				ArrayList<String> local_spectra_filenames = spec_file.getSpectraNames();
+//			Integer[] local_spectra_numbers = spec_file.spectra_numbers;
+				ArrayList<DateTime> local_capture_dates = spec_file.getCaptureDates();
+				ArrayList<Integer> local_measurement_units = new ArrayList<Integer>(spec_file.getMeasurementUnits());
+				//spatial_pos[] local_pos = spec_file.pos;
+
+				spec_file.setNumberOfSpectra(1);
+
+				spec_file.setSpectraNames(new ArrayList<String>());
+				spec_file.setSpectraFilenames(new ArrayList<String>());
+				spec_file.setMeasurementUnits(new ArrayList<Integer>());
+
+				try{
+				spec_file.addSpectrumName(local_spectra_names.get(1));
+				spec_file.addSpectrumFilename(local_spectra_filenames.get(1));
+//			spec_file.spectra_numbers[0] = local_spectra_numbers[1];
+				spec_file.setCaptureDate(0, local_capture_dates.get(1));
+				spec_file.addMeasurementUnits(local_measurement_units.get(1));
+				//spec_file.pos[0] = local_pos[1];
+				} catch (java.lang.IndexOutOfBoundsException ex) {
+					int bugger = 0;
+				}
+
+			} else {
+
+				f = new Float[3][target.size()];
+
+				f[0] = reference.toArray(f[0]);
+				f[1] = target.toArray(f[1]);
+				f[2] = reflectance.toArray(f[2]);
+
+			}
+
+			for (int i = 0; i < f.length; i++) {
+
+				spec_file.addWvls(new Float[target.size()]);
+				spec_file.setWvls(i, wvls.toArray(spec_file.getWvls(0)));
+
+			}
+
 
 //		li = wvls.listIterator();
 //		int i = 0;
@@ -709,10 +719,15 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 //		{
 //			f[2][i++] = (Float)li.next();
 //		}
+
+			return f;
+
+		} catch (java.lang.IndexOutOfBoundsException ex) {
+			int bugger = 0;
+		}
 		
-		
-		return f;
-		
+
+		return null; // should never reach this point!
 		
 		
 	}
