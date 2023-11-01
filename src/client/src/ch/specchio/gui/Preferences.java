@@ -24,6 +24,7 @@ public class Preferences extends JFrame implements ActionListener {
 	private JCheckBox asd_unit_folder;
 	private JCheckBox asd_DN_folder;
 	private JCheckBox asd_WR_DC;
+	private JCheckBox SVC_Refl_insert;
 	private JCheckBox file_loading_verbose_level;
 	private JCheckBox db_config_file_creation_and_editing;
 	private JCheckBox ShowJavaVersionWarning;
@@ -57,8 +58,16 @@ public class Preferences extends JFrame implements ActionListener {
 			asd_WR_DC.setActionCommand("asd_WR_DC_time");
 			asd_WR_DC.addActionListener((ActionListener) this);
 			asd_WR_DC.setSelected(prefs.getBooleanPreference("INSERT_WR_DC_FOR_ASD_FILES"));
-			asd_WR_DC.setToolTipText("Delta time since last WR and DC will be inserted for new ASD Files; this is experimental and delta times may not be absolute due to UTC time zone problems.");			
-			
+			asd_WR_DC.setToolTipText("Delta time since last WR and DC will be inserted for new ASD Files; this is experimental and delta times may not be absolute due to UTC time zone problems.");
+
+
+			SVC_Refl_insert = new JCheckBox("Insert reflectances for SVC files");
+			SVC_Refl_insert.setActionCommand("SVC_refl_insert");
+			SVC_Refl_insert.addActionListener((ActionListener) this);
+			SVC_Refl_insert.setSelected(prefs.getBooleanPreference("INSERT_REFLECTANCES_FOR_SVC_FILES", true));
+			SVC_Refl_insert.setToolTipText("Ignore reflectances in SVC files; useful when working in radiance or DN mode.");
+
+
 			file_loading_verbose_level = new JCheckBox("File loading verbose level: include INFO messages");			
 			file_loading_verbose_level.setActionCommand("VERBOSE_LEVEL_INFO");
 			file_loading_verbose_level.addActionListener((ActionListener) this);
@@ -127,6 +136,9 @@ public class Preferences extends JFrame implements ActionListener {
 			
 			constraints.gridy++;	
 			l.insertComponent(asd_WR_DC, constraints);
+
+			constraints.gridy++;
+			l.insertComponent(SVC_Refl_insert, constraints);
 			
 			constraints.gridy++;	
 			l.insertComponent(file_loading_verbose_level, constraints);						
@@ -215,8 +227,19 @@ public class Preferences extends JFrame implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		}		
-		
+		}
+
+		if(e.getActionCommand().equals("SVC_refl_insert"))
+		{
+
+			try {
+				prefs.setBooleanPreference(this.SVC_Refl_insert.isSelected(), "INSERT_REFLECTANCES_FOR_SVC_FILES");
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		
 		if(e.getActionCommand().equals("VERBOSE_LEVEL_INFO"))
 		{

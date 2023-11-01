@@ -51,18 +51,19 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 //		spec_file.spectra_numbers[0] = Integer.valueOf(spec_file.base_name.substring(spec_file.base_name.length()-4));
 //		spec_file.spectra_numbers[1] = spec_file.spectra_numbers[0];
 //		spec_file.spectra_numbers[2] = spec_file.spectra_numbers[0];
-						
+
 		spec_file.addSpectrumFilename(spec_file.getFilename()); // target name
 		spec_file.addSpectrumFilename(spec_file.getFilename()); // reference name
 		spec_file.addSpectrumFilename(spec_file.getFilename()); // reflectance name
+
 
 		// default settings
 		spec_file.addMeasurementUnits(0, MeasurementUnit.DN); // DN
 		spec_file.addMeasurementUnits(1, MeasurementUnit.DN); // DN
 		spec_file.addMeasurementUnits(2, MeasurementUnit.Reflectance); // Reflectance
-		
+
 //		spec_file.capture_dates = new Date[spec_file.no_of_spectra()]; 
-		
+
 		md_tgt = new Metadata();
 		md_ref = new Metadata();
 		md_refl = new Metadata();
@@ -639,7 +640,7 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 
 
 			// check if this is a radiance only file (no reference taken)
-			// in this case, the reference readings are all set to 1.00
+			// in this case, the reference readings are all set to 1.00 in the file
 			if (reference.size() == reference_total) {
 				// only radiance of target
 
@@ -674,11 +675,20 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
 
 			} else {
 
-				f = new Float[3][target.size()];
+				if (prefs.getBooleanPreference("INSERT_REFLECTANCES_FOR_SVC_FILES")) {
 
-				f[0] = reference.toArray(f[0]);
-				f[1] = target.toArray(f[1]);
-				f[2] = reflectance.toArray(f[2]);
+					f = new Float[3][target.size()];
+
+					f[0] = reference.toArray(f[0]);
+					f[1] = target.toArray(f[1]);
+					f[2] = reflectance.toArray(f[2]);
+				}
+
+				else {
+					f = new Float[1][target.size()];
+					f[0] = target.toArray(f[0]);
+					spec_file.setNumberOfSpectra(1); // force to 1 only
+				}
 
 			}
 
