@@ -279,7 +279,7 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 			
 		}
 		
-		if (spec_file.getCompany().equals("Solar Systems") && spec_file.getFileFormatName().equals("MicrotopsCSV")) 
+		if (spec_file.getCompany().equals("Solar Systems") && spec_file.getFileFormatName().equals("MicrotopsCSV") || (spec_file.getFileFormatName().equals("Microtops_II_Database")))
 		{				
 			getSubHierarchyId(subhierarchies, hierarchy_id, "Spectrum");
 			getSubHierarchyId(subhierarchies, hierarchy_id, "Spectrum StdDev");
@@ -777,7 +777,8 @@ public class SpectralFileFactory extends SPECCHIOFactory {
 		}
 		
 		
-		if (spec_file.getCompany().equals("Solar Systems") && spec_file.getFileFormatName().equals("MicrotopsCSV")) 
+		if (spec_file.getCompany().equals("Solar Systems") && (spec_file.getFileFormatName().equals("MicrotopsCSV")
+		|| (spec_file.getFileFormatName().equals("Microtops_II_Database"))))
 		{		
 			special_hierarchy_files = true;
 			
