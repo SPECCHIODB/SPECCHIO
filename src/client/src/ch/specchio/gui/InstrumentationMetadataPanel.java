@@ -531,24 +531,27 @@ class CalibrationMetadataPanel extends InstrumentationMetadataPanel implements D
 		l.insertComponent(comment, constraints);
 
 		// if there are EAV metadata then add them as well
-		if(cm.getMetadata() != null & cm.getMetadata().getEntries().size() > 0)
-		{
-			ListIterator<MetaParameter> it = cm.getMetadata().getEntries().listIterator();
+		try {
+			if (cm.getMetadata() != null && cm.getMetadata().getEntries().size() > 0) {
+				ListIterator<MetaParameter> it = cm.getMetadata().getEntries().listIterator();
 
-			while(it.hasNext()) {
+				while (it.hasNext()) {
 
-				MetaParameter mp = it.next();
-				constraints.gridx = 0;
-				constraints.gridy++;
-				l.insertComponent(new JLabel(mp.getAttributeName()), constraints);
-				comment = new JTextField(mp.valueAsString(), 20);
-				//comment.addKeyListener(this);
-				constraints.gridx = 1;
-				l.insertComponent(comment, constraints);
+					MetaParameter mp = it.next();
+					constraints.gridx = 0;
+					constraints.gridy++;
+					l.insertComponent(new JLabel(mp.getAttributeName()), constraints);
+					comment = new JTextField(mp.valueAsString(), 20);
+					//comment.addKeyListener(this);
+					constraints.gridx = 1;
+					l.insertComponent(comment, constraints);
 
+
+				}
 
 			}
-
+		} catch(java.lang.NullPointerException ex) {
+			int fail = 1;
 		}
 
 
@@ -650,14 +653,8 @@ class CalibrationPlotsMetadataPanel extends InstrumentationMetadataPanel
 
 	public CalibrationPlotsMetadataPanel(Frame parent, SPECCHIOClient specchio_client, String title, int calibration_id, CalibrationPlotsMetadata cpm) {
 		super(parent, specchio_client, title);
-		
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		l.insertComponent(new JLabel(title), constraints);					
 		spectrum_plot = new FactorsPlotField(cpm.getSpace(), calibration_id);
-		constraints.gridx = 1;
-		l.insertComponent(spectrum_plot, constraints);
-		
+		this.add(spectrum_plot);
 	}
 	
 }
