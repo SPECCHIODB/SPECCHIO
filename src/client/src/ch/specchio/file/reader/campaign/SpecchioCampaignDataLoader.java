@@ -974,6 +974,13 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 					loader = new Microtops_FileLoader(specchio_client, this);
 	
 				}
+
+				// cx for Microtops_II_Database
+				else if ((exts.contains("csv"))
+						&& line.equals("[MicrotopsII Database file format]")
+				) {
+					loader = new Microtops_II_Database_FileLoader(specchio_client, this);
+				}
 								
 				
 				// cx for Ocean View TXT (Ocean Optics files produced by Ocean View Software)
