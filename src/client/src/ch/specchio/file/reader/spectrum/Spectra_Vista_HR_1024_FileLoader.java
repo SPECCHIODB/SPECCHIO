@@ -79,7 +79,10 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
             spec_file.addEavMetadata(md_refl); // position 2
         }
         else {
+            //  metadata will be taken from first entry
             spec_file.addEavMetadata(md_tgt); // position 0
+            spec_file.setCaptureDate(0, spec_file.getCaptureDate(1));
+            spec_file.addPos(0,spec_file.getPos(1));
         }
 
 
