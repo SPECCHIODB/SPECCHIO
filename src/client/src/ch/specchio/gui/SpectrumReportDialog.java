@@ -1,6 +1,6 @@
 package ch.specchio.gui;
 
-import java.awt.Cursor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -127,18 +127,20 @@ public class SpectrumReportDialog extends JFrame implements ActionListener, Chan
 		
 		// set up the root panel with a vertical box layout
 		JPanel rootPanel = new JPanel();
-		rootPanel.setLayout(new BoxLayout(rootPanel, BoxLayout.Y_AXIS));
-		getContentPane().add(rootPanel);
+		rootPanel.setLayout(new BorderLayout());
+		this.add(rootPanel);
 		
 		// add the spectral plot panel
-		spectralPlotPanel = new JPanel();
-		spectralPlotPanel.setMinimumSize(new java.awt.Dimension(PLOT_WIDTH, PLOT_HEIGHT));
-		rootPanel.add(spectralPlotPanel);
+		JScrollPane spectralPlotPane = new JScrollPane();
+		spectralPlotPanel.setLayout(new FlowLayout());
+		spectralPlotPane.getViewport().add(spectralPlotPanel);
+		rootPanel.add(spectralPlotPane, BorderLayout.NORTH);
 		
 		if (spectrumEnum.size() > 1) {
 			// create a panel for the spinner
 			JPanel spectrumSpinnerPanel = new JPanel();
-			rootPanel.add(spectrumSpinnerPanel);
+			spectralPlotPanel.add(new JPanel(), 0); // placeholder for spectral plot
+			spectralPlotPanel.add(spectrumSpinnerPanel, 1);
 			
 			// add the spectrum selector
 			spectrumSpinner = new JSpinner(new SpinnerNumberModel(1, 1, spectrumEnum.size(), 1));
@@ -151,29 +153,12 @@ public class SpectrumReportDialog extends JFrame implements ActionListener, Chan
 			spectrumSpinnerPanel.add(spectrumSpinnerLabel);
 		}
 		
-		// add the category selector
-//		categoryList = new SpectrumMetadataCategoryList(mdec.getFormFactory(), 3);
-//		categoryList.addListSelectionListener(this);
-//		rootPanel.add(categoryList);
-		
 		// add the spectrum metadata panel
 		spectrumMetadataPanel = new SpectrumMetadataPanel(this, specchioClient, mdec);
 		spectrumMetadataPanel.setEditable(false);
-//		JScrollPane spectrumMetadataScroller = new JScrollPane(spectrumMetadataPanel);
-//		spectrumMetadataScroller.getVerticalScrollBar().setUnitIncrement(10);
-//		rootPanel.add(spectrumMetadataScroller);
-		rootPanel.add(spectrumMetadataPanel);
+		rootPanel.add(spectrumMetadataPanel, BorderLayout.CENTER);
 		
-		// create a panel for the buttons
-		JPanel buttonPanel = new JPanel();
-		rootPanel.add(buttonPanel);
-		
-		// add the "dismiss" button
-		dismissButton = new JButton(DISMISS);
-		dismissButton.setActionCommand(DISMISS);
-		dismissButton.addActionListener(this);
-		buttonPanel.add(dismissButton);
-		
+
 		if (pr != null) {
 			pr.set_progress(100);
 		}
@@ -247,14 +232,14 @@ public class SpectrumReportDialog extends JFrame implements ActionListener, Chan
 				pr.set_operation("Plotting");
 				pr.set_progress(50);
 			}
-			spectralPlotPanel.removeAll();
+
 			if (!spectralPlots.containsKey(ss)) {
 				// need to build the plot object for this space
-				spectralPlots.put(ss, new SpectralLinePlot(ss, PLOT_WIDTH, PLOT_HEIGHT, null));
+				spectralPlots.put(ss, new SpectralLinePlot(ss, null));
 			}
 			SpectralPlot sp = spectralPlots.get(ss);
 			sp.plot(spectrumId);
-			spectralPlotPanel.add(sp);
+			spectralPlotPanel.add(sp, 0);
 			
 			// change the selected spectra
 			ArrayList<Integer> spectrumIdList = new ArrayList<Integer>();

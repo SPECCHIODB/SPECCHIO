@@ -1,9 +1,7 @@
 package ch.specchio.plots.swing;
 
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
+import java.awt.*;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -12,12 +10,7 @@ import java.util.TimeZone;
 import java.util.Date;
 
 
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -75,7 +68,7 @@ public class TimelinePlot extends Explorer implements ListSelectionListener, Cha
 	
 
 	
-	public TimelinePlot(SpectralSpace space, MatlabAdaptedArrayList<Object> time_vector2, int x_size, int y_size, ProgressReportInterface pr) throws SPECCHIOPlotException
+	public TimelinePlot(SpectralSpace space, MatlabAdaptedArrayList<Object> time_vector2, ProgressReportInterface pr) throws SPECCHIOPlotException
 	{
 		this.space = space;
 		this.time_vector = new Date[time_vector2.size()];
@@ -93,7 +86,7 @@ public class TimelinePlot extends Explorer implements ListSelectionListener, Cha
 		
 		ArrayList<Integer> spectrum_ids = space.getSpectrumIds();
 		spectrum_id_array = spectrum_ids.toArray(new Integer[spectrum_ids.size()]);
-		
+
 		setup_plot();
 		
 		listbox.setSelectedIndex(0);
@@ -152,38 +145,24 @@ public class TimelinePlot extends Explorer implements ListSelectionListener, Cha
 		XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true, false);
 		
 		renderer1.setSeriesPaint(0, Color.red);
-//		renderer1.setSeriesStroke(0, new BasicStroke(4.0f,
-//                BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL));
-//		Shape arg1 = new Shape();
-//
-//		renderer1.setSeriesShape(0, arg1);
-//		
-		//renderer1.setShapesVisible(true);
 		renderer1.setSeriesShapesVisible(3, true);
 		renderer1.setSeriesShapesVisible(0, true);
-		
-		
-		//renderer1.setS
+
 
         final XYPlot plot = chart.getXYPlot();
         plot.setBackgroundPaint(Color.WHITE);
         plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
         plot.setRenderer(renderer1);
+
 		
         panel = new ChartPanel(chart);
 		panel.setFillZoomRectangle(true);
 		panel.setMouseWheelEnabled(true);
 		panel.addChartMouseListener(this);
-		
-		
-		
-		GridbagLayouter panel_l = new GridbagLayouter(this);
-		
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 0;	
-		panel_l.insertComponent(panel, constraints);
+		Dimension min_size = new Dimension(300, 200);
+		panel.setPreferredSize(min_size);
+
 		
 		// add a listbox with all wavelengths to the bottom of the graph
 		pr.set_operation("Getting bands.");
@@ -206,19 +185,25 @@ public class TimelinePlot extends Explorer implements ListSelectionListener, Cha
 		JScrollPane listScroller = new JScrollPane(listbox);
 		listScroller.setPreferredSize(new Dimension(200, 80));
 		
-		JLabel label = new JLabel("Instrument Channels:");
+		JLabel label = new JLabel("Instrument Bands:");
 		
 		JPanel wvl_selection_panel = new JPanel();
 		GridbagLayouter wvl_selection_panel_l = new GridbagLayouter(wvl_selection_panel);
-		
+
+		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
-		constraints.gridy = 0;	
-		
+		constraints.gridy = 0;
+
 		wvl_selection_panel_l.insertComponent(label, constraints);
 		constraints.gridy++;
 		wvl_selection_panel_l.insertComponent(listScroller, constraints);
 
-		panel_l.insertComponent(wvl_selection_panel, constraints);
+		JPanel main_panel = new JPanel();
+		main_panel.setLayout(new BorderLayout());
+		main_panel.add(panel, BorderLayout.CENTER);
+		main_panel.add(wvl_selection_panel, BorderLayout.SOUTH);
+
+		this.getViewport().add(main_panel);
 
 		
 	}

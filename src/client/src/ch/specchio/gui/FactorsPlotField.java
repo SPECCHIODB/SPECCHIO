@@ -16,12 +16,10 @@ public class FactorsPlotField extends JPanel
 	public FactorsPlotField(SpectralSpace ss, int spectrum_id)
 	{
 		if (ss != null) {
-			sp = new SpectralLinePlot(ss, 300, 200, null);
+			sp = new SpectralLinePlot(ss, null);
 			add(sp);
 			sp.plot(spectrum_id);
 		}
-		
-		setPreferredSize(new java.awt.Dimension(300, 200));
 	}
 	
 

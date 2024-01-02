@@ -81,7 +81,7 @@ public class VisualisationModule extends Module implements ModuleCallback {
 			{
 				SpectralSpace ss = (SpectralSpace)this.get_main_input_space().getSpace();
 				MatlabAdaptedArrayList<Object> time_vector = specchio_client.getMetaparameterValues(ss.getSpectrumIds(), "Acquisition Time");			
-				vis_panel = new TimelinePlot(ss, time_vector, 400, 400, this);
+				vis_panel = new TimelinePlot(ss, time_vector, this);
 			}
 			
 			if(this.vis_module_type.equals(VisualisationSelectionDialog.time_line_expl))

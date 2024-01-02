@@ -1,10 +1,10 @@
 package ch.specchio.explorers;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import ch.specchio.interfaces.ProgressReportInterface;
 
-public class Explorer extends JPanel {
+public class Explorer extends JScrollPane {
 	/**
 	 * 
 	 */

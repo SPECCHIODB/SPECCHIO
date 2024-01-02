@@ -99,7 +99,7 @@ public class SingleHemisphereExplorer extends Explorer implements ChangeListener
 		
 		
 		// Spectral plot
-		sp = new SpectralLinePlot(space, 300,200, pr);
+		sp = new SpectralLinePlot(space, pr);
 		sp.setShow_wvl_indicator(true);
 		sp.set_wvl_indicator(space.get_wvl_of_band(band_slider.getValue()));
 		constraints.gridx = 0;

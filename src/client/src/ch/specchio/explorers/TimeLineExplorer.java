@@ -1,8 +1,8 @@
 package ch.specchio.explorers;
 
-import java.awt.GridBagConstraints;
+import java.awt.*;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import ch.specchio.client.SPECCHIOClient;
 import ch.specchio.client.SPECCHIOClientException;
@@ -29,28 +29,25 @@ public class TimeLineExplorer extends Explorer implements PlotsCallback
 	{
 		this.space = space;
 		this.pr = pr;
-			
-		GridbagLayouter panel_l = new GridbagLayouter(this);
-		
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 0;	
 		
 		// Time Line Plot
 		pr.set_operation("Reading timeline from database.");
 		MatlabAdaptedArrayList<Object> time_vector = specchio_client.getMetaparameterValues(space.getSpectrumIds(), "Acquisition Time");
-		time_line_plot = new TimelinePlot(space, time_vector, 400, 400, pr);		
+		time_line_plot = new TimelinePlot(space, time_vector, pr);
 		time_line_plot.set_callback(this);
-		panel_l.insertComponent(time_line_plot, constraints);
 		
 		// Spectral Plot
-		sp = new SpectralLinePlot(space, 300,200, pr);
-		constraints.gridx = 1;
-		constraints.gridy = 0;		
-		panel_l.insertComponent(sp, constraints);
+		sp = new SpectralLinePlot(space, pr);
 		sp.setShow_wvl_indicator(true);
 		
 		time_line_plot.enable_indicator(true);
+
+		JPanel main_panel = new JPanel();
+		main_panel.setLayout(new BorderLayout());
+		main_panel.add(time_line_plot, BorderLayout.CENTER);
+		main_panel.add(sp, BorderLayout.SOUTH);
+
+		this.getViewport().add(main_panel);
 		
 	}
 

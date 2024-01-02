@@ -42,7 +42,7 @@ public abstract class SpectralPlot extends JPanel
 	private boolean wvl_indicator_on = false;
 	private boolean show_wvl_indicator = false;
 	
-	public SpectralPlot(SpectralSpace space, int x_size, int y_size, ProgressReportInterface pr)
+	public SpectralPlot(SpectralSpace space, ProgressReportInterface pr)
 	{
 		this.space = space;
 		this.pr = pr;
@@ -64,7 +64,7 @@ public abstract class SpectralPlot extends JPanel
 		
         plot = new Plot();    	
     	
-        plot.setSize(x_size, y_size);
+//        plot.setSize(x_size, y_size);
         plot.setButtons(true);
         plot.setTitle("Spectral Plot");
         plot.setXLabel(space.get_x_axis_label());

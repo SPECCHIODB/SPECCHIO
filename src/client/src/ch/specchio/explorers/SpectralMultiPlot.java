@@ -27,15 +27,17 @@ public class SpectralMultiPlot  extends Explorer implements PlotsCallback
 		
 		// Spectral Plot
 		if(plot_type == 0)
-			sp = new SpectralLinePlot(space, 700,500, pr);	
+			sp = new SpectralLinePlot(space, pr);
 		else
-			sp = new SpectralScatterPlot(space, 700,500, pr);	
+			sp = new SpectralScatterPlot(space, pr);
 		
 		try
 		{
 			sp.plot_all();
 					
-			this.add(sp);
+//			this.add(sp);
+
+			this.getViewport().add(sp);
 			
 			plot_ready = true;
 		}
