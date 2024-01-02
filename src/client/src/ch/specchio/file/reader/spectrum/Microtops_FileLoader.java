@@ -54,7 +54,7 @@ public class Microtops_FileLoader  extends SpectralFileLoader {
 		ArrayList<Float[]> spectra_std = new ArrayList<Float[]>();
 		ArrayList<Float[]> aot = new ArrayList<Float[]>();
 		ArrayList<DateTime> times = new ArrayList<DateTime>();
-		
+
 		
 		
 		DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").withZoneUTC();
@@ -132,7 +132,7 @@ public class Microtops_FileLoader  extends SpectralFileLoader {
 				// SDCORR
 
 				// TEMP
-				mp = MetaParameter.newInstance(attributes_name_hash.get("Instrument Temperature"));
+				mp = MetaParameter.newInstance(attributes_name_hash.get("Ambient Temperature"));
 				mp.setValue(Double.valueOf(fields[10]));
 				smd.addEntry(mp); 	
 
