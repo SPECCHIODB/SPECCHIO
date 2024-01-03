@@ -84,27 +84,31 @@
             <parsable targetfile="${INSTALL_PATH}/win32/specchio.bat" type="shell" os="windows"/>
             <parsable targetfile="${INSTALL_PATH}/win64/specchio.bat" type="shell" os="windows"/>
             <parsable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Info.plist" type="shell" os="mac"/>
+            <!--    <parsable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" type="shell" os="mac"/>  -->
 
-            <!-- set executable bit on start-up files -->
+               <!-- set executable bit on start-up files -->
             <!-- <executable targetfile="${INSTALL_PATH}/macosx/specchio" keep="yes" stage="never" /> -->
-            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" keep="true" stage="never" os="mac"/>
+            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/MacOS/JavaAppLauncher" keep="true" stage="never">
+               <os family="mac" />
+                </executable>
 
-			<executable
-				targetfile="$INSTALL_PATH/specchio-client.jar"
-				stage="never" failure="warn" keep="true">
-                <os name="linux"/>
-                <os name="ubuntu_linux"/>
-                <os name="debian_linux"/>
-                <os name="fedora_linux"/>
-                <os name="red_hat_linux"/>
-                <os name="suse_linux"/>
-			</executable>
-            
-            
-        </pack>
-    </packs>
 
-    <!-- native libraries -->
+   <executable
+       targetfile="$INSTALL_PATH/specchio-client.jar"
+       stage="never" failure="warn" keep="true">
+       <os name="linux"/>
+       <os name="ubuntu_linux"/>
+       <os name="debian_linux"/>
+       <os name="fedora_linux"/>
+       <os name="red_hat_linux"/>
+       <os name="suse_linux"/>
+   </executable>
+
+
+</pack>
+</packs>
+
+<!-- native libraries -->
     <natives>
         <native type="izpack" name="ShellLink.dll" />
         <native type="izpack" name="ShellLink_x64.dll" />

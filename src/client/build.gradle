@@ -95,6 +95,8 @@ dependencies {
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.2.11'
     compile group: 'com.jidesoft', name: 'jide-oss', version: '3.6.17'
     compile group: 'com.googlecode.cqengine', name: 'cqengine', version: '3.4.0'
+   //compile group: 'net.mikera', name: 'vectorz', version: '0.67.0' //Thanks for using https://jar-download.com
+    compile 'net.mikera:vectorz:0.67.0'
     
     implementation 'com.dropbox.core:dropbox-core-sdk:3.1.4'
 
@@ -103,6 +105,9 @@ dependencies {
 
     // IzPack
     izpack 'org.codehaus.izpack:izpack-ant:5.1.3'
+    //implementation 'mikera:core.matrix:0.0.9'
+
+
 }
 
 // copy the specchio certificate into the current build directory
@@ -178,6 +183,12 @@ task copyKeystoreAndJARsIntoMacApp (type: Copy) {
     into sourceSets.main.output.resourcesDir.path + "/../../macApp/SPECCHIO.app/Contents/Java"
 }
 build.dependsOn copyKeystoreAndJARsIntoMacApp
+
+task copyJavaAppLauncherIntoMacApp (type: Copy) {
+    from file('resources/JavaAppLauncher')
+    into sourceSets.main.output.resourcesDir.path + "/../../macApp/SPECCHIO.app/Contents/MacOS"
+}
+build.dependsOn copyJavaAppLauncherIntoMacApp
 
 task copyMySQLIntoMacApp (type: Copy) {
 	from '../../conf/mysql'
