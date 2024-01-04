@@ -132,6 +132,7 @@ public class SpectrumReportDialog extends JFrame implements ActionListener, Chan
 		
 		// add the spectral plot panel
 		JScrollPane spectralPlotPane = new JScrollPane();
+		spectralPlotPanel = new JPanel();
 		spectralPlotPanel.setLayout(new FlowLayout());
 		spectralPlotPane.getViewport().add(spectralPlotPanel);
 		rootPanel.add(spectralPlotPane, BorderLayout.NORTH);
