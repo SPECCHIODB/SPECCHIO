@@ -160,7 +160,8 @@ public class SPECCHIOApplication {
 
 	      frame.setVisible(true);
 
-	      System.out.println("Java version (major): " + getJavaVersion() + ", (minor) " + getJavaMinorVersion());
+		   System.out.println("JRE location:" + System.getProperty("java.home"));
+	      System.out.println("Java version (major): " + getJavaMajorVersion() + ", (minor) " + getJavaMinorVersion());
 	      
 
 	      SPECCHIOPreferencesStore prefs;
@@ -168,12 +169,12 @@ public class SPECCHIOApplication {
 			prefs = new SPECCHIOPreferencesStore();
 			Boolean show_warning = prefs.getBooleanPreference("SHOW_JAVA_VERSION_WARNING", true);
 
-			if(getJavaVersion() != 8  && show_warning) {
+			if(getJavaMajorVersion() != 8  && show_warning) {
 				java_version_is_supported = false;
 				JOptionPane.showMessageDialog(
 						SPECCHIOApplication.getInstance().get_frame(),
 						"This version of SPECCHIO is compiled for Java version 8.\n" +
-								"This computer runs Java version " + getJavaVersion() + ".\n" +
+								"This computer runs Java version " + getJavaMajorVersion() + ".\n" +
 								"SPECCHIO as been partly tested with AdoptOpenJDK version 11 and 12; some bugs may remain."+ ".\n" +
 								"You can avoid this warning in future by switching it off in the SPECCHIO Preferences.",
 								"Warning",
@@ -266,17 +267,21 @@ public class SPECCHIOApplication {
 	   }   	
 	   
 	   // from: https://stackoverflow.com/questions/2591083/getting-java-version-at-runtime
-	   public static int getJavaVersion() {
-		    String version = System.getProperty("java.version");
-		    if(version.startsWith("1.")) {
-		        version = version.substring(2, 3);
-		    } else {
-		        int dot = version.indexOf(".");
-		        if(dot != -1) { version = version.substring(0, dot); }
-		    } return Integer.parseInt(version);
-		}	   
-	   
-	   public static int getJavaMinorVersion() {
+	   public static String getJavaVersion() {
+		   return System.getProperty("java.version");
+		}
+
+	public static int getJavaMajorVersion() {
+		String version = System.getProperty("java.version");
+		if(version.startsWith("1.")) {
+			version = version.substring(2, 3);
+		} else {
+			int dot = version.indexOf(".");
+			if(dot != -1) { version = version.substring(0, dot); }
+		} return Integer.parseInt(version);
+	}
+
+	public static int getJavaMinorVersion() {
 		    String version = System.getProperty("java.version");
 		    
 		    String minor_version = "";
@@ -294,7 +299,7 @@ public class SPECCHIOApplication {
 		    		    
 		    minor_version = tokens[1];		    
 		    
-		    System.out.println("Java minor version info: " + version);
+//		    System.out.println("Java minor version info: " + minor_version);
 
 		    return Integer.parseInt(minor_version);
 		}	   	   

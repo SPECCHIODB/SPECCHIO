@@ -278,7 +278,7 @@ public class DatabaseConnectionDialog extends JFrame implements ActionListener
 	    		);
 	    		error.setVisible(true);
 	    		
-	    		if(SPECCHIOApplication.getJavaVersion() == 8 && SPECCHIOApplication.getJavaMinorVersion() >= 241)
+	    		if(SPECCHIOApplication.getJavaMajorVersion() == 8 && SPECCHIOApplication.getJavaMinorVersion() >= 241)
 	    		{
 	 			   try {
 	 				   
