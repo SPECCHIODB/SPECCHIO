@@ -169,6 +169,7 @@ macAppBundle {
     mainClassName = "ch.specchio.gui.SPECCHIOApplication"
     icon = "./resources/SPECCHIO.icns"
     javaProperties.put("apple.laf.useScreenMenuBar", "true")
+    javaProperties.put("jdk.security.allowNonCaAnchor", "true")
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
     appName = 'SPECCHIO'
