@@ -2,6 +2,9 @@ package ch.specchio.gui;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -56,6 +59,11 @@ import com.dropbox.core.v2.files.FolderMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.users.FullAccount;
+import org.ujmp.core.Matrix;
+import org.ujmp.core.doublematrix.DenseDoubleMatrix;
+import org.ujmp.core.doublematrix.impl.DefaultDenseDoubleMatrixMultiD;
+
+import static org.ujmp.core.Matrix.factory;
 
 
 class MainMenu implements ActionListener, ItemListener {
@@ -293,7 +301,7 @@ private JMenuItem dbConfigmenuItem;
       // Help 
       menu = new JMenu("Help");
       try {
-		uri = new URI("http://www.specchio.ch");
+		uri = new URI("https://specchio.ch");
 	} catch (URISyntaxException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -317,10 +325,10 @@ private JMenuItem dbConfigmenuItem;
       public_menu_items.put(info, menuItem);
       
       // uncomment for sandbox
-      menuItem = new JMenuItem(test);
-      menuItem.addActionListener(this);
-      menu.add(menuItem);
-      public_menu_items.put(test, menuItem);
+//      menuItem = new JMenuItem(test);
+//      menuItem.addActionListener(this);
+//      menu.add(menuItem);
+//      public_menu_items.put(test, menuItem);
       
       menuBar.add(menu);
    }
@@ -792,29 +800,13 @@ private JMenuItem dbConfigmenuItem;
       
       if(info.equals(e.getActionCommand()))
       {
-//         ImageIcon icon = new ImageIcon("SPECCHIO_Icon_Mid_Res_small.jpg");
-         
-         
-//         JOptionPane.showMessageDialog(null,
-//        		 SPECCHIOApplication.version + "\n" + 
-//        		 "(c) 2006-2012 by Remote Sensing Laboratories (RSL),\n" +
-//        		 "Dept of Geography, " +
-//        		 "University of Zurich\n" + 
-//        		 "www.specchio.ch\n\n" +
-//        		 "Please refer to the User Guide for more information.\n",
-//        		    "About",
-//        		    JOptionPane.INFORMATION_MESSAGE,
-//        		    icon);
+
     	  
     	  BufferedImage myPicture;
 		try {
 			myPicture = ImageIO.read(ClassLoader.getSystemClassLoader().getResource("SPECCHIO_Icon_Mid_Res_small.jpg"));
-//			myPicture = ImageIO.read(new File("SPECCHIO_Icon_Mid_Res_small.jpg"));
-			JLabel picLabel = new JLabel(new ImageIcon(myPicture));	  
+			JLabel picLabel = new JLabel(new ImageIcon(myPicture));
 
-
-    	  
-         
          JFrame frame = new JFrame("About");
          frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
          frame.setSize(550, 200);
@@ -829,14 +821,15 @@ private JMenuItem dbConfigmenuItem;
          String text = "<html>" + "Version: " + SPECCHIO_ReleaseInfo.getVersion() + "<br><br>" +
                  "Build Number: " + SPECCHIO_ReleaseInfo.getBuildNumber() + "<br>" +
                  "Build Date: " + SPECCHIO_ReleaseInfo.getBuildDate()+ "<br>" + "<br>" +
-                 "Java runtime version: " + System.getProperty("java.version")
+                 "Java runtime version: " + System.getProperty("java.version") + "<br>" +
+				 "JRE location: " + System.getProperty("java.home")
                 		 + "<br><br>" +
-                		 "(c) 2006-2022 by Remote Sensing Laboratories (RSL)<br>" +
+                		 "(c) 2006-2024 by Remote Sensing Laboratories (RSL)<br>" +
                 		 "Dept. of Geography, " +
                 		 "University of Zurich (CH)<br>" +
                 		 "(c) 2013-2014 by University of Wollongong (AU)<br><br>" +
                 		 " For more information visit: " +
-                		 "<FONT color=\"#000099\"><U>www.specchio.ch</U></FONT>" +
+                		 "<FONT color=\"#000099\"><U>https://specchio.ch</U></FONT>" +
                 		 " or <br>" +
                 		 "refer to the user guide.";
          
@@ -1068,7 +1061,41 @@ private JMenuItem dbConfigmenuItem;
 
 //		  UncertaintyNode[] ucsns = specchio_client.getUncertaintyNodeComponents(323);
 
-		  UncertaintyNode[] ucsns = specchio_client.getUncertaintyNodeSubSets(326);
+//		  UncertaintyNode[] ucsns = specchio_client.getUncertaintyNodeSubSets(326);
+
+//		  SpectralFile spec_file = new SpectralFile();
+//
+//		  Matrix cube = factory.zeros(1, 2, 3);
+//		  spec_file.addMeasurementMatrix(cube);
+//
+//		  spec_file.serialiseMatrices();
+//
+//		  try {
+//
+//			  JAXBContext jaxbContext = JAXBContext.newInstance(SpectralFile.class);
+//			  Marshaller marshaller = null;
+//
+//			  marshaller = jaxbContext.createMarshaller();
+//
+//			  marshaller.marshal(spec_file, new File("/Users/andyhueni/Downloads/spec_file.xml"));
+//
+//		  } catch (JAXBException ex) {
+//			  ex.printStackTrace();
+//		  }
+//
+//		  ArrayList<Integer> spectrum_id_list_jarray = new ArrayList<Integer>();
+//		  spectrum_id_list_jarray.add(162479);
+//
+//
+//		  ArrayList<Integer> ids_with_pos = specchio_client.filterSpectrumIdsByHavingAttribute(spectrum_id_list_jarray, "Spatial Position");
+
+		  // UTC test
+//		  ArrayList<Integer> spectrum_id_list_jarray = new ArrayList<Integer>();
+//		  spectrum_id_list_jarray.add(112930);
+//		  Object[] joda_time = specchio_client.getMetaparameterValues(spectrum_id_list_jarray, "Acquisition Time (UTC)").toArray();
+
+
+		  ArrayList<Integer>  sl = specchio_client.getDirectSpectrumIdsOfHierarchy(1353);
 
 		  int x = 1;
 
