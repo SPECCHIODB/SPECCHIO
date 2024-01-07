@@ -22,22 +22,31 @@
     </locale>
 
     <!-- GUI preferences -->
-    <guiprefs height="480" width="640" resizable="yes" />
+    <guiprefs height="450" width="710" resizable="yes" />
 
    <!-- resources -->
     <resources>
         <!-- <res src="resources/main/macosx/shortcutSpec.xml" id="shortcutSpec.xml" /> -->
         <res src="resources/main/win32/shortcutSpec.xml" id="Win_shortcutSpec.xml" />
         <res id="Installer.image" src="resources/main/SPECCHIO_Icon_Mid_Res_small.jpg" />
+        <res id="userInputSpec.xml" src="resources/main/userInputSpec.xml" parse="yes" type="xml"/>
     </resources>
 
 <!-- panels -->
     <panels>
         <panel classname="TargetPanel"/>
+        <panel classname="UserInputPanel" id="panel1" condition="izpack.macinstall"/>
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel" condition="izpack.windowsinstall"/> <!-- only for Windows -->
         <panel classname="FinishPanel"/>
     </panels>
+
+    <conditions>
+        <condition type="contains" id="JREradioSelection_InstallJRE">
+            <variable>JREradioSelection</variable>
+            <value>specchio_and_JRE</value>
+        </condition>
+    </conditions>
 
     <!-- packs -->
     <packs>

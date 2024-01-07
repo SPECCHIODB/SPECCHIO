@@ -1,0 +1,11 @@
+<izpack:userinput version="5.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:izpack="http://izpack.org/schema/userinput" xsi:schemaLocation="http://izpack.org/schema/userinput http://izpack.org/schema/5.0/izpack-userinput-5.0.xsd">
+    <panel id="panel1">
+        <field type="radio" variable="JREradioSelection">
+            <description txt="Please choose if the bundled JRE should be installed:" id="description.radio"/>
+            <spec>
+                <choice txt="Install only SPECCHIO, my existing Java is set up already" id="radio.label.1" value="specchio_only" />
+                <choice txt="Install SPECCHIO including the bundled JRE" id="radio.label.2" value="specchio_and_JRE" set="true" />
+            </spec>
+        </field>
+    </panel>
+</izpack:userinput>

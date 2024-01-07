@@ -216,6 +216,13 @@ task copyDefaultXML (type: Copy) {
 
     from file('izpack_MacOS_JRE.xml')
     into sourceSets.main.output.resourcesDir.path
+
+//    from file('userInputSpec.xml')
+//    into sourceSets.main.output.resourcesDir.path
+
+   // println  "  whatever path:   ${sourceSets.main.output.resourcesDir.path}";
+
+   // println  "  buildDir:   ${project.buildDir.path}";
 }
 
 // insert MacOS specific JRE into izPack xml generic configuration to create a MacOS specific installer
@@ -234,7 +241,7 @@ task writeIzPackXML {
         //def MacOS_JRE_XML = new XmlParser().parse('resources/izpack_MacOS_JRE.xml')
         def MacOS_JRE_XML = new XmlParser().parse(sourceSets.main.output.resourcesDir.path + '/izpack_MacOS_JRE.xml')
 
-        def packs = defaultXml.value().get(5)
+        def packs = defaultXml.value().get(6)
         packs.value().add(MacOS_JRE_XML)
 
         def writer = new FileWriter("${project.rootDir}" + "/src/MacOS_Installer/installer_MacOS_JRE.xml")

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<pack name="OpenJDK8 JRE" required="yes" id="pack.OpenJDK.jre">  <os family="mac" />
+<pack name="OpenJDK8 JRE" required="yes" id="pack.OpenJDK.jre" condition="JREradioSelection_InstallJRE">  <os family="mac"/>
+
     <description>OpenJDK JRE</description>
+
     <file src="JREs/OpenJDK8U-jre_x64_mac_hotspot_8u392b08.tar" targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks" unpack="true" override="true">
 
     </file>
@@ -17,5 +19,7 @@
         <os family="mac" />
         <fileset targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks/jdk8u392-b08-jre/Contents/Home/bin" includes="*" />
     </executable>
+
+
 
 </pack>
