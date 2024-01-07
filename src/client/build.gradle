@@ -11,7 +11,7 @@ plugins {
 
     // IzPack is used to generate Cross-platform installers
     // http://izpack.org/
-    id "com.bmuschko.izpack" version "3.0"
+    id "com.bmuschko.izpack" version "3.2"
 
     // used to create an appbundle for macos
     id "edu.sc.seis.macAppBundle" version "2.3.0"
@@ -24,6 +24,8 @@ plugins {
     id 'idea'
     id 'eclipse'
 }
+
+import groovy.xml.XmlUtil
 
 // This defines the Java version that this project is compiled against
 sourceCompatibility = 1.8
@@ -164,12 +166,16 @@ izpack {
 }
 izPackCreateInstaller.dependsOn build
 
+
 // config for macAppBundle
+// LSEnvironment: https://stackoverflow.com/questions/16184505/set-environment-variable-for-the-process-before-startup
+// Map for the LSEnvironment: https://www.baeldung.com/groovy-maps
 macAppBundle {
     mainClassName = "ch.specchio.gui.SPECCHIOApplication"
-    icon = "./resources/SPECCHIO.icns"
+    icon = "resources/SPECCHIO.icns"
     javaProperties.put("apple.laf.useScreenMenuBar", "true")
     javaProperties.put("jdk.security.allowNonCaAnchor", "true")
+    bundleExtras.put("LSEnvironment",[JAVA_HOME: "Contents/Frameworks/jdk8u392-b08-jre/Contents/Home"])
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
     appName = 'SPECCHIO'
@@ -186,27 +192,59 @@ task copyKeystoreAndJARsIntoMacApp (type: Copy) {
 build.dependsOn copyKeystoreAndJARsIntoMacApp
 
 task copyJavaAppLauncherIntoMacApp (type: Copy) {
-    from file('resources/JavaAppLauncher')
-    into sourceSets.main.output.resourcesDir.path + "/../../macApp/SPECCHIO.app/Contents/MacOS"
+
+        // println("Copy JavaAppLauncher from " + file('resources/main/JavaAppLauncher'))
+
+        from file('resources/JavaAppLauncher')
+        into sourceSets.main.output.resourcesDir.path + "/../../macApp/SPECCHIO.app/Contents/MacOS"
 }
-build.dependsOn copyJavaAppLauncherIntoMacApp
+//copyJavaAppLauncherIntoMacApp.dependsOn("createApp")
+//copyJavaAppLauncherIntoMacApp.dependsOn "src:client:createApp" // these do not work, unclear why, maybe the Gradle version?
+build.dependsOn copyJavaAppLauncherIntoMacApp // not pretty, but it does work.
 
 task copyMySQLIntoMacApp (type: Copy) {
 	from '../../conf/mysql'
 	include '*upgrade*.sql'
 	into sourceSets.main.output.resourcesDir.path + "/../../macApp/SPECCHIO.app/Contents/Java/mysql"
 }
-
 build.dependsOn copyMySQLIntoMacApp
 
-// ToDo: copy only upgrade scripts into the 
-//task copyMySQLIntoGeneric (type: Copy) {
-//	from '../../conf/mysql'
-//	include '*upgrade*.sql'
-//	into sourceSets.main.output.resourcesDir.path + "/mysql"
-//}
 
-//build.dependsOn copyMySQLIntoGeneric
+task copyDefaultXML (type: Copy) {
+    from file('installer.xml')
+    into sourceSets.main.output.resourcesDir.path
+
+    from file('izpack_MacOS_JRE.xml')
+    into sourceSets.main.output.resourcesDir.path
+}
+
+// insert MacOS specific JRE into izPack xml generic configuration to create a MacOS specific installer
+task writeIzPackXML {
+
+    println  "Root project:   ${project.rootProject}";
+    println  "  rootDir:      ${project.rootDir}"
+    println  "  projectDir:   ${project.projectDir}";
+
+    doLast {
+
+        def path = new File(".").absolutePath
+        println("Running MacOS installer XML update at " + (new File(".").absolutePath))
+
+        def defaultXml = new XmlParser().parse(sourceSets.main.output.resourcesDir.path + '/installer.xml')
+        //def MacOS_JRE_XML = new XmlParser().parse('resources/izpack_MacOS_JRE.xml')
+        def MacOS_JRE_XML = new XmlParser().parse(sourceSets.main.output.resourcesDir.path + '/izpack_MacOS_JRE.xml')
+
+        def packs = defaultXml.value().get(5)
+        packs.value().add(MacOS_JRE_XML)
+
+        def writer = new FileWriter("${project.rootDir}" + "/src/MacOS_Installer/installer_MacOS_JRE.xml")
+        XmlUtil.serialize(defaultXml, writer)
+
+    }
+}
+writeIzPackXML.dependsOn("copyDefaultXML")
+build.dependsOn writeIzPackXML
+//izPackCreateInstaller.dependsOn writeIzPackXML
 
 
 // create zip with application, schemas and resources
