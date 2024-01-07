@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<izpack:installation version="5.0"
+                     xmlns:izpack="http://izpack.org/schema/installation"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
+
+<panel classname="UserInputPanel" id="panel1" condition="izpack.macinstall" />
 
 <pack name="OpenJDK8 JRE" required="yes" id="pack.OpenJDK.jre" condition="JREradioSelection_InstallJRE">  <os family="mac"/>
 
@@ -23,3 +28,4 @@
 
 
 </pack>
+</izpack:installation>

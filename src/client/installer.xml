@@ -35,7 +35,7 @@
 <!-- panels -->
     <panels>
         <panel classname="TargetPanel"/>
-        <panel classname="UserInputPanel" id="panel1" condition="izpack.macinstall"/>
+
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel" condition="izpack.windowsinstall"/> <!-- only for Windows -->
         <panel classname="FinishPanel"/>

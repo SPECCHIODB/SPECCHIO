@@ -241,8 +241,12 @@ task writeIzPackXML {
         //def MacOS_JRE_XML = new XmlParser().parse('resources/izpack_MacOS_JRE.xml')
         def MacOS_JRE_XML = new XmlParser().parse(sourceSets.main.output.resourcesDir.path + '/izpack_MacOS_JRE.xml')
 
+        def panels = defaultXml.value().get(4)
+        def new_panel = MacOS_JRE_XML.value().get(0)
+
+        panels.value().add(1, new_panel)
         def packs = defaultXml.value().get(6)
-        packs.value().add(MacOS_JRE_XML)
+        packs.value().add(MacOS_JRE_XML.value().get(1))
 
         def writer = new FileWriter("${project.rootDir}" + "/src/MacOS_Installer/installer_MacOS_JRE.xml")
         XmlUtil.serialize(defaultXml, writer)
