@@ -1,0 +1,75 @@
+
+plugins {
+
+    // IzPack is used to generate Cross-platform installers
+    // http://izpack.org/
+    id "com.bmuschko.izpack" version "3.2"
+
+    //id 'java'
+
+}
+
+// This defines the repositories used to download dependencies
+repositories {
+    // flatDir allows access to .jar files inside these folders
+    // use this only for dependencies that are not available in jcenter
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+sourceSets {
+    main {
+
+        // resources are copied as-is into the output format
+        resources {
+            //srcDirs = ['../resources', '../osdep', '../../../conf']
+            srcDirs = ['../client/resources', '../client/osdep']
+        }
+
+    }
+}
+
+
+dependencies {
+
+    // IzPack
+    izpack 'org.codehaus.izpack:izpack-ant:5.1.3'
+
+}
+
+// The mainClass is the primary entry point for the application
+mainClassName  = "ch.specchio.gui.SPECCHIOApplication"
+
+println("Configuring MacOS installer at " + new File(".").absolutePath)
+
+task copyBuildDirectory (type: Copy) {
+    from '../client/build/macApp'
+    into "$buildDir" + "/macApp"
+
+    //println "Copied macApp from client build."
+}
+izPackCreateInstaller.dependsOn copyBuildDirectory
+
+task copyJRE (type: Copy) {
+    from 'OpenJDK8U-jre_x64_mac_hotspot_8u392b08.tar'
+    into "$buildDir" + "/JREs"
+
+    //println "Copied MacOS JRE from client build."
+}
+izPackCreateInstaller.dependsOn copyJRE
+
+
+izpack {
+    baseDir = file("$buildDir")
+    installFile = file('installer_MacOS_JRE.xml')
+    outputFile = file("$buildDir/distributions/specchio-installer_MacOS.jar")
+    compression = 'deflate'
+    compressionLevel = 9
+    appProperties = ['app.group': 'ch.specchio.gui',
+                     'app.name': 'SPECCHIO Spectral Information System',
+                     'app.title': name,
+                     'app.version': version,
+                     'app.subpath': "SPECCHIO-$version"]
+}
+izPackCreateInstaller.dependsOn build

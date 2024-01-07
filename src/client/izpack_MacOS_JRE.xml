@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pack name="OpenJDK8 JRE" required="yes" id="pack.OpenJDK.jre">  <os family="mac" />
+    <description>OpenJDK JRE</description>
+    <file src="JREs/OpenJDK8U-jre_x64_mac_hotspot_8u392b08.tar" targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks" unpack="true" override="true">
+
+    </file>
+    <!-- The following is superseded by the executable call below, giving executable flags to all files in bin-->
+    <!--
+            <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks/jdk8u392-b08-jre/Contents/Home/bin/java" keep="true" stage="never">
+                <os family="mac" />
+            </executable>
+            -->
+
+    <!-- Give executable flags to all files in bin to make the JRE runnable-->
+    <executable type="bin" stage="never" failure ="warn" keep="true">
+        <os family="mac" />
+        <fileset targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks/jdk8u392-b08-jre/Contents/Home/bin" includes="*" />
+    </executable>
+
+</pack>
