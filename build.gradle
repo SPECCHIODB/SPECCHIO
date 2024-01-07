@@ -14,6 +14,11 @@ project(":src:types") {
     apply plugin: 'java'
 }
 
+project(":src:MacOS_Installer") {
+    apply plugin: 'application'
+    evaluationDependsOn(":src:client")
+}
+
 task aggregatedJavadocs(type: Javadoc, description: 'Generate javadocs from all child projects as if it was a single project', group: 'Documentation') {
     destinationDir = file("$buildDir/docs/javadoc")
     title = "$project.name $version API"

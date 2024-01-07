@@ -24,17 +24,18 @@
     <!-- GUI preferences -->
     <guiprefs height="480" width="640" resizable="yes" />
 
-    <!-- resources -->
+   <!-- resources -->
     <resources>
-        <res src="resources/main/macosx/shortcutSpec.xml" id="shortcutSpec.xml" />
+        <!-- <res src="resources/main/macosx/shortcutSpec.xml" id="shortcutSpec.xml" /> -->
         <res src="resources/main/win32/shortcutSpec.xml" id="Win_shortcutSpec.xml" />
+        <res id="Installer.image" src="resources/main/SPECCHIO_Icon_Mid_Res_small.jpg" />
     </resources>
 
-    <!-- panels -->
+<!-- panels -->
     <panels>
         <panel classname="TargetPanel"/>
         <panel classname="InstallPanel"/>
-        <panel classname="ShortcutPanel" />
+        <panel classname="ShortcutPanel" condition="izpack.windowsinstall"/> <!-- only for Windows -->
         <panel classname="FinishPanel"/>
     </panels>
 
@@ -106,9 +107,30 @@
 
 
 </pack>
-</packs>
 
-<!-- native libraries -->
+<!--        <pack name="OpenJDK8 JRE" required="yes" id="pack.OpenJDK.jre">  <os family="mac" />-->
+<!--            <description>OpenJDK JRE</description>-->
+<!--            <file src="resources/main/OpenJDK8U-jre_x64_mac_hotspot_8u392b08.tar" targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks" unpack="true" override="true">-->
+
+<!--            </file>-->
+<!--            &lt;!&ndash; The following is superseded by the executable call below, giving executable flags to all files in bin&ndash;&gt;-->
+<!--            &lt;!&ndash;-->
+<!--                    <executable targetfile="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks/jdk8u392-b08-jre/Contents/Home/bin/java" keep="true" stage="never">-->
+<!--                        <os family="mac" />-->
+<!--                    </executable>-->
+<!--                    &ndash;&gt;-->
+
+<!--            &lt;!&ndash; Give executable flags to all files in bin to make the JRE runnable&ndash;&gt;-->
+<!--                <executable type="bin" stage="never" failure ="warn" keep="true">-->
+<!--                    <os family="mac" />-->
+<!--                    <fileset targetdir="${INSTALL_PATH}/SPECCHIO.app/Contents/Frameworks/jdk8u392-b08-jre/Contents/Home/bin" includes="*" />-->
+<!--                </executable>-->
+
+<!--        </pack>-->
+
+    </packs>
+
+    <!-- native libraries -->
     <natives>
         <native type="izpack" name="ShellLink.dll" />
         <native type="izpack" name="ShellLink_x64.dll" />

@@ -1,4 +1,5 @@
 rootProject.name = 'SPECCHIO'
 include ':src:client'
+include ':src:MacOS_Installer'
 include ':src:types'
 include ':src:webapp'

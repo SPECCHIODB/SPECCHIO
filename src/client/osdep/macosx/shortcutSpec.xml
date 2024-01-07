@@ -6,6 +6,6 @@
 		workingDirectory="${INSTALL_PATH}"
 		target="java"
 		commandLine="-Xdock:name=&quot;SPECCHIO V3&quot; -Dncsa.hdf.hdf5lib.H5.hdf5lib=&quot;${INSTALL_PATH}/macosx/libjhdf5.jnilib&quot; -jar specchio-client.jar"
-		programGorup="true"
+		programGroup="true"
 	/>
 </shortcuts>
