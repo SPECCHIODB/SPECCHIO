@@ -132,13 +132,24 @@ public class RoX_FileLoader extends JB_FileLoader {
 					
 					// fill vector
 					ArrayList<Float> DN = new ArrayList<Float>();
-					
-					for(int i=1;i<r.size();i++)
-					{
-						// skip empty cells (they do appear at the end of the FLOX files ... WTF?)
-						if(!r.get(i).isEmpty())
-							DN.add(Float.valueOf(r.get(i)));
-					}
+
+
+
+						for (int i = 1; i < r.size(); i++) {
+
+							try {
+							// skip empty cells (they do appear at the end of the FLOX files ... WTF?)
+							if (!r.get(i).isEmpty())
+								DN.add(Float.valueOf(r.get(i)));
+
+							} catch (java.lang.NumberFormatException e)
+							{
+								int x = 1;
+
+							}
+						}
+
+
 					
 					DNs.add(DN);
 					
