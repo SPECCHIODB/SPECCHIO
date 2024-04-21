@@ -1024,12 +1024,18 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 					loader = new FloX_FileLoader(specchio_client, this);	
 				}	
 				
-				// cx if we got RoX files: Full range instruments like the RoX start with an 'F' in the filename.
+				// cx if we got legacy RoX files: Full range instruments like the RoX start with an 'F' in the filename.
 				// also, if the instrument number would be higher than 100 it would be a RoX
 				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("FloX") && filename.charAt(0) == 'F') {
 					loader = new RoX_FileLoader(specchio_client, this);	
-				}					
-				
+				}
+
+				// cx if we got RoX files: Full range instruments like the RoX start with an 'F' in the filename.
+				// also, if the instrument number would be higher than 100 it would be a RoX
+				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("RoX") && filename.charAt(0) == 'F') {
+					loader = new RoX_FileLoader_V2_2(specchio_client, this);
+				}
+
 				// ignore FloX/RoX calibration files
 				else if ((exts.contains("csv") || exts.contains("CSV")) && line.contains("wl_F;up_coef_F;dw_coef_F;wl_F;up_coef_F;dw_coef_F;Device ID")) {
 					loader = null;	
