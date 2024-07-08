@@ -454,8 +454,16 @@ public class DataCache {
 			while(li.hasNext() && instrument == null)
 			{
 				s = li.next();
-				if(s.getInstrumentId() == instrument_id && s.getCalibrationId() == calibration_id)
-					instrument = s;			
+				if(calibration_id > 0)
+				{
+					if(s.getInstrumentId() == instrument_id && s.getCalibrationId() == calibration_id)
+						instrument = s;
+				}
+				else // this is a case that should not happen as it means that some spectra got inserted with no proper calibration id ... but it appears to happen occasionally anyhow.
+				{
+					if(s.getInstrumentId() == instrument_id)
+						instrument = s;
+				}
 			}
 		}
 				
