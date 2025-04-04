@@ -552,7 +552,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return Attributes stored in hashtable, indexed by attribute name
 	 */
-	public Hashtable<String, attribute> getAttributesNameHash() throws SPECCHIOClientException {
+	public synchronized Hashtable<String, attribute> getAttributesNameHash() throws SPECCHIOClientException {
 
 		if(this.attributes_name_hash == null)
 		{
@@ -1177,7 +1177,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return a new Instrument object
 	 */	
-	public Instrument getInstrumentForSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
+	public synchronized Instrument getInstrumentForSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
 		
 		Instrument instr = null;
 		try {
@@ -1541,7 +1541,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return a new MeasurementUnit object, or null if the coding does not exist
 	 */	
-	public MeasurementUnit getMeasurementUnitFromCoding(int coding) throws SPECCHIOWebClientException {
+	public synchronized MeasurementUnit getMeasurementUnitFromCoding(int coding) throws SPECCHIOWebClientException {
 		
 		
 		MeasurementUnit mu = getObject(MeasurementUnit.class, "metadata", "get_measurement_unit_from_coding", Integer.toString(coding));
@@ -2327,7 +2327,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @param c		the calibration data
 	 */
-	public void insertInstrumentCalibration(Calibration c) throws SPECCHIOWebClientException {
+	public synchronized void insertInstrumentCalibration(Calibration c) throws SPECCHIOWebClientException {
 		
 		postForString("instrumentation", "insertInstrumentCalibration", c);
 		
@@ -2494,7 +2494,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return a list of spectrum identifiers that were inserted into the database
 	 */
-	public SpectralFileInsertResult insertSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
+	public synchronized SpectralFileInsertResult insertSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
 		
 		SpectralFileInsertResult insert_result = null;
 		try {
@@ -2626,7 +2626,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return true if the calibration already exists in the database, false otherwise
 	 */
-	public boolean instrumentCalibrationExists(Calibration cal) throws SPECCHIOWebClientException {
+	public synchronized boolean instrumentCalibrationExists(Calibration cal) throws SPECCHIOWebClientException {
 
 		return postForBoolean("instrumentation", "instrument_calibration_exists", cal);
 		
@@ -2931,7 +2931,7 @@ public class SPECCHIOWebClient implements SPECCHIOClient {
 	 * 
 	 * @return array of boolean values indicating existence
 	 */
-	public boolean[] spectralFilesExist(SpectralFiles spec_files) throws SPECCHIOClientException {
+	public synchronized boolean[] spectralFilesExist(SpectralFiles spec_files) throws SPECCHIOClientException {
 		
 		XmlIntegerAdapter adapter = new XmlIntegerAdapter();
 		

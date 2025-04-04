@@ -72,6 +72,7 @@ import ch.specchio.types.MetaParameter;
 import ch.specchio.types.MetaParameterFormatException;
 import ch.specchio.types.Metadata;
 import ch.specchio.types.Spectrum;
+import org.ujmp.core.Matrix;
 
 public class QueryBuilder extends SpectralMetaDataBase  implements ActionListener, TreeSelectionListener, ChangeListener, ClipboardOwner, QueryConditionChangeInterface, ListSelectionListener 
 {
@@ -900,23 +901,33 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 //	    		  specchio_client.copyHierarchy(540, 538, "New Name");
 	    		  
 	    		  ArrayList<Integer> ids = get_ids_matching_query();
-	    		  
-	    		  	
-	    		  	
-	    		  	MetaParameter mp;
-	    		  	ArrayList<Metadata> md_list = new ArrayList<Metadata>();
-	    		  
-//	    		  	for(int i=1;i<=ids.size();i++)
-	    		  	for(int i : ids)
-	    		  	{
-	    		  		Metadata md = new Metadata();
-						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"));							
-						mp.setValue(13, "m2");
-						md.addEntry(mp);	
-						md_list.add(md);
-	    		  	}
 
-	    		  	specchio_client.updateOrInsertEavMetadata(md_list, ids,  sdb.get_selected_campaign().getId());
+				  Space[] spaces = specchio_client.getSpaces(ids, "Loading Time");
+
+				  Space space = spaces[0];
+
+				  space = specchio_client.loadSpace(space);
+
+				  Matrix frame = space.getMeasurementMatrix(0);
+
+//				  m = frame.
+
+				  int x = 1;
+	    		  	
+//	    		  	MetaParameter mp;
+//	    		  	ArrayList<Metadata> md_list = new ArrayList<Metadata>();
+//
+////	    		  	for(int i=1;i<=ids.size();i++)
+//	    		  	for(int i : ids)
+//	    		  	{
+//	    		  		Metadata md = new Metadata();
+//						mp = MetaParameter.newInstance(specchio_client.getAttributesNameHash().get("Measurement Support Area"));
+//						mp.setValue(13, "m2");
+//						md.addEntry(mp);
+//						md_list.add(md);
+//	    		  	}
+//
+//	    		  	specchio_client.updateOrInsertEavMetadata(md_list, ids,  sdb.get_selected_campaign().getId());
 
 	    		  
 //	    		  
@@ -937,7 +948,7 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 	    		  
 //	    		  System.out.println(joda_time.size());
 	    		  
-	    		  int x = 1;
+
 				// ArrayList<Integer> ids = specchio_client.getInstrumentIds(ids_matching_query);
 //	    		  Spectrum s = specchio_client.getSpectrum(get_ids_matching_query().get(0), false);
 //	    		  int current_hierarchy_id = s.getHierarchyLevelId();
@@ -954,10 +965,10 @@ public class QueryBuilder extends SpectralMetaDataBase  implements ActionListene
 			} catch (SPECCHIOClientException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} catch (MetaParameterFormatException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}	    	  
+//			} catch (MetaParameterFormatException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+			}
 	    	  
 	      }
 	      

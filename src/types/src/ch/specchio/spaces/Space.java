@@ -81,7 +81,17 @@ public abstract class Space {
 	}
 	public void addVector(double[] vector) { vectors.add(vector); }
 	public void clearDataVectors() { vectors.clear(); }
-	public int getNumberOfDataPoints() { return vectors.size(); }
+	public int getNumberOfDataPoints() {
+
+		if(isUJMP_storage()){
+			return matrices.size();
+		}
+		else {
+			return vectors.size();
+		}
+
+	}
+
 	public double[] getVector(int spectrum_id) { return vectors.get(spectrum_ids.indexOf(spectrum_id)); }
 	public double[][] getVectorsAsArray(ArrayList<Integer> in_spectrum_ids) { 
 		

@@ -2032,7 +2032,7 @@ public class SPECCHIOClientCache implements SPECCHIOClient {
 	 * 
 	 * @return a list of spectrum identifiers that were inserted into the database
 	 */
-	public SpectralFileInsertResult insertSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
+	public synchronized SpectralFileInsertResult insertSpectralFile(SpectralFile spec_file) throws SPECCHIOClientException {
 		
 		return realClient.insertSpectralFile(spec_file);
 		

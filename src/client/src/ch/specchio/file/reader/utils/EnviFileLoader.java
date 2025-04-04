@@ -83,7 +83,7 @@ public class EnviFileLoader  {
 		return sample;
 	}
 	
-//	protected void readBSQ(EnviHeader header, FileReaderUtil fileReader) {
+//	public Matrix readBSQ(SpectralFile spec_file, FileReaderUtil fileReader) {
 //		/*
 //		 *
 //		 * BSQ (Band Sequential Format) In its simplest form, the data is in BSQ
@@ -94,24 +94,74 @@ public class EnviFileLoader  {
 //		 *
 //		 */
 //
-//		int bands = header.getBands();
-//		int lines = header.getLines();
-//		int samples = header.getSamples();
-//		int dataType = header.getDataType();
 //
+//		int dataType = spec_file.getDataType();
 //		int bytesPerSample = getBytesPerSample(dataType);
-//		float sample = 0;
+//		int samples = spec_file.getAcross_track_dim();
+//		int bands = spec_file.getNumberOfChannels(0);
+//		int lines = spec_file.getAlong_track_dim();
+//		//short sample = 0;
+//		float sample;
+//		int pixel = 0;
+//
+////		DefaultDenseDoubleMatrixFactory factory = new DefaultDenseDoubleMatrixFactory();
+////
+//		Matrix cube = factory.zeros(samples, bands, lines);
+////		Matrix cube = ShortMatrix.factory.zeros(samples, bands, lines);
+//
+//		//AMatrix cube = Matrixx..create(samples, bands);
 //
 //		try {
+////			for (int l = 0; l < lines; l++) {
+////				for (int s = 0; s < samples; s++) {
+////					pixel = (l * samples) + s;
+////					fileReader.position(pixel * bytesPerSample * bands);
+////					for (int b = 0; b < bands; b++) {
+////
+////						//sample = fileReader.readShort();
+////
+////						if(s==1000){
+////							int x = 1;
+////						};
+////
+////						sample = readData(dataType, fileReader);
+//////						data.putSample(s, l, b, (sample > 0.0 ? sample : 0.0f ));
+////
+////						//cube.setAsShort(sample, s, b, l);
+////						cube.setAsDouble(sample, s, b, l);
+////
+////
+////					}
+////				}
+////			}
+//			for (int l = 0; l < lines; l++) {
 //
-//			for (int b = 0; b < bands; b++) {
-//				fileReader.position(bytesPerSample * samples * lines * b);
 //
-//				for (int l = 0; l < lines; l++) {
+//				for (int b = 0; b < bands; b++) {
+//
 //					for (int s = 0; s < samples; s++) {
+////					pixel = (l * samples) + s;
+////					fileReader.position(pixel * bytesPerSample * bands);
+//
+//
+//						//sample = fileReader.readShort();
+//
+//						if(s==653){
+//							int x = 1;
+//						};
 //
 //						sample = readData(dataType, fileReader);
-//						//data.putSample(s, l, b, (sample > 0.0 ? sample : 0.0f ));
+////						data.putSample(s, l, b, (sample > 0.0 ? sample : 0.0f ));
+//
+//						if (sample  > 20000)
+//						{
+//							int x = 2;
+//						}
+//
+//						//cube.setAsShort(sample, s, b, l);
+//						cube.setAsDouble(sample, s, b, l);
+//
+//
 //					}
 //				}
 //			}
@@ -120,6 +170,38 @@ public class EnviFileLoader  {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+//
+////		cube.showGUI();
+//
+//		return cube;
+//
+////
+////		int bands = header.getBands();
+////		int lines = header.getLines();
+////		int samples = header.getSamples();
+////		int dataType = header.getDataType();
+////
+////		int bytesPerSample = getBytesPerSample(dataType);
+////		float sample = 0;
+////
+////		try {
+////
+////			for (int b = 0; b < bands; b++) {
+////				fileReader.position(bytesPerSample * samples * lines * b);
+////
+////				for (int l = 0; l < lines; l++) {
+////					for (int s = 0; s < samples; s++) {
+////
+////						sample = readData(dataType, fileReader);
+////						//data.putSample(s, l, b, (sample > 0.0 ? sample : 0.0f ));
+////					}
+////				}
+////			}
+////
+////		} catch (IOException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
 //
 //	}
 
@@ -254,12 +336,17 @@ public class EnviFileLoader  {
 
 						//sample = fileReader.readShort();
 
-						if(s==1000){
+						if(s==653){
 							int x = 1;
 						};
 
 						sample = readData(dataType, fileReader);
 //						data.putSample(s, l, b, (sample > 0.0 ? sample : 0.0f ));
+
+						if (sample  > 20000)
+						{
+							int x = 2;
+						}
 
 						//cube.setAsShort(sample, s, b, l);
 						cube.setAsDouble(sample, s, b, l);
@@ -274,7 +361,7 @@ public class EnviFileLoader  {
 			e.printStackTrace();
 		}
 
-		cube.showGUI();
+//		cube.showGUI();
 
 		return cube;
 

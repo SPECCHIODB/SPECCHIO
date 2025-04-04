@@ -85,7 +85,7 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 	 * @param file_errors	a list of files that contained errors
 	 * @param simple_delta_loading	loading based on file time stamps
 	 */
-	public void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, int files_without_file_loader, List<String> file_errors, boolean simple_delta_loading) {
+	public synchronized void campaignDataLoaded(int parsedFileCount, int num_files, int num_spectra, int files_without_file_loader, List<String> file_errors, boolean simple_delta_loading) {
 
 		OperationsPane op = OperationsPane.getInstance();
 		p_rep.set_operation("Done!");
@@ -150,7 +150,7 @@ public class LoadCampaignDataHandler implements CampaignDataLoaderListener {
 	 * @param fileCount		the new value of the file counter
 	 * @param spectrumCount	the new value of the spectrum counter
 	 */
-	public void campaignDataLoadFileCount(int fileCount, int spectrumCount) {
+	public synchronized void campaignDataLoadFileCount(int fileCount, int spectrumCount) {
 
 		p_rep.set_progress(fileCount);
 		p_spectra_insert_rep.set_progress(spectrumCount);

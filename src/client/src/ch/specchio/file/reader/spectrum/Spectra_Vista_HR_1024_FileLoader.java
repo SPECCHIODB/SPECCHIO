@@ -442,6 +442,11 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
             formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy hh:mm:ss a").withZoneUTC());
             formatters.add(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss").withZoneUTC());
 
+            formatters.add(DateTimeFormat.forPattern("dd.MM.yyyy hh:mm:ss a").withZoneUTC());
+            formatters.add(DateTimeFormat.forPattern("dd.MM.yyyy HH:mm:ss").withZoneUTC());
+            formatters.add(DateTimeFormat.forPattern("MM.dd.yyyy hh:mm:ss a").withZoneUTC());
+            formatters.add(DateTimeFormat.forPattern("MM.dd.yyyy HH:mm:ss").withZoneUTC());
+
             formatters.add(DateTimeFormat.forPattern("dd-MMM-yy HH.mm.ss").withLocale(Locale.ITALY).withZoneUTC());
 
             formatters.add(DateTimeFormat.forPattern("dd/MM/yyyy hh:mm:ssa").withZoneUTC());
@@ -490,6 +495,8 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
             try {
 
                 while (format_index < formatters.size()) {
+                    formatter = formatters.get(format_index);
+
                     try {
                         DateTime dt_tmp = formatter.parseDateTime(str);
 
@@ -504,7 +511,6 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
                         message = e.getMessage();
                     }
                     format_index++;
-                    formatter = formatters.get(format_index);
 
                 }
             } catch (java.lang.IndexOutOfBoundsException e) {

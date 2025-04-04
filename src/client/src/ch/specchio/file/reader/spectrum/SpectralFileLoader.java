@@ -33,7 +33,7 @@ public abstract class SpectralFileLoader {
 	DataInputStream data_in = null;
 	public int file_format_id;
 	public String file_format_name;
-	private SPECCHIOClient specchio_client;
+	protected SPECCHIOClient specchio_client;
 	Hashtable<String, attribute> attributes_name_hash;	
 	protected SpectralFile spec_file;
 	public SpectralFileInsertResult insert_result; // field to store the insert result (used for instrument calibration updates)

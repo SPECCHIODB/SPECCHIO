@@ -160,7 +160,7 @@ public class SPECCHIOApplication {
 
 	      frame.setVisible(true);
 
-		   System.out.println("JRE location:" + System.getProperty("java.home"));
+		  System.out.println("JRE location:" + System.getProperty("java.home"));
 	      System.out.println("Java version (major): " + getJavaMajorVersion() + ", (minor) " + getJavaMinorVersion());
 	      
 

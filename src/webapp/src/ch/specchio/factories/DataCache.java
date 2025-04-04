@@ -1310,13 +1310,29 @@ public class DataCache {
 					return s.getSensorId();
 				else
 				{
-					s = get_sensor(spec_file.getWvls(spec_no)); // fallback option: wrong selection can happen if the blueprints of two different companies 
-					
-					// check if company names are matching ...
-					String spec_file_company = spec_file.getCompany();
-					if(s != null && !s.getManufacturerShortName().get_value().equals(spec_file_company))
+					try {
+						s = get_sensor(spec_file.getWvls(spec_no)); // fallback option: wrong selection can happen if the blueprints of two different companies
+
+						// check if company names are matching ...
+						String spec_file_company = spec_file.getCompany();
+						if (s != null && !s.getManufacturerShortName().get_value().equals(spec_file_company)) {
+							s = null;
+						}
+					} catch (IndexOutOfBoundsException ex)
 					{
-						s = null;
+						// sensor without wavelengths
+						// Introducing further fix: use bands as wavelengths proxy
+						Float[] wvls = new Float[spec_file.getNumberOfChannels(0)];
+
+						for (int i=0;i<spec_file.getNumberOfChannels().get(0);i++)
+						{
+							wvls[i] = 1.0f + i;
+						}
+
+						spec_file.addWvls(wvls);
+
+
+						s = get_sensor(spec_file.getWvls(spec_no));
 					}
 				}
 			}
