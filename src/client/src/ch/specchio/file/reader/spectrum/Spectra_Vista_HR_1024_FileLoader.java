@@ -82,7 +82,8 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
             //  metadata will be taken from first entry
             spec_file.addEavMetadata(md_tgt); // position 0
             spec_file.setCaptureDate(0, spec_file.getCaptureDate(1));
-            spec_file.addPos(0,spec_file.getPos(1));
+            if(spec_file.getPos().size() > 0)
+                spec_file.addPos(0,spec_file.getPos(1));
         }
 
 
@@ -101,10 +102,15 @@ public class Spectra_Vista_HR_1024_FileLoader extends SpectralFileLoader {
         // read line by line
         while (!hdr_ended && (line = d.readLine()) != null) {
             // tokenise the line
-            String[] tokens = line.split("=");
+            try {
+                String[] tokens = line.split("=");
 
-            // analyse the tokens
-            hdr_ended = analyse_HR1024_file(tokens, d, f);
+                // analyse the tokens
+                hdr_ended = analyse_HR1024_file(tokens, d, f);
+            } catch(java.lang.NullPointerException e)
+            {
+                int wetf = 1;
+            }
         }
 
         // read the measurements
