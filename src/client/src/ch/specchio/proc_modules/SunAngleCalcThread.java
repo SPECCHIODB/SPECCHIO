@@ -11,6 +11,9 @@ import org.joda.time.DateTimeZone;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
@@ -380,12 +383,11 @@ public class SunAngleCalcThread extends Thread {
 //
 //			return new CelestialAngle(Math.toDegrees(azimuth), Math.toDegrees(thz));
 
-//	        GregorianCalendar time = new GregorianCalendar(new SimpleTimeZone(+1 * 60 * 60 * 1000, "UTC"));
-//	        time.set(2012, Calendar.JANUARY, 1, 12, 0, 0);
+        Instant instant = Instant.ofEpochMilli(dateTime.getMillis());
+        ZoneId zoneId = ZoneId.of(dateTime.getZone().getID(), ZoneId.SHORT_IDS);
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, zoneId);
 
-        GregorianCalendar time = dateTime.toGregorianCalendar();
-
-        AzimuthZenithAngle result = Grena3.calculateSolarPosition(time,
+        AzimuthZenithAngle result = Grena3.calculateSolarPosition(zdt,
                 latitude, longitude, 65, 1000, 20);
 
 
