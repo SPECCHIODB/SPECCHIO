@@ -20,17 +20,14 @@ public class CHB_Setting {
         else if(parameter.equals("<angle>")){
             along_track_scan_angle = Double.valueOf(value);
         }
-        else if(parameter.equals("<cal_mode>")){
-            if(value.equals("geo")){
+        else if(parameter.equals("<cal_mode>")) {
+            if (value.equals("geo")) {
                 cal_mode = "Geometric";
-            } else if (value.equals("srf")){
+            } else if (value.equals("srf")) {
                 cal_mode = "Spectral";
-            } else if (value.equals("radiometric")){
+            } else if (value.equals("is")) {
                 cal_mode = "Radiometric";
             }
-
-
-
         }
         else if(parameter.equals("<wavelength>")){
             wavelength = Double.valueOf(value);

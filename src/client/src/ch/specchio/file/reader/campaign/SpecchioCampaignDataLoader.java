@@ -14,6 +14,7 @@ import java.util.ListIterator;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 
+import ch.specchio.file.reader.utils.CHB_Setting;
 import ch.specchio.file.reader.utils.CHB_Settings;
 import ch.specchio.file.reader.utils.CHB_XML_Loader;
 import ch.specchio.types.*;
@@ -316,51 +317,51 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 //				}
 //			}
 
+			if(simple_delta_loading == false || new_data_available) {
+				// split data into chunks, assign to threads and get started
+				int n_threads = 5;
+				int chunk_size = 30;
 
-			// split data into chunks, assign to threads and get started
-			int n_threads = 5;
-			int chunk_size = 30;
+				float chunks_float = Float.valueOf(files.size()) / Float.valueOf(chunk_size);
+				int chunks = files.size() / chunk_size;
+				float rem = chunks_float - chunks;
 
-			float chunks_float =  Float.valueOf(files.size()) / Float.valueOf(chunk_size);
-			int chunks = files.size() / chunk_size;
-			float rem = chunks_float - chunks;
+				ArrayList<Integer> chunk_sizes = new ArrayList<Integer>();
 
-			ArrayList<Integer> chunk_sizes = new ArrayList<Integer>();
+				ArrayList<List<File>> file_chunks = new ArrayList<List<File>>();
 
-			ArrayList<List<File>> file_chunks= new ArrayList<List<File>>();
+				int j;
+				for (j = 0; j < chunks; j++) {
+					chunk_sizes.add(chunk_size);
+					file_chunks.add(files.subList(j * chunk_size, j * chunk_size + chunk_size));
+				}
 
-			int j;
-			for (j=0; j<chunks; j++){
-				chunk_sizes.add(chunk_size);
-				file_chunks.add(files.subList(j*chunk_size,j*chunk_size+chunk_size));
-			}
+				chunk_sizes.add(files.size() - chunks * chunk_size);
+				file_chunks.add(files.subList(j * chunk_size, j * chunk_size + (files.size() - chunks * chunk_size)));
 
-			chunk_sizes.add(files.size() - chunks*chunk_size);
-			file_chunks.add(files.subList(j*chunk_size,j*chunk_size + (files.size() - chunks*chunk_size)));
+				ThreadPoolExecutor executor =
+						(ThreadPoolExecutor) Executors.newFixedThreadPool(n_threads);
 
-			ThreadPoolExecutor executor =
-					(ThreadPoolExecutor) Executors.newFixedThreadPool(n_threads);
+				List<CompletableFuture<String>> futures = new ArrayList<>();
 
-			List<CompletableFuture<String>> futures = new ArrayList<>();
+				for (int i = 0; i < chunk_sizes.size(); i++) {
 
-			for(int i=0;i<chunk_sizes.size();i++) {
-
-				int finalI = i;
+					int finalI = i;
 //				Future<Object> future = executor.submit(() -> {
 //					ChunkLoader CL = new ChunkLoader(file_chunks.get(finalI), this, is_garbage, parent_id);
 //					CL.run();
 //					return null;
 //				});
 
-				CompletableFuture<String> future = null;
-				try {
-					future = this.calculateAsync(executor, file_chunks.get(finalI), is_garbage, parent_id);
+					CompletableFuture<String> future = null;
+					try {
+						future = this.calculateAsync(executor, file_chunks.get(finalI), is_garbage, parent_id);
 
-					futures.add(future);
+						futures.add(future);
 
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 
 
 //				try {
@@ -369,21 +370,23 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 //					e.printStackTrace();
 //				}
 
-			}
+				}
 
-			CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-					futures.toArray(new CompletableFuture[futures.size()]));
+				CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+						futures.toArray(new CompletableFuture[futures.size()]));
 
-			// Wait for all individual CompletableFuture to complete
-			// All individual CompletableFutures are executed in parallel
-			try {
-				allFutures.get();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-			} catch (NullPointerException e) {
-				e.printStackTrace();
+				// Wait for all individual CompletableFuture to complete
+				// All individual CompletableFutures are executed in parallel
+				try {
+					allFutures.get();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				}
+
 			}
 
 			boolean completed = true;
@@ -497,14 +500,20 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 
 			if (ext.contains("bin")) {
 
-				if(filename.startsWith("RawDataCube")) {
+				try {
 
-					// search the CHB metadata file
-					CHB_Settings chb = this.getCHB_CAL_settings(filename, file.getParentFile());
+					if (filename.startsWith("RawDataCube") || filename.startsWith("DarkCurrent")) {
+
+						// search the CHB metadata file
+						CHB_Settings chb = this.getCHB_CAL_settings(filename, file.getParentFile());
 
 
-					// This is an AVIRIS-4 data cube
-					loader = new AVIRIS_4_Float32_FileLoader(specchio_client, this, chb);
+						// This is an AVIRIS-4 data cube
+						loader = new AVIRIS_4_Float32_FileLoader(specchio_client, this, chb);
+					}
+
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 
@@ -875,6 +884,23 @@ public class SpecchioCampaignDataLoader extends CampaignDataLoader {
 				CHB_XML_Loader xml_l = new CHB_XML_Loader(RX_files[i]);
 
 				CHB_Settings settings = xml_l.load();
+
+				// insert into LUT
+				CHB_Settings_hash.put(settings.LUT_key, settings);
+
+			}
+
+			// second option: there is no XML CAL file: this happens for integrating sphere calibrations where the CHB does not control the acquisition through an XML file
+			if (filename.startsWith("RawDataCube_Line_is")) {
+
+				CHB_Settings settings = new CHB_Settings();
+
+				CHB_Setting setting = new CHB_Setting();
+				setting.cal_mode = "is";
+				//LUT_key = "is"; // dynamic modification of LUT key
+				settings.LUT_key = LUT_key;
+				setting.add("<cal_mode>", "is");
+				settings.settings.put(-1, setting); // no ID, therefore set it to -1
 
 				// insert into LUT
 				CHB_Settings_hash.put(settings.LUT_key, settings);

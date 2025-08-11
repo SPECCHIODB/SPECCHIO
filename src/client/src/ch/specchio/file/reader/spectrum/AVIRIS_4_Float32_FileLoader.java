@@ -94,6 +94,11 @@ public class AVIRIS_4_Float32_FileLoader extends ENVI_FileLoader{
 
                 if(setting != null) {
                     addMetaparameters(md, setting, chb_id);
+
+//                    if(setting.cal_mode.equals("Radiometric")) {
+                        addMetaparametersFromFilename(md, setting.cal_mode);
+//                    }
+
                     spec_file.addEavMetadata(md);
                 }
 
@@ -139,6 +144,58 @@ public class AVIRIS_4_Float32_FileLoader extends ENVI_FileLoader{
         }
 
         return spec_file;
+
+    }
+
+    private void addMetaparametersFromFilename(Metadata md, String cal_mode) {
+
+        // written for the radiometric case
+        if(cal_mode.equals("Radiometric")) {
+            String[] tokens = spec_file.getFilename().split("_");
+
+            // get lamp combo
+            String[] combo_tokens = tokens[3].split("combo");
+
+            MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("Integrating Sphere Lamp Combination"));
+            try {
+                mp.setValue(Integer.valueOf(combo_tokens[1]));
+            } catch (MetaParameterFormatException e) {
+                e.printStackTrace();
+            }
+            md.addEntry(mp);
+        }
+
+        // check for dark current frame
+        Hashtable<String, Integer> tax_hash = specchio_client.getTaxonomyHash(attributes_name_hash.get("CAL Measurement Type"));
+        if(this.spec_file.getFilename().contains("_dark_")) {
+
+            try {
+                MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("CAL Measurement Type"));
+
+                mp.setValue(tax_hash.get("Dark Current"));
+
+                md.addEntry(mp);
+
+            } catch (MetaParameterFormatException e) {
+                e.printStackTrace();
+            }
+
+        }
+        else {
+
+            try {
+                MetaParameter mp = MetaParameter.newInstance(attributes_name_hash.get("CAL Measurement Type"));
+
+                mp.setValue(tax_hash.get("Light"));
+
+                md.addEntry(mp);
+
+            } catch (MetaParameterFormatException e) {
+                e.printStackTrace();
+            }
+
+        }
+
 
     }
 

@@ -98,6 +98,9 @@ public class CHB_XML_Loader {
 
         } else if(filename.contains("along-track")){
 
+        } else if(filename.contains("_is_")){
+
+            LUT_key = "is";
 
         } else {
             boolean unknown = true;
