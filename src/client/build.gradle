@@ -175,7 +175,7 @@ macAppBundle {
     icon = "resources/SPECCHIO.icns"
     javaProperties.put("apple.laf.useScreenMenuBar", "true")
     javaProperties.put("jdk.security.allowNonCaAnchor", "true")
-    bundleExtras.put("LSEnvironment",[JAVA_HOME: "Contents/Frameworks/jdk8u392-b08-jre/Contents/Home"])
+    bundleExtras.put("LSEnvironment",[MallocNanoZone: "0", SYSTEM_VERSION_COMPAT: "0", JAVA_HOME: "Contents/Frameworks/jdk8u392-b08-jre/Contents/Home"])
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
     appName = 'SPECCHIO'
