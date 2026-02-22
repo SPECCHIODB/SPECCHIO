@@ -255,8 +255,9 @@ class CsvHdrWriter extends CsvWriter {
 
 		// write one row for the spectrum id
 		writeField("SpectrumId");		// write the attribute's value for each spectrum
-		writeFieldSeparator();
+
 		if(combine){
+            writeFieldSeparator();
 			for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++){
 				if (channel != 0) {
 					writeFieldSeparator();
@@ -353,9 +354,9 @@ class CsvHdrWriter extends CsvWriter {
 			writeField(Integer.toString(s.campaign_id));
 			writeFieldSeparator();
 			writeField(Integer.toString(s.spectrum_id));
-			writeFieldSeparator();
 
 			if(combine){
+                writeFieldSeparator();
 				// MEASUREMENT VALUES
 				for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++) {
 					if (channel != 0) {
@@ -571,13 +572,13 @@ class CsvBodyWriter extends CsvWriter {
 
 		for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++){
 			writeField(df.format(getCurrentSpace().get_dimension_number(channel)));
-			writeFieldSeparator();
+            if(channel < (getCurrentSpace().getDimensionality() - 1)) writeFieldSeparator();
 		}
 		writeRecordSeparator();
 		for(Spectrum s : spectra){
 			for (int channel = 0; channel < getCurrentSpace().getDimensionality(); channel++) {
 				writeField(Double.toString(getCurrentSpace().get_vector_element(s.getSpectrumId(), channel)));
-				writeFieldSeparator();
+                if(channel < getCurrentSpace().getDimensionality() - 1) writeFieldSeparator();
 			}
 			writeRecordSeparator();
 		}
