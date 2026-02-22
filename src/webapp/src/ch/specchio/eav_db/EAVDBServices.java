@@ -1041,10 +1041,10 @@ public class EAVDBServices extends Thread {
 	
 	// inserts links between spectra and eavs by using the redundancy index
 	public void insert_primary_x_eav(int metadata_level, ArrayList<Integer> spectrum_ids,
-			ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum,
-			ArrayList<Integer> eav_ids, Statement stmt) throws SQLException {
+		ArrayList<ArrayList<Integer>> redundancy_reduced_metaparameter_index_per_spectrum,
+		ArrayList<Integer> eav_ids, Statement stmt) throws SQLException {
 		
-		String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
+    	String query = "insert into " + get_primary_x_eav_viewname(metadata_level) + " (" + get_primary_id_name(metadata_level) + ", eav_id) values ";
 		StringBuffer value_strings = new StringBuffer();
 		
 		// iterate all spectrum_ids, look up their index and create value strings
