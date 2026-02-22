@@ -234,6 +234,19 @@ public class AVIRIS_4_Float32_FileLoader extends ENVI_FileLoader{
                 md.addEntry(mp);
             }
 
+            if(setting.wheel_0 != null){
+                mp = MetaParameter.newInstance(attributes_name_hash.get("Wheel 0"));
+                mp.setValue(setting.wheel_0);
+                md.addEntry(mp);
+            }
+
+            if(setting.wheel_1 != null){
+                mp = MetaParameter.newInstance(attributes_name_hash.get("Wheel 1"));
+                mp.setValue(setting.wheel_1);
+                md.addEntry(mp);
+            }
+
+
             if(setting.cal_mode != null){
 
                 // CHB CAL Mode taxonomy

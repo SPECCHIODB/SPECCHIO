@@ -30,12 +30,21 @@ public class CHB_XML_Loader {
                 getSetting(line, "<scan_angle>", setting);
                 getSetting(line, "<cal_mode>", setting);
                 getSetting(line, "<angle>", setting);
+                getSetting(line, "<wheel_0>", setting);
+                getSetting(line, "<wheel_1>", setting);
+
 
 
 
                 if(xml_filename.getName().contains("srf") && setting.cal_mode.equals("Geometric")){
                     setting.cal_mode = "Spectral"; // correction for wrong CHB logging
                 }
+
+                if(xml_filename.getName().contains("nonlinearity") && setting.cal_mode.equals("Geometric")){
+                    setting.cal_mode = "Non Linearity"; // correction for wrong CHB logging
+                }
+
+
 
                 getSetting(line, "<wavelength>", setting);
 

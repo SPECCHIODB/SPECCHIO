@@ -5,6 +5,8 @@ public class CHB_Setting {
     public int ID;
     public Double across_track_scan_angle = null;
     public Double along_track_scan_angle = null;
+    public Double wheel_0 = null; // filter wheel for non linearity and straylight
+    public Double wheel_1 = null; // filter wheel for non linearity and straylight
     public String cal_mode = null;
     public Double wavelength = null;
 
@@ -20,6 +22,15 @@ public class CHB_Setting {
         else if(parameter.equals("<angle>")){
             along_track_scan_angle = Double.valueOf(value);
         }
+
+        else if(parameter.equals("<wheel_0>")){
+            wheel_0 = Double.valueOf(value);
+        }
+
+        else if(parameter.equals("<wheel_1>")){
+            wheel_1 = Double.valueOf(value);
+        }
+
         else if(parameter.equals("<cal_mode>")) {
             if (value.equals("geo")) {
                 cal_mode = "Geometric";
