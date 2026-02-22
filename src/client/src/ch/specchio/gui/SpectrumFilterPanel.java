@@ -29,7 +29,7 @@ import java.util.*;
 
 public class SpectrumFilterPanel extends JPanel {
     
-    private Frame ownerReference;
+    private java.awt.Frame ownerReference;
     private MDE_Controller mdeController;
     private QueryController queryController;
     private MDE_Form mdeForm;
@@ -41,7 +41,7 @@ public class SpectrumFilterPanel extends JPanel {
     private ArrayList<String> categoryStrings;
     private ArrayList<String> attributeStrings;
     
-    public SpectrumFilterPanel(Frame myOwner, MDE_Controller mdeController, QueryController myController){
+    public SpectrumFilterPanel(java.awt.Frame myOwner, MDE_Controller mdeController, QueryController myController){
         super();
         spectrumQueryCategoryContainers = new Hashtable<String, SpectrumQueryCategoryContainer>();
         this.ownerReference = myOwner;

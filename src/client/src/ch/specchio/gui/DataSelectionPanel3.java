@@ -25,7 +25,7 @@ import java.util.*;
 
 public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener, QueryConditionChangeInterface {
     private SPECCHIOClient specchioClient;
-    private Frame frameRef;
+    private java.awt.Frame frameRef;
     private SpectralDataBrowser hierarchySelect;
     private ArrayList<Integer> selectedIds;
     private JTextArea textArea;
@@ -42,7 +42,7 @@ public class DataSelectionPanel3 extends JPanel implements TreeSelectionListener
     private ArrayList<Integer> originalIds;
     private Boolean nothingSelected;
 
-    public DataSelectionPanel3(SPECCHIOClient specchioClient, Frame frameReference){
+    public DataSelectionPanel3(SPECCHIOClient specchioClient, java.awt.Frame frameReference){
         this.specchioClient = specchioClient;
         this.frameRef = frameReference;
 
