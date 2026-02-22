@@ -1314,9 +1314,15 @@ public class SpaceFactory extends SPECCHIOFactory {
 
 					// Test of conversion to matrix from hex
 //					byte[] b_ = javax.xml.bind.DatatypeConverter.parseHexBinary(hex);
-//					space.addMeasurementMatrix((Matrix) SerializationUtil.deserialize(b_));
-
-					int x = 1;
+//                    try {
+//                        space.addMeasurementMatrix((Matrix) SerializationUtil.deserialize(b_));
+//                    } catch (ClassNotFoundException e) {
+//                        throw new RuntimeException(e);
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//
+//                    int x = 1;
 
 					// Direct creation of matrices; not needed as they get pushed through JAXB anyway, hence, it is easier to keep them as HEX string
 					// space.addMeasurementMatrix((Matrix) SerializationUtil.deserialize(binstream));
