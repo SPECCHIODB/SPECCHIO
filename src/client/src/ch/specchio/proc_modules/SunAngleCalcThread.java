@@ -236,7 +236,7 @@ public class SunAngleCalcThread extends Thread {
         catch (SPECCHIOClientException ex) {
             // error contacting server
             if(isGUI) {
-                ErrorDialog error = new ErrorDialog((Frame) dialog.getOwner(), "Error", ex.getUserMessage(), ex);
+                ErrorDialog error = new ErrorDialog((java.awt.Frame) dialog.getOwner(), "Error", ex.getUserMessage(), ex);
                 error.setVisible(true);
             }
             else {
@@ -246,7 +246,7 @@ public class SunAngleCalcThread extends Thread {
         catch (ClassCastException ex) {
             // invalid data stored in the database
             if (isGUI) {
-                ErrorDialog error = new ErrorDialog((Frame) dialog.getOwner(), "Error", "The database contains invalid data for one or more of these spectra.", ex);
+                ErrorDialog error = new ErrorDialog((java.awt.Frame) dialog.getOwner(), "Error", "The database contains invalid data for one or more of these spectra.", ex);
                 error.setVisible(true);
             } else {
                 throw new SPECCHIOClientException("The database contains invalid data for one or more of these spectra.", ex);
@@ -255,7 +255,7 @@ public class SunAngleCalcThread extends Thread {
         catch (MetaParameterFormatException ex) {
             // the parameter have the wrong type
             if(isGUI) {
-                ErrorDialog error = new ErrorDialog((Frame) dialog.getOwner(), "Error", "The illumination attributes have the wrong type. Please contact your system administrator.", ex);
+                ErrorDialog error = new ErrorDialog((java.awt.Frame) dialog.getOwner(), "Error", "The illumination attributes have the wrong type. Please contact your system administrator.", ex);
                 error.setVisible(true);
             }  else {
             throw new SPECCHIOClientException("The illumination attributes have the wrong type. Please contact your system administrator.", ex);
