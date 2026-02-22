@@ -137,7 +137,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			String query;
 			
 			// create an entry in the research_group table
-			query = "insert into research_group_view(name) values(" + SQL.quote_string(name) + ")";
+			query = "insert into " + (Is_admin()?"research_group":"research_group_view") +  "(name) values(" + SQL.quote_string(name) + ")";
 			stmt.executeUpdate(query);
 			
 			// get the identifier for the new group
@@ -151,7 +151,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			// make the current user into a member of the group
 			UserFactory uf = new UserFactory(this);
 			User user = uf.getUser(getDatabaseUserName());
-			query = "insert into research_group_members_view(research_group_id,member_id) " +
+			query = "insert into " + (Is_admin()?"research_group_members":"research_group_members_view") +  "(research_group_id,member_id) " +
 					"values(" + Integer.toString(group.getId()) + "," + Integer.toString(user.getUserId()) + ")";
 			stmt.executeUpdate(query);
 			
@@ -859,7 +859,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			ResultSet rs;
 			
 			// get the research group definition
-			query = "select name from research_group_view where research_group_id=" + Integer.toString(research_group_id);
+			query = "select name from " + (Is_admin()?"research_group":"research_group_view") +  " where research_group_id=" + Integer.toString(research_group_id);
 			rs = stmt.executeQuery(query);
 			if (rs.next()) {
 				group = new ResearchGroup(research_group_id, rs.getString(1));
@@ -869,7 +869,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			if (group != null) {
 				// add the members to the group
 				UserFactory uf = new UserFactory(this);
-				query = "select member_id from research_group_members_view where research_group_id=" + Integer.toString(research_group_id);
+				query = "select member_id from " + (Is_admin()?"research_group_members":"research_group_members_view") +  " where research_group_id=" + Integer.toString(research_group_id);
 				rs = stmt.executeQuery(query);
 				while (rs.next()) {
 					int user_id = rs.getInt(1);
@@ -1484,7 +1484,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			stmt.executeQuery(query);
 			
 			// delete entry from the research group table
-			query = "delete from research_group_view where " + research_group_cond;
+			query = "delete from " + (Is_admin()?"research_group":"research_group_view") +  " where " + research_group_cond;
 			stmt.executeUpdate(query);
 			
 			// restore foreign key checks
@@ -1492,7 +1492,7 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			stmt.executeQuery(query);
 			
 			// delete members from the research group member table
-			query = "delete from research_group_members_view where " + research_group_cond;
+			query = "delete from " + (Is_admin()?"research_group_members":"research_group_members_view") +  " where " + research_group_cond;
 			stmt.executeUpdate(query);
 			
 			// clean up
@@ -1630,13 +1630,13 @@ public class SpecchioCampaignFactory extends SPECCHIOFactory {
 			String query;
 			
 			// delete the existing research group members
-			query = "delete from research_group_members_view where research_group_id=" + Integer.toString(group.getId());
+			query = "delete from " + (Is_admin()?"research_group_members":"research_group_members_view") +  " where research_group_id=" + Integer.toString(group.getId());
 			Statement stmt = SQL.createStatement();
 			stmt.executeUpdate(query);
 			stmt.close();
 			
 			// add the new research group members
-			query = "insert into research_group_members_view(research_group_id, member_id) values(?, ?)";
+			query = "insert into " + (Is_admin()?"research_group_members":"research_group_members_view") +  " (research_group_id, member_id) values(?, ?)";
 			PreparedStatement pstmt = SQL.prepareStatement(query);
 			for (User member : group.getMembers()) {
 				pstmt.setInt(1, group.getId());
