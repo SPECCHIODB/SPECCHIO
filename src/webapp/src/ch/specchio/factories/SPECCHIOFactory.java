@@ -98,7 +98,9 @@ public class SPECCHIOFactory {
 		try {
 			// set up database connection
 			datasource_name = ds_name;
-			init(getDataSource(ds_name).getConnection());
+			DataSource ds = getDataSource(ds_name);
+            conn = ds.getConnection();
+            init(conn);
 			this.my_conn = true;
 		}
 		catch (SQLException ex) {

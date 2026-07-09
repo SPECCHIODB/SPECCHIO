@@ -156,17 +156,19 @@ public class SPECCHIOService {
 		}				
 		
 		// set database capabilities
-		SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName(), this.capabilities);
+        try {
+            SPECCHIOFactory factory = new SPECCHIOFactory(getDataSourceName(), this.capabilities);
 
-		Long maxObjectSize = factory.getMaximumQuerySize() - 1024;
-		capabilities.setCapability(Capabilities.MAX_OBJECT_SIZE, maxObjectSize.toString());
-		
-		Double db_version = factory.getDatabaseVersion();
-		capabilities.setCapability(Capabilities.DB_VERSION, db_version.toString());
-		
-		EAVDBServices eav = factory.getEavServices();
-		Boolean spatially_enabled = eav.isSpatially_enabled();
-		capabilities.setCapability(Capabilities.SPATIAL_EXTENSION, spatially_enabled.toString());
+            Long maxObjectSize = factory.getMaximumQuerySize() - 1024;
+            capabilities.setCapability(Capabilities.MAX_OBJECT_SIZE, maxObjectSize.toString());
+
+            Double db_version = factory.getDatabaseVersion();
+            capabilities.setCapability(Capabilities.DB_VERSION, db_version.toString());
+
+            EAVDBServices eav = factory.getEavServices();
+            Boolean spatially_enabled = eav.isSpatially_enabled();
+            capabilities.setCapability(Capabilities.SPATIAL_EXTENSION, spatially_enabled.toString());
+
 
 		// get more capabilities from DB
 		try {
@@ -206,8 +208,16 @@ public class SPECCHIOService {
 
 		capabilities.setCapability(Capabilities.SERVER_VERSION, SPECCHIO_ReleaseInfo.getVersion());
 		capabilities.setCapability(Capabilities.SERVER_BUILD_NUMBER, Integer.toString(SPECCHIO_ReleaseInfo.getBuildNumber()));
+
+
 		
 		factory.dispose();
+
+        }
+        catch(Exception e) {
+            //  Block of code to handle errors
+            int err = 1;
+        }
 		
 	}
 	
