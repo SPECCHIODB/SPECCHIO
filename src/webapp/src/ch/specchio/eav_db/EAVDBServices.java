@@ -1928,8 +1928,17 @@ public class EAVDBServices extends Thread {
 				}
 				else if (datetime_val != null)
 				{
-					DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
-					DateTime d = formatter.parseDateTime((String) datetime_val); 					
+                    // deal with MySQL 8 datetime formatting issues ...
+                    DateTimeFormatter formatter;
+                    if(datetime_val.toString().contains("."))
+                    {
+                        formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+                    }
+                    else
+                    {
+                        formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT).withZoneUTC();
+                    }			DateTime d = formatter.parseDateTime((String) datetime_val);
+
 					mp = MetaParameter.newInstance(attr, d);
 				}
 				else if (taxonomy_id != null)
@@ -2112,7 +2121,17 @@ public class EAVDBServices extends Thread {
 					}						
 					else if (datetime_val != null)
 					{
-						DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+                        DateTimeFormatter formatter;
+                        // deal with MySQL 8 datetime formatting issues ...
+                        if(datetime_val.toString().contains("."))
+                        {
+                            formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+                        }
+                        else
+                        {
+                            formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT).withZoneUTC();
+                        }
+
 						DateTime d = formatter.parseDateTime((String) datetime_val); 
 						mp = MetaParameter.newInstance(attr, d);
 					}
@@ -2195,6 +2214,12 @@ public class EAVDBServices extends Thread {
 					// should never happen but let's re-throw it as an SQL exception just in case.
 					throw new SQLException(e);
 				}
+
+                catch (java.lang.IllegalArgumentException ex) {
+
+                    int wtf = 1;
+
+                }
 
 
 			}			

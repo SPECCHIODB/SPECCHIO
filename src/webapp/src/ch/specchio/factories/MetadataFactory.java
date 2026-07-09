@@ -1671,7 +1671,16 @@ public class MetadataFactory extends SPECCHIOFactory {
 				if(attr.getDefaultStorageField().equals("datetime_val"))
 				{
 					o = rs.getString(i++);
-					DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+                    DateTimeFormatter formatter;
+                    // deal with MySQL 8 datetime formatting issues ...
+                    if(o.toString().contains("."))
+                    {
+                        formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+                    }
+                    else
+                    {
+                        formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT).withZoneUTC();
+                    }
 					DateTime d = formatter.parseDateTime((String) o); 
 					o = d;
 				}
@@ -1849,8 +1858,16 @@ public class MetadataFactory extends SPECCHIOFactory {
 		if(attr.getDefaultStorageField().equals("datetime_val"))
 		{
 			o = rs.getString(i);
-			DateTimeFormatter formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
-			DateTime d = formatter.parseDateTime((String) o); 
+            // deal with MySQL 8 datetime formatting issues ...
+            DateTimeFormatter formatter;
+            if(o.toString().contains("."))
+            {
+                formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT + ".S").withZoneUTC();
+            }
+            else
+            {
+                formatter = DateTimeFormat.forPattern(MetaDate.DEFAULT_DATE_FORMAT).withZoneUTC();
+            }			DateTime d = formatter.parseDateTime((String) o);
 			o = d;
 		}
 		else
