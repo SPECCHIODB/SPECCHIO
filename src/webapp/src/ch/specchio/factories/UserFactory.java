@@ -1143,8 +1143,10 @@ public class UserFactory extends SPECCHIOFactory {
 			attr_and_vals.add("external_id"); attr_and_vals.add(user.getExternalId());
 			attr_and_vals.add("description"); attr_and_vals.add(user.getDescription());
 			
-			if(this.capabilities.getCapability(Capabilities.USE_SALTING).equals("enabled"))
-				attr_and_vals.add("salt"); attr_and_vals.add(user.getSalt());
+			if(this.capabilities.getCapability(Capabilities.USE_SALTING).equals("enabled")) {
+                attr_and_vals.add("salt");
+                attr_and_vals.add(user.getSalt());
+            }
 			
 			query = SQL.assemble_sql_update_query(
 					SQL.conc_attr_and_vals("specchio_user", attr_and_vals.toArray(new String[attr_and_vals.size()])),
